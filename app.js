@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.8.2';
+const CURRENT_APP_VERSION = '2.8.3';
 
 // Application State
 const state = {
@@ -496,15 +496,22 @@ function renderSlots() {
           <input type="file" id="${fileInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start justify-between gap-3">
-            <div class="space-y-1 flex-1 min-w-0">
+            <div class="space-y-1.5 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
                 ${
                   slot.isCustom
                     ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
                     : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
                 }
-                <span class="text-[10px] px-2 py-0.5 rounded-md neu-inset font-bold text-slate-500">${slot.defaultFormat}</span>
+                <!-- High-Contrast Color-Coded Format Badge -->
+                <span class="text-[10px] px-2.5 py-0.5 rounded-lg font-black tracking-wider uppercase shadow-xs ${
+                  slot.defaultFormat === 'PDF'
+                    ? 'bg-red-500/15 text-red-700 border border-red-300/80'
+                    : 'bg-blue-500/15 text-blue-700 border border-blue-300/80'
+                }">
+                  ${slot.defaultFormat === 'PDF' ? '📕 PDF' : '🖼️ JPG'}
+                </span>
               </div>
               <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
             </div>
@@ -613,16 +620,20 @@ function renderSlots() {
 
           <!-- Footer Actions -->
           <div class="pt-3 border-t border-[#cbd5e1]/60 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-            <!-- Format Switch (Pure Neumorphic Toggle Switch) -->
+            <!-- Format Switch (Vibrant Color-Coded Toggle) -->
             <div class="flex items-center gap-1.5">
               <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
-              <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
-                <button class="px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer btn-slot-jpg ${
-                  att.targetFormat === 'JPG' ? 'neu-pill-active shadow-xs' : 'text-slate-600 hover:text-orange-600'
-                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
-                <button class="px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer btn-slot-pdf ${
-                  att.targetFormat === 'PDF' ? 'neu-pill-active shadow-xs' : 'text-slate-600 hover:text-orange-600'
-                }" data-id="${slot.id}">PDF</button>
+              <div class="flex items-center p-1 rounded-xl neu-inset gap-1.5">
+                <button class="px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer btn-slot-jpg ${
+                  att.targetFormat === 'JPG'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-blue-600'
+                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>🖼️ JPG</button>
+                <button class="px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer btn-slot-pdf ${
+                  att.targetFormat === 'PDF'
+                    ? 'bg-red-600 text-white shadow-md'
+                    : 'text-slate-600 hover:text-red-600'
+                }" data-id="${slot.id}">📕 PDF</button>
               </div>
             </div>
 
