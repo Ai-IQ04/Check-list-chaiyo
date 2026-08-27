@@ -6,11 +6,11 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.5.0';
+const CURRENT_APP_VERSION = '2.5.1';
 
 // Application State
 const state = {
-  currentCategory: 'land',
+  currentCategory: 'motorcycle',
   selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderBottomDock();
-  selectCategory('land');
+  selectCategory('motorcycle');
   setupGlobalEventListeners();
   setupPreviewModalListeners();
   setupDraftModalListeners();
