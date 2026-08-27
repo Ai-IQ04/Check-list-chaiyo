@@ -538,6 +538,59 @@
     </div>
   </div>
 
+  <!-- MOBILE / DESKTOP MEDIA PICKER MODAL (CAMERA / GALLERY / PDF) -->
+  <div id="mediaPickerModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-0 sm:p-4 transition-all duration-300">
+    <div class="neu-raised w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 border border-white/80 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-[#dfe2eb]">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="pickerSlotCode" class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold text-orange-600">A01</span>
+          <h3 id="pickerSlotName" class="text-sm sm:text-base font-extrabold text-slate-800 truncate">เลือกวิธีแนบเอกสาร</h3>
+        </div>
+        <button id="btnCloseMediaPicker" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- 3 Big Action Buttons -->
+      <div class="grid grid-cols-1 gap-3">
+        <!-- Option 1: Direct Camera -->
+        <button id="btnPickerCamera" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-400 text-white flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
+            <i data-lucide="camera" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-orange-600 transition-colors">📷 ถ่ายรูปทันที (เปิดกล้อง)</h4>
+            <p class="text-[11px] text-slate-500">เปิดกล้องมือถือถ่ายสด และบันทึกรูปสำรองลงเครื่อง</p>
+          </div>
+        </button>
+
+        <!-- Option 2: Photo Gallery -->
+        <button id="btnPickerGallery" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
+          <div class="w-12 h-12 rounded-2xl neu-inset text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <i data-lucide="image" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-orange-600 transition-colors">🖼️ เลือกรูปจากอัลบั้ม (Gallery)</h4>
+            <p class="text-[11px] text-slate-500">เลือกรูป 1 หรือหลายรูปเพื่อรวมเป็น PDF</p>
+          </div>
+        </button>
+
+        <!-- Option 3: PDF Document -->
+        <button id="btnPickerPdf" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
+          <div class="w-12 h-12 rounded-2xl neu-inset text-red-500 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-red-600 transition-colors">📄 เลือกไฟล์เอกสาร PDF</h4>
+            <p class="text-[11px] text-slate-500">เลือกไฟล์ PDF ที่บันทึกไว้ในอุปกรณ์</p>
+          </div>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Missing Warning Modal -->
   <div id="missingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4 transition-all duration-300">
     <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 max-h-[90vh] flex flex-col border border-white/80 animate-in fade-in zoom-in-95 duration-200">

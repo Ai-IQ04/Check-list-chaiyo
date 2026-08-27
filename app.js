@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupGlobalEventListeners();
   setupPreviewModalListeners();
   setupDraftModalListeners();
+  setupMediaPickerListeners();
 });
 
 // 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
@@ -322,10 +323,181 @@ function renderSlots() {
       }`;
       card.style.animationDelay = `${animDelay}ms`;
 
-      const slotInputId = `slot_input_${slot.id}`;
       const cameraInputId = `slot_camera_${slot.id}`;
-      const appendInputId = `slot_append_${slot.id}`;
+      const galleryInputId = `slot_gallery_${slot.id}`;
+      const pdfInputId = `slot_pdf_${slot.id}`;
+
       const appendCameraId = `slot_append_camera_${slot.id}`;
+      const appendGalleryId = `slot_append_gallery_${slot.id}`;
+
+      if (!isAttached) {
+        // Empty Slot
+        card.innerHTML = `
+          <!-- Hidden Dedicated Inputs (Camera, Gallery, PDF) -->
+          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
+          <input type="file" id="${galleryInputId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-gallery-input">
+          <input type="file" id="${pdfInputId}" data-id="${slot.id}" accept="application/pdf" class="hidden slot-pdf-input">
+          
+          <div class="flex items-start justify-between gap-3">
+            <div class="space-y-1 flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
+                ${
+                  slot.isCustom
+                    ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
+                    : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
+                }
+                <span class="text-[10px] px-2 py-0.5 rounded-md neu-inset font-bold text-slate-500">${slot.defaultFormat}</span>
+              </div>
+              <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
+            </div>
+
+            ${
+              slot.isCustom
+                ? `<button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer transition-colors" data-id="${slot.id}" title="ลบช่องเอกสารเพิ่มเติมนี้">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>`
+                : ''
+            }
+          </div>
+
+          <!-- Click Target Area triggers Media Picker Modal -->
+          <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
+            <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
+              <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 transition-all">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </div>
+              <span class="text-xs font-bold">แตะเพื่อถ่ายรูป / เลือกไฟล์</span>
+            </div>
+          </div>
+        `;
+      } else {
+        // Attached Slot
+        const att = slot.attached;
+        const pageCount = att.pages.length;
+        const totalBytes = att.pages.reduce((acc, p) => acc + p.size, 0);
+        const formattedSize = formatFileSize(totalBytes);
+
+        let thumbsHtml = '';
+        if (pageCount === 1) {
+          const p = att.pages[0];
+          thumbsHtml = `
+            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" data-page="0" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
+              ${
+                p.dataUrl
+                  ? `<img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform duration-300" alt="Page 1">`
+                  : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500 animate-pulse"></i><span class="text-[10px] font-bold">PDF</span></div>`
+              }
+              <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white backdrop-blur-[1px]">
+                <i data-lucide="zoom-in" class="w-5 h-5 animate-bounce"></i>
+              </div>
+              <div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-orange-600 text-white text-[9px] font-extrabold shadow-sm">
+                ${slot.code}
+              </div>
+            </div>
+          `;
+        } else {
+          const pagesThumbs = att.pages
+            .map((p, idx) => `
+              <div class="w-16 h-16 rounded-xl neu-inset overflow-hidden flex-shrink-0 relative p-0.5 slot-preview-trigger group cursor-pointer border border-white/60" data-id="${slot.id}" data-page="${idx}" title="คลิกเพื่อดูหน้า ${idx + 1}">
+                <img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-lg" alt="Page ${idx + 1}">
+                <div class="absolute top-1 left-1 px-1 rounded bg-black/60 text-white text-[9px] font-bold">
+                  ${idx + 1}
+                </div>
+                <button class="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity btn-delete-page cursor-pointer" data-id="${slot.id}" data-page="${idx}" title="ลบหน้านี้">
+                  <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                </button>
+              </div>
+            `)
+            .join('');
+
+          thumbsHtml = `
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 flex-shrink-0 max-w-[200px] sm:max-w-[220px]">
+              ${pagesThumbs}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <!-- Hidden Dedicated Inputs for Replace/Append -->
+          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
+          <input type="file" id="${galleryInputId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-gallery-input">
+          <input type="file" id="${pdfInputId}" data-id="${slot.id}" accept="application/pdf" class="hidden slot-pdf-input">
+
+          <input type="file" id="${appendCameraId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-append-camera-input">
+          <input type="file" id="${appendGalleryId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-append-gallery-input">
+          
+          <div class="flex items-start gap-3.5">
+            ${thumbsHtml}
+
+            <!-- Details & Renaming -->
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-bold ${pageCount > 1 ? 'text-orange-600 bg-orange-50/50' : 'text-slate-600'} whitespace-nowrap">
+                  ${pageCount > 1 ? `📄 รวม ${pageCount} หน้า • ${formattedSize}` : formattedSize}
+                </span>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก (แก้ไขได้):</label>
+                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name transition-all focus:ring-1 focus:ring-orange-400">
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="pt-2.5 border-t border-[#dfe2eb] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+            <!-- Format Switch -->
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
+              <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
+                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
+                  att.targetFormat === 'JPG' ? 'neu-pill-active' : 'text-slate-600'
+                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
+                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
+                  att.targetFormat === 'PDF' ? 'neu-pill-active' : 'text-slate-600'
+                }" data-id="${slot.id}">PDF</button>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
+              <!-- Add photo button triggers Media Picker in append mode -->
+              <button class="px-2.5 py-1.5 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-append cursor-pointer hover:bg-orange-50/50" data-id="${slot.id}" title="เพิ่มรูปอีกหน้าในเอกสารนี้">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                <span>+ เพิ่มรูป</span>
+              </button>
+
+              <!-- Quick Time Stamp Button -->
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-timestamp cursor-pointer" data-id="${slot.id}" title="ปั๊ม Time Stamp ลงบนรูปภาพ">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              </button>
+
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}" data-page="0">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              </button>
+              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์ทั้งหมดในช่องนี้" data-id="${slot.id}">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              </button>
+              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>โหลด</span>
+              </button>
+              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer hover:scale-105 transition-all" title="ลบไฟล์ที่แนบทั้งหมดในช่องนี้" data-id="${slot.id}">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+              ${
+                slot.isCustom
+                  ? `<button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer" title="ลบช่องเอกสารเพิ่มเติมนี้ทิ้ง" data-id="${slot.id}">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>`
+                  : ''
+              }
+            </div>
+          </div>
+        `;
+      }
 
       if (!isAttached) {
         // Empty Slot
@@ -515,8 +687,259 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 4. Attach Events to Slots
 function attachSlotEvents() {
+  // Click thumbnail or eye button to open Lightbox Preview
+  document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.id;
+      const pageIdx = parseInt(el.dataset.page || '0', 10);
+      openPreviewModal(id, pageIdx);
+    });
+  });
+
+  // Click drop target (empty slot) -> Open Media Picker Modal
+  document.querySelectorAll('.slot-drop-target').forEach((el) => {
+    const id = el.dataset.id;
+    el.addEventListener('click', () => openMediaPicker(id, 'replace'));
+
+    ['dragenter', 'dragover'].forEach((evt) => {
+      el.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.add('slot-drag-hover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((evt) => {
+      el.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.remove('slot-drag-hover');
+      });
+    });
+
+    el.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        attachFilesToSlotById(id, Array.from(e.dataTransfer.files));
+      }
+    });
+  });
+
+  // Append photo button -> Open Media Picker Modal in 'append' mode
+  document.querySelectorAll('.btn-slot-append').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      openMediaPicker(id, 'append');
+    });
+  });
+
+  // Change file button -> Open Media Picker Modal in 'replace' mode
+  document.querySelectorAll('.btn-slot-change').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      openMediaPicker(id, 'replace');
+    });
+  });
+
+  // Camera inputs (replace mode)
+  document.querySelectorAll('.slot-camera-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await attachFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Gallery inputs (replace mode)
+  document.querySelectorAll('.slot-gallery-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await attachFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // PDF inputs (replace mode)
+  document.querySelectorAll('.slot-pdf-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await attachFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Append camera inputs
+  document.querySelectorAll('.slot-append-camera-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await appendFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Append gallery inputs
+  document.querySelectorAll('.slot-append-gallery-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await appendFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Quick Time Stamp button on slot card
+  document.querySelectorAll('.btn-slot-timestamp').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        const page = slot.attached.pages[0];
+        if (page && page.dataUrl) {
+          page.dataUrl = await applyTimeStampToImage(page.dataUrl, page.rotation);
+          renderSlots();
+          showToast(`ปั๊ม Time Stamp ลงบน [${slot.code}] สำเร็จ!`, 'success');
+        }
+      }
+    });
+  });
+
+  // Delete specific page from multi-page slot
+  document.querySelectorAll('.btn-delete-page').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const pageIdx = parseInt(btn.dataset.page, 10);
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached && slot.attached.pages.length > 1) {
+        slot.attached.pages.splice(pageIdx, 1);
+        if (slot.attached.pages.length === 1 && slot.defaultFormat === 'JPG') {
+          slot.attached.targetFormat = 'JPG';
+        }
+        renderSlots();
+        updateSummaryMetrics();
+        showToast('ลบรูปภาพหน้านั้นออกแล้ว', 'info');
+      }
+    });
+  });
+
+  // Custom Slot Name input change
+  document.querySelectorAll('.input-custom-name').forEach((inp) => {
+    inp.addEventListener('input', (e) => {
+      const id = e.target.dataset.id;
+      const customSlot = state.customSlots.find((s) => s.id === id);
+      if (customSlot) {
+        customSlot.targetName = e.target.value;
+      }
+    });
+  });
+
+  // Delete Custom Slot
+  document.querySelectorAll('.btn-delete-custom-slot').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      state.customSlots = state.customSlots.filter((s) => s.id !== id);
+      renderSlots();
+      renderGroupFilterPills();
+      updateSummaryMetrics();
+      showToast('ลบช่องเอกสารเพิ่มเติมแล้ว', 'info');
+    });
+  });
+
+  // Rename input
+  document.querySelectorAll('.input-slot-name').forEach((inp) => {
+    inp.addEventListener('input', (e) => {
+      const id = e.target.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        slot.attached.targetName = e.target.value;
+      }
+    });
+  });
+
+  // Format toggle JPG
+  document.querySelectorAll('.btn-slot-jpg').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        if (slot.attached.pages.length > 1) {
+          showToast('เอกสารที่มีหลายรูปต้องรวมเป็นไฟล์ PDF', 'info');
+          return;
+        }
+        slot.attached.targetFormat = 'JPG';
+        renderSlots();
+        updateSummaryMetrics();
+      }
+    });
+  });
+
+  // Format toggle PDF
+  document.querySelectorAll('.btn-slot-pdf').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        slot.attached.targetFormat = 'PDF';
+        renderSlots();
+        updateSummaryMetrics();
+      }
+    });
+  });
+
+  // Single download
+  document.querySelectorAll('.btn-slot-download').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        showToast(`กำลังเตรียมไฟล์ ${slot.attached.targetName}...`, 'info');
+        try {
+          const { blob, finalFilename } = await processAttachedFile(slot.attached);
+          downloadBlob(blob, finalFilename);
+          showToast(`ดาวน์โหลด ${finalFilename} เรียบร้อยแล้ว`, 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
+        }
+      }
+    });
+  });
+
+  // Remove attached file
+  document.querySelectorAll('.btn-slot-remove').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot) {
+        slot.attached = null;
+        renderSlots();
+        renderGroupFilterPills();
+        updateSummaryMetrics();
+        showToast(`ลบไฟล์ออกจาก [${slot.code}] เรียบร้อย`, 'info');
+      }
+    });
+  });
+}
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
     el.addEventListener('click', (e) => {
@@ -1121,7 +1544,72 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 8. Draft Management (IndexedDB Save & Resume)
+// Media Picker Modal Elements
+const mediaPickerModal = document.getElementById('mediaPickerModal');
+const pickerSlotCode = document.getElementById('pickerSlotCode');
+const pickerSlotName = document.getElementById('pickerSlotName');
+const btnCloseMediaPicker = document.getElementById('btnCloseMediaPicker');
+const btnPickerCamera = document.getElementById('btnPickerCamera');
+const btnPickerGallery = document.getElementById('btnPickerGallery');
+const btnPickerPdf = document.getElementById('btnPickerPdf');
+
+let currentPickerSlotId = null;
+let currentPickerMode = 'replace'; // 'replace' or 'append'
+
+function openMediaPicker(slotId, mode = 'replace') {
+  currentPickerSlotId = slotId;
+  currentPickerMode = mode;
+
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === slotId);
+  if (!slot) return;
+
+  pickerSlotCode.innerText = slot.code;
+  pickerSlotName.innerText = slot.targetName || slot.desc;
+
+  mediaPickerModal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function closeMediaPicker() {
+  mediaPickerModal.classList.add('hidden');
+  currentPickerSlotId = null;
+}
+
+function setupMediaPickerListeners() {
+  btnCloseMediaPicker.addEventListener('click', closeMediaPicker);
+  mediaPickerModal.addEventListener('click', (e) => {
+    if (e.target === mediaPickerModal) closeMediaPicker();
+  });
+
+  btnPickerCamera.addEventListener('click', () => {
+    if (!currentPickerSlotId) return;
+    const inputId = currentPickerMode === 'append'
+      ? `slot_append_camera_${currentPickerSlotId}`
+      : `slot_camera_${currentPickerSlotId}`;
+    const inp = document.getElementById(inputId);
+    closeMediaPicker();
+    if (inp) inp.click();
+  });
+
+  btnPickerGallery.addEventListener('click', () => {
+    if (!currentPickerSlotId) return;
+    const inputId = currentPickerMode === 'append'
+      ? `slot_append_gallery_${currentPickerSlotId}`
+      : `slot_gallery_${currentPickerSlotId}`;
+    const inp = document.getElementById(inputId);
+    closeMediaPicker();
+    if (inp) inp.click();
+  });
+
+  btnPickerPdf.addEventListener('click', () => {
+    if (!currentPickerSlotId) return;
+    const inputId = `slot_pdf_${currentPickerSlotId}`;
+    const inp = document.getElementById(inputId);
+    closeMediaPicker();
+    if (inp) inp.click();
+  });
+}
 function setupDraftModalListeners() {
   btnSaveDraft.addEventListener('click', () => {
     const attachedCount = getAllSlots().filter((s) => s.attached).length;
