@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.0.0';
+const CURRENT_APP_VERSION = '3.1.0';
 
 // Application State
 const state = {
@@ -619,20 +619,26 @@ function renderSlots() {
 
           <!-- Footer Actions -->
           <div class="pt-3 border-t border-[#cbd5e1]/60 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-            <!-- Format Switch (Vibrant Color-Coded Toggle) -->
+            <!-- Format Switch (100% Pure Neumorphic Soft UI Toggle Switch) -->
             <div class="flex items-center gap-1.5">
               <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
-              <div class="flex items-center p-1 rounded-xl neu-inset gap-1.5">
-                <button class="px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer btn-slot-jpg ${
+              <div class="flex items-center p-1 rounded-2xl neu-inset gap-1">
+                <button class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer select-none flex items-center gap-1 btn-slot-jpg ${
                   att.targetFormat === 'JPG'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-blue-600'
-                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>🖼️ JPG</button>
-                <button class="px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer btn-slot-pdf ${
+                    ? 'neu-raised text-orange-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>
+                  ${att.targetFormat === 'JPG' ? '<span class="w-2 h-2 rounded-full bg-orange-500 shadow-sm inline-block"></span>' : ''}
+                  <span>JPG</span>
+                </button>
+                <button class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer select-none flex items-center gap-1 btn-slot-pdf ${
                   att.targetFormat === 'PDF'
-                    ? 'bg-red-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-red-600'
-                }" data-id="${slot.id}">📕 PDF</button>
+                    ? 'neu-raised text-orange-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                }" data-id="${slot.id}">
+                  ${att.targetFormat === 'PDF' ? '<span class="w-2 h-2 rounded-full bg-orange-500 shadow-sm inline-block"></span>' : ''}
+                  <span>PDF</span>
+                </button>
               </div>
             </div>
 
