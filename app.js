@@ -1,7 +1,11 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Multi-Image Merge to Single PDF, Camera Capture, Time Stamp, Auto-Enhance & IndexedDB Drafts
+ * Version 2.4.2
+ * Direct 1-Click Native Camera, Time Stamp, Auto-Enhance, Multi-Image PDF & IndexedDB Drafts
  */
+
+// App Version Constant
+const CURRENT_APP_VERSION = '2.4.2';
 
 // Application State
 const state = {
@@ -80,18 +84,6 @@ const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
 
-// Media Picker Modal Elements
-const mediaPickerModal = document.getElementById('mediaPickerModal');
-const pickerSlotCode = document.getElementById('pickerSlotCode');
-const pickerSlotName = document.getElementById('pickerSlotName');
-const btnCloseMediaPicker = document.getElementById('btnCloseMediaPicker');
-const btnPickerCamera = document.getElementById('btnPickerCamera');
-const btnPickerGallery = document.getElementById('btnPickerGallery');
-const btnPickerPdf = document.getElementById('btnPickerPdf');
-
-let currentPickerSlotId = null;
-let currentPickerMode = 'replace'; // 'replace' or 'append'
-
 // Drafts Modals DOM Elements
 const btnSaveDraft = document.getElementById('btnSaveDraft');
 const btnOpenDraftsList = document.getElementById('btnOpenDraftsList');
@@ -133,9 +125,6 @@ const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
 const toastIcon = document.getElementById('toastIcon');
 
-// App Version Constant
-const CURRENT_APP_VERSION = '2.4.1';
-
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.LOAN_CHECKLISTS) {
@@ -151,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDraftModalListeners();
   checkAppVersion();
 
-  // Check for updates every 60 seconds
-  setInterval(checkAppVersion, 60000);
+  // Check for updates every 45 seconds
+  setInterval(checkAppVersion, 45000);
 });
 
 // Auto Version Checker & Cache Buster
@@ -166,7 +155,7 @@ async function checkAppVersion() {
       }
     }
   } catch (e) {
-    // Silent fail if offline
+    // Offline silent fallback
   }
 }
 
@@ -307,7 +296,7 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 3. Render Checklist Slots with Direct 1-Click Native Camera & File Triggers
+// 3. Render Checklist Slots with 2 Direct Buttons (Camera & File)
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
@@ -378,9 +367,9 @@ function renderSlots() {
       const appendFileId = `slot_append_file_${slot.id}`;
 
       if (!isAttached) {
-        // Empty Slot with 2 Direct Action Triggers (Camera & File)
+        // Empty Slot with 2 Direct 1-Click Buttons
         card.innerHTML = `
-          <!-- Direct Native Inputs (Pure 100% Mobile Compatible) -->
+          <!-- Direct Native Inputs (Pure 100% Mobile & Desktop Compatible) -->
           <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
           <input type="file" id="${fileInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
@@ -409,7 +398,7 @@ function renderSlots() {
 
           <!-- Direct 2-Button Action Bar (Direct Camera Label + File Label) -->
           <div class="grid grid-cols-2 gap-2.5 pt-1">
-            <!-- Button 1: Direct 1-Click Camera (Pure Native Label Trigger) -->
+            <!-- Button 1: Direct 1-Click Camera (Opens camera instantly on iOS & Android) -->
             <label for="${cameraInputId}" class="neu-btn px-3 py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer text-slate-700 hover:text-orange-600 hover:border-orange-400 transition-all select-none group">
               <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 text-white flex items-center justify-center shadow-sm flex-shrink-0 group-hover:scale-110 transition-transform">
                 <i data-lucide="camera" class="w-4 h-4"></i>
@@ -569,429 +558,6 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 1. Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
-  if (!window.LOAN_CHECKLISTS) {
-    console.error('LOAN_CHECKLISTS data not found!');
-    showToast('ไม่พบข้อมูล Checklist กรุณาโหลดไฟล์ checklists.js', 'error');
-    return;
-  }
-
-  renderBottomDock();
-  selectCategory('land');
-  setupGlobalEventListeners();
-  setupPreviewModalListeners();
-  setupDraftModalListeners();
-  setupMediaPickerListeners();
-  checkAppVersion();
-
-  // Check for updates every 60 seconds
-  setInterval(checkAppVersion, 60000);
-});
-
-// Auto Version Checker & Cache Buster
-async function checkAppVersion() {
-  try {
-    const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (response.ok) {
-      const data = await response.json();
-      if (data.version && data.version !== CURRENT_APP_VERSION) {
-        showUpdateBanner(data.version);
-      }
-    }
-  } catch (e) {
-    // Silent fail if offline
-  }
-}
-
-function showUpdateBanner(newVersion) {
-  const banner = document.getElementById('updateNotificationBanner');
-  const title = document.getElementById('updateBannerTitle');
-  const btnReload = document.getElementById('btnReloadNewVersion');
-
-  if (banner && title && btnReload) {
-    title.innerText = `🚀 มีการอัปเดตเวอร์ชันใหม่ (v${newVersion})!`;
-    banner.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
-    banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-    btnReload.onclick = () => {
-      window.location.reload(true);
-    };
-  }
-}
-
-// 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
-function renderBottomDock() {
-  loanCategoryTabs.innerHTML = '';
-  const categories = Object.values(window.LOAN_CHECKLISTS);
-
-  categories.forEach((cat) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    const isActive = state.currentCategory === cat.id;
-    
-    btn.className = `py-2 sm:py-2.5 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer w-full text-center select-none ${
-      isActive
-        ? 'neu-product-active font-extrabold shadow-lg'
-        : 'neu-product-btn font-bold text-slate-700 hover:text-orange-600'
-    }`;
-    
-    let cleanName = cat.name.replace('สินเชื่อ', '').trim();
-
-    btn.innerHTML = `
-      <span class="text-xl sm:text-2xl filter drop-shadow-sm leading-none pointer-events-none">${cat.icon}</span>
-      <span class="text-[11px] sm:text-xs tracking-tight line-clamp-1 leading-tight font-extrabold pointer-events-none">${cleanName}</span>
-    `;
-    btn.onclick = (e) => {
-      e.preventDefault();
-      selectCategory(cat.id);
-    };
-    loanCategoryTabs.appendChild(btn);
-  });
-}
-
-function selectCategory(catId) {
-  state.currentCategory = catId;
-  state.selectedGroupFilter = 'all';
-
-  const catData = window.LOAN_CHECKLISTS[catId];
-  currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
-
-  renderBottomDock();
-
-  // Initialize Slots from Checklist
-  state.slots = catData.items.map((item) => ({
-    id: `slot_${item.code}`,
-    code: item.code,
-    group: item.group,
-    desc: item.desc,
-    targetName: item.targetName,
-    defaultFormat: item.format || 'JPG',
-    isCustom: false,
-    attached: null,
-  }));
-
-  renderGroupFilterPills();
-  renderSlots();
-  updateSummaryMetrics();
-}
-
-function getAllSlots() {
-  return [...state.slots, ...state.customSlots];
-}
-
-function renderGroupFilterPills() {
-  groupFilterPills.innerHTML = '';
-  const allSlots = getAllSlots();
-  const unattachedCount = state.slots.filter((s) => !s.attached).length;
-
-  // 1. "All" Pill
-  const allPill = document.createElement('button');
-  allPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-    state.selectedGroupFilter === 'all'
-      ? 'neu-pill-active'
-      : 'neu-btn text-slate-600 hover:text-slate-900'
-  }`;
-  allPill.innerText = `ทั้งหมด (${allSlots.length})`;
-  allPill.addEventListener('click', () => {
-    state.selectedGroupFilter = 'all';
-    renderGroupFilterPills();
-    renderSlots();
-  });
-  groupFilterPills.appendChild(allPill);
-
-  // 2. "Unattached" Filter Pill (Missing Items)
-  if (unattachedCount > 0) {
-    const missingPill = document.createElement('button');
-    missingPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-      state.selectedGroupFilter === 'unattached'
-        ? 'bg-amber-500 text-white shadow-md'
-        : 'neu-btn text-amber-700 hover:text-amber-900 border border-amber-300'
-    }`;
-    missingPill.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ยังไม่แนบ (${unattachedCount})</span>`;
-    missingPill.addEventListener('click', () => {
-      state.selectedGroupFilter = 'unattached';
-      renderGroupFilterPills();
-      renderSlots();
-    });
-    groupFilterPills.appendChild(missingPill);
-  }
-
-  // 3. Specific Group Pills
-  const groups = Array.from(new Set(allSlots.map((s) => s.group)));
-  groups.forEach((groupName) => {
-    const countInGroup = allSlots.filter((s) => s.group === groupName).length;
-    const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
-
-    const pill = document.createElement('button');
-    pill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-      state.selectedGroupFilter === groupName
-        ? 'neu-pill-active'
-        : 'neu-btn text-slate-600 hover:text-slate-900'
-    }`;
-    pill.innerText = `${groupName} (${attachedInGroup}/${countInGroup})`;
-    pill.addEventListener('click', () => {
-      state.selectedGroupFilter = groupName;
-      renderGroupFilterPills();
-      renderSlots();
-    });
-    groupFilterPills.appendChild(pill);
-  });
-
-  lucide.createIcons();
-}
-
-// 3. Render Checklist Slots with Media Picker Support
-function renderSlots() {
-  slotsContainer.innerHTML = '';
-  const allSlots = getAllSlots();
-
-  let visibleSlots = allSlots;
-  if (state.selectedGroupFilter === 'unattached') {
-    visibleSlots = allSlots.filter((s) => !s.attached);
-  } else if (state.selectedGroupFilter !== 'all') {
-    visibleSlots = allSlots.filter((s) => s.group === state.selectedGroupFilter);
-  }
-
-  if (visibleSlots.length === 0) {
-    slotsContainer.innerHTML = `
-      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2 animate-in fade-in zoom-in-95 duration-300">
-        <i data-lucide="check-circle-2" class="w-10 h-10 mx-auto text-emerald-500 animate-bounce"></i>
-        <p class="text-sm font-bold text-slate-700">ไม่มีรายการในหมวดหมู่นี้ หรือแนบครบทุกรายการแล้ว!</p>
-      </div>
-    `;
-    lucide.createIcons();
-    return;
-  }
-
-  const grouped = {};
-  visibleSlots.forEach((slot) => {
-    if (!grouped[slot.group]) grouped[slot.group] = [];
-    grouped[slot.group].push(slot);
-  });
-
-  let globalCardIndex = 0;
-
-  for (const [groupName, slotsInGroup] of Object.entries(grouped)) {
-    const groupSection = document.createElement('div');
-    groupSection.className = 'space-y-3';
-
-    const isCustomGroup = groupName === 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)';
-
-    groupSection.innerHTML = `
-      <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
-        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_8px_#ff6a00]"></span>
-          ${groupName}
-        </h3>
-        <span class="text-xs font-bold text-slate-500">
-          ${slotsInGroup.filter((s) => s.attached).length} / ${slotsInGroup.length} แนบแล้ว
-        </span>
-      </div>
-    `;
-
-    const grid = document.createElement('div');
-    grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-
-    slotsInGroup.forEach((slot) => {
-      const isAttached = !!slot.attached;
-      const card = document.createElement('div');
-      
-      const animDelay = Math.min(globalCardIndex * 25, 400);
-      globalCardIndex++;
-
-      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 slot-card-animate ${
-        isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
-      }`;
-      card.style.animationDelay = `${animDelay}ms`;
-
-      const cameraInputId = `slot_camera_${slot.id}`;
-      const galleryInputId = `slot_gallery_${slot.id}`;
-      const pdfInputId = `slot_pdf_${slot.id}`;
-
-      const appendCameraId = `slot_append_camera_${slot.id}`;
-      const appendGalleryId = `slot_append_gallery_${slot.id}`;
-
-      if (!isAttached) {
-        // Empty Slot
-        card.innerHTML = `
-          <!-- Hidden Dedicated Inputs (Camera, Gallery, PDF) -->
-          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
-          <input type="file" id="${galleryInputId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-gallery-input">
-          <input type="file" id="${pdfInputId}" data-id="${slot.id}" accept="application/pdf" class="hidden slot-pdf-input">
-          
-          <div class="flex items-start justify-between gap-3">
-            <div class="space-y-1 flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
-                ${
-                  slot.isCustom
-                    ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
-                    : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
-                }
-                <span class="text-[10px] px-2 py-0.5 rounded-md neu-inset font-bold text-slate-500">${slot.defaultFormat}</span>
-              </div>
-              <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
-            </div>
-
-            ${
-              slot.isCustom
-                ? `<button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer transition-colors" data-id="${slot.id}" title="ลบช่องเอกสารเพิ่มเติมนี้">
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                  </button>`
-                : ''
-            }
-          </div>
-
-          <!-- Click Target Area triggers Media Picker Modal -->
-          <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
-            <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
-              <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 transition-all">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-              </div>
-              <span class="text-xs font-bold">แตะเพื่อถ่ายรูป / เลือกไฟล์</span>
-            </div>
-          </div>
-        `;
-      } else {
-        // Attached Slot
-        const att = slot.attached;
-        const pageCount = att.pages.length;
-        const totalBytes = att.pages.reduce((acc, p) => acc + p.size, 0);
-        const formattedSize = formatFileSize(totalBytes);
-
-        let thumbsHtml = '';
-        if (pageCount === 1) {
-          const p = att.pages[0];
-          thumbsHtml = `
-            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" data-page="0" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
-              ${
-                p.dataUrl
-                  ? `<img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform duration-300" alt="Page 1">`
-                  : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500 animate-pulse"></i><span class="text-[10px] font-bold">PDF</span></div>`
-              }
-              <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white backdrop-blur-[1px]">
-                <i data-lucide="zoom-in" class="w-5 h-5 animate-bounce"></i>
-              </div>
-              <div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-orange-600 text-white text-[9px] font-extrabold shadow-sm">
-                ${slot.code}
-              </div>
-            </div>
-          `;
-        } else {
-          const pagesThumbs = att.pages
-            .map((p, idx) => `
-              <div class="w-16 h-16 rounded-xl neu-inset overflow-hidden flex-shrink-0 relative p-0.5 slot-preview-trigger group cursor-pointer border border-white/60" data-id="${slot.id}" data-page="${idx}" title="คลิกเพื่อดูหน้า ${idx + 1}">
-                <img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-lg" alt="Page ${idx + 1}">
-                <div class="absolute top-1 left-1 px-1 rounded bg-black/60 text-white text-[9px] font-bold">
-                  ${idx + 1}
-                </div>
-                <button class="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity btn-delete-page cursor-pointer" data-id="${slot.id}" data-page="${idx}" title="ลบหน้านี้">
-                  <i data-lucide="x" class="w-2.5 h-2.5"></i>
-                </button>
-              </div>
-            `)
-            .join('');
-
-          thumbsHtml = `
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 flex-shrink-0 max-w-[200px] sm:max-w-[220px]">
-              ${pagesThumbs}
-            </div>
-          `;
-        }
-
-        card.innerHTML = `
-          <!-- Hidden Dedicated Inputs for Replace/Append -->
-          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
-          <input type="file" id="${galleryInputId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-gallery-input">
-          <input type="file" id="${pdfInputId}" data-id="${slot.id}" accept="application/pdf" class="hidden slot-pdf-input">
-
-          <input type="file" id="${appendCameraId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-append-camera-input">
-          <input type="file" id="${appendGalleryId}" data-id="${slot.id}" multiple accept="image/*" class="hidden slot-append-gallery-input">
-          
-          <div class="flex items-start gap-3.5">
-            ${thumbsHtml}
-
-            <!-- Details & Renaming -->
-            <div class="flex-1 min-w-0 space-y-1.5">
-              <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
-                <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-bold ${pageCount > 1 ? 'text-orange-600 bg-orange-50/50' : 'text-slate-600'} whitespace-nowrap">
-                  ${pageCount > 1 ? `📄 รวม ${pageCount} หน้า • ${formattedSize}` : formattedSize}
-                </span>
-              </div>
-
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก (แก้ไขได้):</label>
-                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name transition-all focus:ring-1 focus:ring-orange-400">
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer Actions -->
-          <div class="pt-2.5 border-t border-[#dfe2eb] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-            <!-- Format Switch -->
-            <div class="flex items-center gap-1">
-              <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
-              <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
-                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
-                  att.targetFormat === 'JPG' ? 'neu-pill-active' : 'text-slate-600'
-                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
-                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
-                  att.targetFormat === 'PDF' ? 'neu-pill-active' : 'text-slate-600'
-                }" data-id="${slot.id}">PDF</button>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
-              <!-- Add photo button triggers Media Picker in append mode -->
-              <button class="px-2.5 py-1.5 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-append cursor-pointer hover:bg-orange-50/50" data-id="${slot.id}" title="เพิ่มรูปอีกหน้าในเอกสารนี้">
-                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                <span>+ เพิ่มรูป</span>
-              </button>
-
-              <!-- Quick Time Stamp Button -->
-              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-timestamp cursor-pointer" data-id="${slot.id}" title="ปั๊ม Time Stamp ลงบนรูปภาพ">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-              </button>
-
-              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}" data-page="0">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-              </button>
-              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์ทั้งหมดในช่องนี้" data-id="${slot.id}">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-              </button>
-              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>โหลด</span>
-              </button>
-              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer hover:scale-105 transition-all" title="ลบไฟล์ที่แนบทั้งหมดในช่องนี้" data-id="${slot.id}">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-              ${
-                slot.isCustom
-                  ? `<button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer" title="ลบช่องเอกสารเพิ่มเติมนี้ทิ้ง" data-id="${slot.id}">
-                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                    </button>`
-                  : ''
-              }
-            </div>
-          </div>
-        `;
-      }
-
-      grid.appendChild(card);
-    });
-
-    groupSection.appendChild(grid);
-    slotsContainer.appendChild(groupSection);
-  }
-
-  attachSlotEvents();
-  lucide.createIcons();
-}
-
 // 4. Attach Events to Slots
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
@@ -1004,53 +570,7 @@ function attachSlotEvents() {
     });
   });
 
-  // Click drop target (empty slot) -> Open Media Picker Modal
-  document.querySelectorAll('.slot-drop-target').forEach((el) => {
-    const id = el.dataset.id;
-    el.addEventListener('click', () => openMediaPicker(id, 'replace'));
-
-    ['dragenter', 'dragover'].forEach((evt) => {
-      el.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        el.classList.add('slot-drag-hover');
-      });
-    });
-
-    ['dragleave', 'drop'].forEach((evt) => {
-      el.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        el.classList.remove('slot-drag-hover');
-      });
-    });
-
-    el.addEventListener('drop', (e) => {
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        attachFilesToSlotById(id, Array.from(e.dataTransfer.files));
-      }
-    });
-  });
-
-  // Append photo button -> Open Media Picker Modal in 'append' mode
-  document.querySelectorAll('.btn-slot-append').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      openMediaPicker(id, 'append');
-    });
-  });
-
-  // Change file button -> Open Media Picker Modal in 'replace' mode
-  document.querySelectorAll('.btn-slot-change').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      openMediaPicker(id, 'replace');
-    });
-  });
-
-  // Camera inputs (replace mode)
+  // Camera inputs (Direct native trigger)
   document.querySelectorAll('.slot-camera-input').forEach((inp) => {
     inp.addEventListener('change', async (e) => {
       const id = e.target.dataset.id;
@@ -1061,19 +581,8 @@ function attachSlotEvents() {
     });
   });
 
-  // Gallery inputs (replace mode)
-  document.querySelectorAll('.slot-gallery-input').forEach((inp) => {
-    inp.addEventListener('change', async (e) => {
-      const id = e.target.dataset.id;
-      if (e.target.files.length > 0) {
-        await attachFilesToSlotById(id, Array.from(e.target.files));
-        e.target.value = '';
-      }
-    });
-  });
-
-  // PDF inputs (replace mode)
-  document.querySelectorAll('.slot-pdf-input').forEach((inp) => {
+  // File / Gallery inputs
+  document.querySelectorAll('.slot-file-input').forEach((inp) => {
     inp.addEventListener('change', async (e) => {
       const id = e.target.dataset.id;
       if (e.target.files.length > 0) {
@@ -1094,14 +603,23 @@ function attachSlotEvents() {
     });
   });
 
-  // Append gallery inputs
-  document.querySelectorAll('.slot-append-gallery-input').forEach((inp) => {
+  // Append file inputs
+  document.querySelectorAll('.slot-append-input').forEach((inp) => {
     inp.addEventListener('change', async (e) => {
       const id = e.target.dataset.id;
       if (e.target.files.length > 0) {
         await appendFilesToSlotById(id, Array.from(e.target.files));
         e.target.value = '';
       }
+    });
+  });
+
+  // Change file button
+  document.querySelectorAll('.btn-slot-change').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const input = document.getElementById(`slot_file_${id}`);
+      if (input) input.click();
     });
   });
 
@@ -1491,7 +1009,6 @@ function setupPreviewModalListeners() {
       missingModal.classList.add('hidden');
       saveDraftModal.classList.add('hidden');
       draftsListModal.classList.add('hidden');
-      closeMediaPicker();
     } else if (e.key === 'ArrowLeft') {
       if (state.activePreviewSlotId && state.activePreviewPageIndex > 0) {
         state.activePreviewPageIndex--;
@@ -1586,62 +1103,7 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 8. Media Picker & Draft Management
-function setupMediaPickerListeners() {
-  btnCloseMediaPicker.addEventListener('click', closeMediaPicker);
-  mediaPickerModal.addEventListener('click', (e) => {
-    if (e.target === mediaPickerModal) closeMediaPicker();
-  });
-
-  btnPickerCamera.addEventListener('click', () => {
-    if (!currentPickerSlotId) return;
-    const inputId = currentPickerMode === 'append'
-      ? `slot_append_camera_${currentPickerSlotId}`
-      : `slot_camera_${currentPickerSlotId}`;
-    const inp = document.getElementById(inputId);
-    closeMediaPicker();
-    if (inp) inp.click();
-  });
-
-  btnPickerGallery.addEventListener('click', () => {
-    if (!currentPickerSlotId) return;
-    const inputId = currentPickerMode === 'append'
-      ? `slot_append_gallery_${currentPickerSlotId}`
-      : `slot_gallery_${currentPickerSlotId}`;
-    const inp = document.getElementById(inputId);
-    closeMediaPicker();
-    if (inp) inp.click();
-  });
-
-  btnPickerPdf.addEventListener('click', () => {
-    if (!currentPickerSlotId) return;
-    const inputId = `slot_pdf_${currentPickerSlotId}`;
-    const inp = document.getElementById(inputId);
-    closeMediaPicker();
-    if (inp) inp.click();
-  });
-}
-
-function openMediaPicker(slotId, mode = 'replace') {
-  currentPickerSlotId = slotId;
-  currentPickerMode = mode;
-
-  const all = getAllSlots();
-  const slot = all.find((s) => s.id === slotId);
-  if (!slot) return;
-
-  pickerSlotCode.innerText = slot.code;
-  pickerSlotName.innerText = slot.targetName || slot.desc;
-
-  mediaPickerModal.classList.remove('hidden');
-  lucide.createIcons();
-}
-
-function closeMediaPicker() {
-  mediaPickerModal.classList.add('hidden');
-  currentPickerSlotId = null;
-}
-
+// 8. Draft Management (IndexedDB Save & Resume)
 function setupDraftModalListeners() {
   btnSaveDraft.addEventListener('click', () => {
     const attachedCount = getAllSlots().filter((s) => s.attached).length;
@@ -1808,7 +1270,7 @@ function setupGlobalEventListeners() {
     updateSummaryMetrics();
     showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
 
-    const targetElement = document.getElementById(`slot_input_${customId}`);
+    const targetElement = document.getElementById(`slot_file_${customId}`);
     if (targetElement) {
       targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
