@@ -1,12 +1,12 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Slot-based Checklist & Custom User-Defined Document Attachment Engine
+ * Slot-based Checklist, Custom User-Defined Document & Missing Warning System
  */
 
 // Application State
 const state = {
   currentCategory: 'land',
-  selectedGroupFilter: 'all',
+  selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
   customCounter: 1,
@@ -15,6 +15,8 @@ const state = {
 // DOM Elements
 const loanCategoryTabs = document.getElementById('loanCategoryTabs');
 const currentLoanBadge = document.getElementById('currentLoanBadge');
+const missingCountBadge = document.getElementById('missingCountBadge');
+const missingText = document.getElementById('missingText');
 const groupFilterPills = document.getElementById('groupFilterPills');
 const slotsContainer = document.getElementById('slotsContainer');
 const attachedCountBadge = document.getElementById('attachedCountBadge');
@@ -25,6 +27,15 @@ const btnAddCustomSlot = document.getElementById('btnAddCustomSlot');
 const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
+
+// Missing Modal DOM Elements
+const missingModal = document.getElementById('missingModal');
+const missingModalSubtitle = document.getElementById('missingModalSubtitle');
+const missingItemsList = document.getElementById('missingItemsList');
+const btnModalBackToAttach = document.getElementById('btnModalBackToAttach');
+const btnModalConfirmDownload = document.getElementById('btnModalConfirmDownload');
+
+// Toast
 const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
 const toastIcon = document.getElementById('toastIcon');
@@ -102,11 +113,9 @@ function getAllSlots() {
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
   const allSlots = getAllSlots();
+  const unattachedCount = state.slots.filter((s) => !s.attached).length;
 
-  // Get unique groups
-  const groups = Array.from(new Set(allSlots.map((s) => s.group)));
-
-  // "All" Pill
+  // 1. "All" Pill
   const allPill = document.createElement('button');
   allPill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
     state.selectedGroupFilter === 'all'
@@ -121,7 +130,25 @@ function renderGroupFilterPills() {
   });
   groupFilterPills.appendChild(allPill);
 
-  // Specific Group Pills
+  // 2. "Unattached" Filter Pill (Missing Items)
+  if (unattachedCount > 0) {
+    const missingPill = document.createElement('button');
+    missingPill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+      state.selectedGroupFilter === 'unattached'
+        ? 'bg-amber-500 text-white shadow-md'
+        : 'neu-btn text-amber-700 hover:text-amber-900 border border-amber-300'
+    }`;
+    missingPill.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> ยังไม่แนบ (${unattachedCount})</span>`;
+    missingPill.addEventListener('click', () => {
+      state.selectedGroupFilter = 'unattached';
+      renderGroupFilterPills();
+      renderSlots();
+    });
+    groupFilterPills.appendChild(missingPill);
+  }
+
+  // 3. Specific Group Pills
+  const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
     const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
@@ -132,7 +159,7 @@ function renderGroupFilterPills() {
         ? 'neu-pill-active'
         : 'neu-btn text-slate-600 hover:text-slate-900'
     }`;
-    pill.innerText = `${groupName.substring(0, 18)} (${attachedInGroup}/${countInGroup})`;
+    pill.innerText = `${groupName.substring(0, 16)} (${attachedInGroup}/${countInGroup})`;
     pill.addEventListener('click', () => {
       state.selectedGroupFilter = groupName;
       renderGroupFilterPills();
@@ -140,6 +167,8 @@ function renderGroupFilterPills() {
     });
     groupFilterPills.appendChild(pill);
   });
+
+  lucide.createIcons();
 }
 
 // 3. Render Checklist Topic Slots & Custom Slots
@@ -148,10 +177,23 @@ function renderSlots() {
   const allSlots = getAllSlots();
 
   // Filter slots
-  const visibleSlots =
-    state.selectedGroupFilter === 'all'
-      ? allSlots
-      : allSlots.filter((s) => s.group === state.selectedGroupFilter);
+  let visibleSlots = allSlots;
+  if (state.selectedGroupFilter === 'unattached') {
+    visibleSlots = allSlots.filter((s) => !s.attached);
+  } else if (state.selectedGroupFilter !== 'all') {
+    visibleSlots = allSlots.filter((s) => s.group === state.selectedGroupFilter);
+  }
+
+  if (visibleSlots.length === 0) {
+    slotsContainer.innerHTML = `
+      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2">
+        <i data-lucide="check-circle-2" class="w-10 h-10 mx-auto text-emerald-500"></i>
+        <p class="text-sm font-bold text-slate-700">ไม่มีรายการในหมวดหมู่นี้ หรือแนบครบทุกรายการแล้ว!</p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
 
   // Group visible slots
   const grouped = {};
@@ -549,7 +591,6 @@ function setupGlobalEventListeners() {
     updateSummaryMetrics();
     showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
 
-    // Scroll to custom slots
     const targetElement = document.getElementById(`slot_input_${customId}`);
     if (targetElement) {
       targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -605,14 +646,85 @@ function setupGlobalEventListeners() {
     }
   });
 
-  btnDownloadZip.addEventListener('click', handleDownloadZip);
+  // ZIP Download with Warning Validation
+  btnDownloadZip.addEventListener('click', () => {
+    const unattachedSlots = state.slots.filter((s) => !s.attached);
+    const attachedSlots = getAllSlots().filter((s) => s.attached);
+
+    if (attachedSlots.length === 0) {
+      showToast('ยังไม่ได้แนบเอกสารใดๆ', 'error');
+      return;
+    }
+
+    if (unattachedSlots.length > 0) {
+      // Show Missing Warning Modal
+      openMissingModal(unattachedSlots, attachedSlots.length);
+    } else {
+      // Complete 100%! Directly generate ZIP
+      executeZipDownload();
+    }
+  });
+
+  // Modal Actions
+  btnModalBackToAttach.addEventListener('click', () => {
+    missingModal.classList.add('hidden');
+    // Filter to unattached slots so user immediately sees what to attach!
+    state.selectedGroupFilter = 'unattached';
+    renderGroupFilterPills();
+    renderSlots();
+    showToast('กรองแสดงเฉพาะเอกสารที่ยังไม่ได้แนบ', 'info');
+  });
+
+  btnModalConfirmDownload.addEventListener('click', () => {
+    missingModal.classList.add('hidden');
+    executeZipDownload();
+  });
+}
+
+function openMissingModal(unattachedSlots, attachedCount) {
+  missingModalSubtitle.innerText = `แนบแล้ว ${attachedCount} ไฟล์ • ยังขาดอีก ${unattachedSlots.length} ไฟล์ Checklist`;
+  
+  missingItemsList.innerHTML = '';
+  unattachedSlots.slice(0, 15).forEach((slot) => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center justify-between p-2 rounded-xl neu-inset text-xs';
+    row.innerHTML = `
+      <div class="flex items-center gap-2 truncate">
+        <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 font-extrabold text-[10px]">${slot.code}</span>
+        <span class="font-bold text-slate-800 truncate">${slot.targetName}</span>
+      </div>
+      <span class="text-[10px] text-slate-500 font-semibold whitespace-nowrap ml-2">หมวด ${slot.group.substring(0, 12)}</span>
+    `;
+    missingItemsList.appendChild(row);
+  });
+
+  if (unattachedSlots.length > 15) {
+    const moreRow = document.createElement('div');
+    moreRow.className = 'text-center text-xs font-bold text-slate-500 py-1';
+    moreRow.innerText = `...และอีก ${unattachedSlots.length - 15} รายการ`;
+    missingItemsList.appendChild(moreRow);
+  }
+
+  missingModal.classList.remove('hidden');
+  lucide.createIcons();
 }
 
 // 7. Metrics Calculation
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
+  const unattachedChecklistCount = state.slots.filter((s) => !s.attached).length;
+
   attachedCountBadge.innerText = `${attachedSlots.length} / ${all.length} ไฟล์`;
+
+  // Update Header Missing Indicator
+  if (unattachedChecklistCount === 0 && state.slots.length > 0) {
+    missingCountBadge.className = 'flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-emerald-700 font-bold';
+    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i> ครบถ้วน 100%</span>`;
+  } else {
+    missingCountBadge.className = 'flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-amber-700 font-bold';
+    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i> ยังขาด ${unattachedChecklistCount} เอกสาร</span>`;
+  }
 
   let totalOriginalBytes = 0;
   let totalEstimatedBytes = 0;
@@ -631,6 +743,7 @@ function updateSummaryMetrics() {
   sumEstimatedSize.innerText = `~${formatFileSize(totalEstimatedBytes)}`;
 
   btnDownloadZip.disabled = attachedSlots.length === 0;
+  lucide.createIcons();
 }
 
 // 8. Image & Document Processing Engine (< 5MB Guaranteed)
@@ -752,7 +865,7 @@ async function convertImageBlobToPdf(imageBlob) {
 }
 
 // 9. Batch Download as .ZIP
-async function handleDownloadZip() {
+async function executeZipDownload() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
   if (attachedSlots.length === 0) {

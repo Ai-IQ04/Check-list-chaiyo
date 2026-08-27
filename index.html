@@ -177,18 +177,18 @@
               Auto Loan Document Optimizer
             </h1>
             <span class="text-[11px] px-2.5 py-0.5 rounded-full neu-inset text-orange-600 font-bold">
-              แนบตามหัวข้อ + ตั้งชื่อเอง
+              ตรวจสอบความครบถ้วน
             </span>
           </div>
-          <p class="text-xs text-slate-500 font-medium">แนบไฟล์ตาม Checklist • เพิ่มเอกสารตั้งชื่อเองได้ • คุมขนาดไม่เกิน 5MB</p>
+          <p class="text-xs text-slate-500 font-medium">แนบไฟล์ตาม Checklist • แจ้งเตือนเมื่อไม่ครบ • คุมขนาดไม่เกิน 5MB</p>
         </div>
       </div>
 
       <!-- Quick Status Badges -->
       <div class="flex items-center gap-2.5 text-xs">
-        <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-slate-600 font-semibold">
-          <span class="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_#ff6a00]"></span>
-          <span>คุมขนาด &lt; 5MB/ไฟล์</span>
+        <div id="missingCountBadge" class="flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-amber-700 font-bold">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+          <span id="missingText">ตรวจสอบเอกสาร</span>
         </div>
         <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-slate-600 font-semibold">
           <i data-lucide="shield-check" class="w-4 h-4 text-orange-500"></i>
@@ -231,7 +231,7 @@
         
         <!-- Filter & Search Toolbar -->
         <div class="flex flex-wrap items-center gap-2.5 flex-1">
-          <span class="text-xs font-bold text-slate-600">กรองหมวดหมู่:</span>
+          <span class="text-xs font-bold text-slate-600">กรองรายการ:</span>
           <div id="groupFilterPills" class="flex flex-wrap gap-1.5">
             <!-- Injected by JavaScript -->
           </div>
@@ -242,7 +242,7 @@
           <!-- Add Custom Slot Button -->
           <button id="btnAddCustomSlot" class="neu-btn px-3.5 py-2 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1.5 cursor-pointer hover:bg-orange-50/50" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
             <i data-lucide="plus-circle" class="w-4 h-4 text-orange-500"></i>
-            <span>+ แนบเอกสารเพิ่มเติม (ตั้งชื่อเอง)</span>
+            <span>+ แนบเอกสารเพิ่มเติม</span>
           </button>
 
           <!-- Batch auto-drop helper input -->
@@ -313,11 +313,52 @@
 
       <!-- Checklist Slots Container -->
       <div id="slotsContainer" class="space-y-6">
-        <!-- Group sections and slot cards injected by JavaScript -->
+        <!-- Injected by JavaScript -->
       </div>
     </section>
 
   </main>
+
+  <!-- Missing Documents Warning Modal (Soft UI Neumorphism) -->
+  <div id="missingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4">
+    <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 max-h-[90vh] flex flex-col border border-white/80 animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 pb-3 border-b border-[#dfe2eb]">
+        <div class="w-11 h-11 rounded-2xl neu-inset flex items-center justify-center text-amber-500 flex-shrink-0">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-800">แจ้งเตือน: ยังแนบเอกสารไม่ครบ!</h3>
+          <p id="missingModalSubtitle" class="text-xs text-slate-500 font-medium">
+            มีรายการ Checklist ที่ยังไม่ได้แนบไฟล์
+          </p>
+        </div>
+      </div>
+
+      <!-- Missing Items List -->
+      <div class="space-y-2 flex-1 overflow-y-auto pr-1">
+        <span class="text-xs font-bold text-slate-600 block">รายการที่ยังขาดอยู่:</span>
+        <div id="missingItemsList" class="space-y-1.5">
+          <!-- Injected by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Modal Footer Action Buttons -->
+      <div class="pt-3 border-t border-[#dfe2eb] flex flex-col sm:flex-row items-center justify-end gap-2.5">
+        <button id="btnModalBackToAttach" class="neu-btn px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 w-full sm:w-auto hover:text-orange-600 cursor-pointer flex items-center justify-center gap-1.5">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>กลับไปแนบให้ครบ</span>
+        </button>
+        
+        <button id="btnModalConfirmDownload" class="neu-btn-orange px-5 py-2.5 rounded-xl text-xs font-extrabold w-full sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>ดาวน์โหลดต่อไป (เฉพาะที่มี)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Neumorphic Toast Notification -->
   <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 neu-raised text-slate-800 text-xs font-bold px-4 py-3.5 rounded-2xl flex items-center gap-3">
