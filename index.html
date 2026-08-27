@@ -240,7 +240,7 @@
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold tracking-tight">
-              v3.1.0 • License: Anusat
+              v3.2.1 • License: Anusat
             </span>
           </div>
           <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • แสดงครบทุกหมวดหมู่ • สแกน AI</p>
@@ -564,9 +564,9 @@
     </div>
   </div>
 
-  <!-- IN-APP MANUAL VIEWER MODAL (100% Mobile & PC Compatible) -->
+  <!-- IN-APP NATIVE MANUAL VIEWER MODAL (100% Mobile & iPad Native Responsive) -->
   <div id="manualModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-3 sm:p-6 transition-all duration-300">
-    <div class="neu-raised max-w-5xl w-full rounded-3xl p-4 sm:p-6 space-y-4 max-h-[94vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <div class="neu-raised max-w-4xl w-full rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       
       <!-- Manual Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60">
@@ -576,15 +576,14 @@
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-extrabold text-slate-800">คู่มือการใช้งานระบบ (User Manual)</h3>
-              <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold">v3.2.0 • Soft UI</span>
+              <h3 class="text-base sm:text-lg font-extrabold text-slate-800">คู่มือการใช้งานระบบ (User Manual)</h3>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold">v3.2.1 • Soft UI</span>
             </div>
             <p class="text-xs text-slate-500 font-medium">ขั้นตอนการทำงาน • ระบบความปลอดภัยระดับไฟล์ (PDPA 100%) • แนะนำฟังก์ชัน</p>
           </div>
         </div>
         
         <div class="flex items-center gap-2">
-          <!-- Direct PDF Download Link (ASCII safe filename) -->
           <a href="manual_guide.pdf" download="คู่มือการใช้งาน_ระบบจัดการเอกสารสินเชื่อ.pdf" class="neu-btn-orange px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">โหลด PDF</span>
@@ -595,14 +594,99 @@
         </div>
       </div>
 
-      <!-- Manual Content Iframe / Embed Container -->
-      <div class="flex-1 overflow-hidden rounded-2xl neu-inset p-1 bg-[#e0e5ec] min-h-[450px]">
-        <iframe id="manualIframe" src="manual.html" class="w-full h-full rounded-xl border-0" title="Manual Guide Viewer"></iframe>
+      <!-- Native Scrollable Guide Container (Zero iframe, 100% Crisp Responsive) -->
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+        
+        <!-- Section 1: Product Matrix -->
+        <div class="neu-raised rounded-2xl p-4 space-y-2.5">
+          <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2 border-b border-[#cbd5e1]/40 pb-2">
+            <span class="w-6 h-6 rounded-lg neu-inset flex items-center justify-center text-orange-600 text-xs font-black">1</span>
+            5 ประเภทสินเชื่อหลัก (เลือกจากแถบด้านล่าง)
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-xl neu-inset">
+              <strong class="text-orange-600 block mb-0.5">🏍️ มอเตอร์ไซค์:</strong>
+              <p class="text-slate-600 text-[11px]">เล่มทะเบียน [B101-B105], ป้ายภาษี [B107], รูปรถรอบคัน [B10-B14]</p>
+            </div>
+            <div class="p-2.5 rounded-xl neu-inset">
+              <strong class="text-orange-600 block mb-0.5">🚗 รถยนต์:</strong>
+              <p class="text-slate-600 text-[11px]">เล่มทะเบียน, ป้ายภาษี, รูปรถ 8 มุม, รูปเลขตัวถัง/เครื่อง</p>
+            </div>
+            <div class="p-2.5 rounded-xl neu-inset">
+              <strong class="text-orange-600 block mb-0.5">🚛 รถบรรทุก:</strong>
+              <p class="text-slate-600 text-[11px]">เล่มทะเบียน ขส., รูปรถรอบคัน, รูปยาง/กระบะบรรทุก</p>
+            </div>
+            <div class="p-2.5 rounded-xl neu-inset">
+              <strong class="text-orange-600 block mb-0.5">🚜 รถไถ/เกษตรกรรม:</strong>
+              <p class="text-slate-600 text-[11px]">ใบตรวจสภาพอุปกรณ์ต่อพ่วง, เช็คชีทแปลงเกษตร</p>
+            </div>
+            <div class="p-2.5 rounded-xl neu-inset sm:col-span-2">
+              <strong class="text-orange-600 block mb-0.5">🏠 ที่ดินและสิ่งปลูกสร้าง:</strong>
+              <p class="text-slate-600 text-[11px]">โฉนดหน้า-หลัง [B201-B202], สัญญาจำนอง [DD01], ท.ด.21, แผนที่แปลง</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Security & Privacy (PDPA 100%) -->
+        <div class="neu-raised rounded-2xl p-4 space-y-2.5 border border-emerald-300/40 bg-emerald-50/20">
+          <h4 class="text-sm font-extrabold text-emerald-800 flex items-center gap-2 border-b border-emerald-200/60 pb-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            มาตรฐานความปลอดภัยระดับไฟล์ & การคุ้มครองข้อมูลส่วนบุคคล (PDPA 100%)
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+            <div class="p-3 rounded-xl neu-inset bg-white/40">
+              <strong class="text-emerald-700 block mb-1">1. Client-Side Processing:</strong>
+              <p class="text-slate-600 text-[11px]">รูปภาพและข้อมูลเอกสารทั้งหมดถูกประมวลผลบน RAM ของเครื่องสาขาโดยตรง <b>100% ไม่มีการส่งไฟล์ออกไปยังเซิร์ฟเวอร์ภายนอก</b></p>
+            </div>
+            <div class="p-3 rounded-xl neu-inset bg-white/40">
+              <strong class="text-emerald-700 block mb-1">2. Sandboxed DB:</strong>
+              <p class="text-slate-600 text-[11px]">ระบบบันทึกเคส (Drafts) ถูกจัดเก็บบน IndexedDB ภายใน Sandbox ของเครื่อง ปลอดภัย แอปภายนอกไม่สามารถเข้าถึงได้</p>
+            </div>
+            <div class="p-3 rounded-xl neu-inset bg-white/40">
+              <strong class="text-emerald-700 block mb-1">3. Privacy & Metadata:</strong>
+              <p class="text-slate-600 text-[11px]">รูปภาพถูกบีบอัดและรวมไฟล์ ZIP ในเครื่อง โดยล้าง Metadata แฝงที่ไม่จำเป็นออก ปลอดภัยตาม พ.ร.บ. PDPA</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Time Stamp & Features Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <!-- Time Stamp Card -->
+          <div class="neu-raised rounded-2xl p-4 space-y-2">
+            <h4 class="text-xs font-extrabold text-slate-800 flex items-center gap-2">
+              <i data-lucide="clock" class="w-4 h-4 text-orange-500"></i>
+              📍 GPS & Thai Address Time Stamp
+            </h4>
+            <p class="text-slate-600 text-[11px]">
+              แตะปุ่มนาฬิกาบนการ์ด ระบบจะประทับพิกัดดาวเทียม วันที่เวลา และที่อยู่ภาษาไทยอัตโนมัติ:
+            </p>
+            <div class="p-2 rounded-xl neu-inset font-mono text-[10px] text-slate-700 space-y-0.5">
+              <div>28 ส.ค. 2026 18:04:30</div>
+              <div>13.71740757N 99.772852E</div>
+              <div>ตำบล เตาปูน / อำเภอ โพธาราม / ราชบุรี</div>
+            </div>
+          </div>
+
+          <!-- AI Scanner & Camera -->
+          <div class="neu-raised rounded-2xl p-4 space-y-2">
+            <h4 class="text-xs font-extrabold text-slate-800 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
+              ✨ สแกน AI & ถ่ายรูปสด 1-Click
+            </h4>
+            <ul class="space-y-1.5 text-[11px] text-slate-600">
+              <li>• <b>สแกน AI:</b> ตรวจจับบัตร ปชช., ทะเบียนบ้าน, เล่มทะเบียน, โฉนด และจัดลงช่องหมวดปัจจุบันอัตโนมัติ</li>
+              <li>• <b>รวมหลายรูป:</b> แตะ <b>+ เพิ่มรูป</b> เพื่อรวมรูปเป็น 1 ไฟล์ PDF ทันที</li>
+              <li>• <b>บีบอัด ZIP:</b> รวมไฟล์ทั้งหมดโดยควบคุมขนาด <b>ไม่เกิน 5 MB</b></li>
+            </ul>
+          </div>
+        </div>
+
       </div>
 
-      <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1 border-t border-[#cbd5e1]/40">
-        <span>💡 สามารถเลื่อนอ่านคู่มือได้ในหน้านี้ หรือกดปุ่ม <b>โหลด PDF</b> เพื่อบันทึกเก็บไว้</span>
-        <span class="font-bold text-orange-600">License: Anusat</span>
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-2 border-t border-[#cbd5e1]/40">
+        <span>💡 เลื่อนอ่านคู่มือได้ในหน้านี้ หรือกดปุ่ม <b>โหลด PDF</b> เพื่อบันทึกฉบับพิมพ์</span>
+        <span class="font-bold text-orange-600">License: Anusat • v3.2.1</span>
       </div>
 
     </div>
@@ -631,8 +715,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.2.0"></script>
-  <script src="app.js?v=3.2.0"></script>
+  <script src="checklists.js?v=3.2.1"></script>
+  <script src="app.js?v=3.2.1"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
