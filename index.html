@@ -284,14 +284,14 @@
           <span class="hidden sm:inline">คู่มือการใช้งาน</span>
         </button>
 
-        <!-- Add Custom Slot -->
-        <button id="btnAddCustomSlot" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1.5 cursor-pointer" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
-          <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-orange-500"></i>
-          <span>+ เพิ่มเอกสารเอง</span>
+        <!-- Start New Case Button -->
+        <button id="btnStartNewCase" class="neu-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer" title="ล้างข้อมูลทั้งหมดเพื่อเริ่มทำเคสลูกค้าคนใหม่">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-orange-500"></i>
+          <span>เริ่มเคสใหม่</span>
         </button>
 
         <!-- Main ZIP Download Button -->
-        <button id="btnDownloadZip" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap">
+        <button id="btnDownloadZip" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap shadow-md">
           <i data-lucide="archive" class="w-3.5 h-3.5"></i>
           <span>ดาวน์โหลด ZIP</span>
         </button>
@@ -608,6 +608,38 @@
     </div>
   </div>
 
+  <!-- POST-DOWNLOAD CASE SUCCESS MODAL (Prompt to Start New Case) -->
+  <div id="caseSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4 transition-all duration-300">
+    <div class="neu-raised max-w-md w-full rounded-3xl p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center gap-3.5 pb-3 border-b border-[#cbd5e1]/60">
+        <div class="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-emerald-500 shadow-inner flex-shrink-0">
+          <i data-lucide="check-circle" class="w-7 h-7"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-800">ดาวน์โหลด ZIP สำเร็จเรียบร้อย! 🎉</h3>
+          <p class="text-xs text-slate-500 font-medium">ไฟล์ ZIP ถูกบันทึกลงในเครื่องของคุณแล้ว</p>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-2xl neu-inset text-xs text-slate-700 space-y-1">
+        <strong class="text-orange-600 block">💡 แนะนำสำหรับเจ้าหน้าที่สาขา:</strong>
+        <p>หากจบเคสนี้แล้ว คุณสามารถกด <b>"เริ่มเคสใหม่"</b> เพื่อล้างรูปภาพเดิมและเปิด Checklist ว่างพร้อมรับลูกค้าคนถัดไปได้ทันที</p>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2">
+        <button id="btnKeepCurrentCase" class="neu-btn px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer">
+          คงรูปไว้ก่อน
+        </button>
+        <button id="btnConfirmStartNewCaseAfterZip" class="neu-btn-orange px-5 py-2.5 rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5 shadow-md">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>✨ เริ่มเคสใหม่ทันที</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- IN-APP NATIVE MANUAL VIEWER MODAL (100% Mobile & iPad Native Responsive) -->
   <div id="manualModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-3 sm:p-6 transition-all duration-300">
     <div class="neu-raised max-w-4xl w-full rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -850,8 +882,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.4.0"></script>
-  <script src="app.js?v=3.4.0"></script>
+  <script src="checklists.js?v=3.5.0"></script>
+  <script src="app.js?v=3.5.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();

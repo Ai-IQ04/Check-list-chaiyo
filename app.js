@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.4.0';
+const CURRENT_APP_VERSION = '3.5.0';
 
 // Application State
 const state = {
@@ -1854,11 +1854,69 @@ async function renderDraftsList() {
   }
 }
 
-// 12. Global Batch, Custom Slots & Manual Modal Events
+// 12. Global Batch, Custom Slots, New Case & Manual Modal Events
+async function resetToNewCase(showNotification = true) {
+  const all = getAllSlots();
+  all.forEach((s) => (s.attached = null));
+  state.customSlots = [];
+  state.customCounter = 1;
+  state.selectedGroupFilter = 'all';
+
+  // Clear active autosave from IndexedDB
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_AUTOSAVE, 'readwrite');
+    const store = tx.objectStore(STORE_AUTOSAVE);
+    store.delete('current_active_session');
+  } catch (e) {
+    console.warn('Error clearing autosave:', e);
+  }
+
+  renderGroupFilterPills();
+  renderSlots();
+  updateSummaryMetrics();
+  updateAutoSaveIndicator('idle');
+
+  if (showNotification) {
+    showToast('✨ เริ่มต้นเคสใหม่เรียบร้อยแล้ว พร้อมแนบเอกสาร!', 'success');
+  }
+}
+
 function setupGlobalEventListeners() {
   const btnOpenManualModal = document.getElementById('btnOpenManualModal');
   const btnCloseManualModal = document.getElementById('btnCloseManualModal');
   const manualModal = document.getElementById('manualModal');
+
+  const btnStartNewCase = document.getElementById('btnStartNewCase');
+  const caseSuccessModal = document.getElementById('caseSuccessModal');
+  const btnKeepCurrentCase = document.getElementById('btnKeepCurrentCase');
+  const btnConfirmStartNewCaseAfterZip = document.getElementById('btnConfirmStartNewCaseAfterZip');
+
+  if (btnStartNewCase) {
+    btnStartNewCase.addEventListener('click', () => {
+      const attachedCount = getAllSlots().filter((s) => s.attached).length;
+      if (attachedCount === 0 && state.customSlots.length === 0) {
+        showToast('หน้าต่างว่างอยู่แล้ว พร้อมเริ่มเคสใหม่ได้ทันที', 'info');
+        return;
+      }
+      if (confirm(`คุณต้องการล้างรูปภาพและข้อมูลเคสปัจจุบัน (${attachedCount} ไฟล์) เพื่อเริ่มเคสใหม่หรือไม่?`)) {
+        resetToNewCase(true);
+      }
+    });
+  }
+
+  if (btnKeepCurrentCase && caseSuccessModal) {
+    btnKeepCurrentCase.addEventListener('click', () => {
+      caseSuccessModal.classList.add('hidden');
+    });
+  }
+
+  if (btnConfirmStartNewCaseAfterZip && caseSuccessModal) {
+    btnConfirmStartNewCaseAfterZip.addEventListener('click', () => {
+      caseSuccessModal.classList.add('hidden');
+      resetToNewCase(true);
+    });
+  }
 
   if (btnOpenManualModal && manualModal) {
     btnOpenManualModal.addEventListener('click', () => {
@@ -2212,6 +2270,15 @@ async function executeZipDownload() {
     downloadBlob(zipBlob, zipName);
 
     showToast(`ดาวน์โหลดไฟล์ ${zipName} สำเร็จ! (${attachedSlots.length} ไฟล์)`, 'success');
+
+    // Prompt user to start new case
+    setTimeout(() => {
+      const successM = document.getElementById('caseSuccessModal');
+      if (successM) {
+        successM.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }, 600);
   } catch (err) {
     console.error('ZIP Error:', err);
     showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP', 'error');
