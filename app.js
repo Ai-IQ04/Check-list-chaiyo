@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.3.0';
+const CURRENT_APP_VERSION = '3.3.1';
 
 // Application State
 const state = {
@@ -1456,26 +1456,40 @@ function updatePreviewModalDisplay() {
 }
 
 function closePreviewModal() {
-  previewModal.classList.add('hidden');
+  if (previewModal) previewModal.classList.add('hidden');
   state.activePreviewSlotId = null;
 }
 
 function setupPreviewModalListeners() {
-  btnPreviewClose.addEventListener('click', closePreviewModal);
-
-  previewModal.addEventListener('click', (e) => {
-    if (e.target === previewModal) {
+  if (btnPreviewClose) {
+    btnPreviewClose.addEventListener('click', (e) => {
+      e.stopPropagation();
       closePreviewModal();
-    }
-  });
+    });
+  }
+
+  if (previewModal) {
+    previewModal.addEventListener('click', (e) => {
+      if (e.target === previewModal) {
+        closePreviewModal();
+      }
+    });
+  }
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closePreviewModal();
-      missingModal.classList.add('hidden');
-      saveDraftModal.classList.add('hidden');
-      draftsListModal.classList.add('hidden');
-      aiDetectionModal.classList.add('hidden');
+      const missingM = document.getElementById('missingModal');
+      const saveDraftM = document.getElementById('saveDraftModal');
+      const draftsListM = document.getElementById('draftsListModal');
+      const aiDetectionM = document.getElementById('aiDetectionModal');
+      const manualM = document.getElementById('manualModal');
+
+      if (missingM) missingM.classList.add('hidden');
+      if (saveDraftM) saveDraftM.classList.add('hidden');
+      if (draftsListM) draftsListM.classList.add('hidden');
+      if (aiDetectionM) aiDetectionM.classList.add('hidden');
+      if (manualM) manualM.classList.add('hidden');
     } else if (e.key === 'ArrowLeft') {
       if (state.activePreviewSlotId && state.activePreviewPageIndex > 0) {
         state.activePreviewPageIndex--;
@@ -1828,18 +1842,30 @@ function setupGlobalEventListeners() {
     }
   });
 
-  btnModalBackToAttach.addEventListener('click', () => {
-    missingModal.classList.add('hidden');
-    state.selectedGroupFilter = 'unattached';
-    renderGroupFilterPills();
-    renderSlots();
-    showToast('กรองแสดงเฉพาะเอกสารที่ยังไม่ได้แนบ', 'info');
-  });
+  if (btnModalBackToAttach) {
+    btnModalBackToAttach.addEventListener('click', () => {
+      if (missingModal) missingModal.classList.add('hidden');
+      state.selectedGroupFilter = 'unattached';
+      renderGroupFilterPills();
+      renderSlots();
+      showToast('กรองแสดงเฉพาะเอกสารที่ยังไม่ได้แนบ', 'info');
+    });
+  }
 
-  btnModalConfirmDownload.addEventListener('click', () => {
-    missingModal.classList.add('hidden');
-    executeZipDownload();
-  });
+  if (btnModalConfirmDownload) {
+    btnModalConfirmDownload.addEventListener('click', () => {
+      if (missingModal) missingModal.classList.add('hidden');
+      executeZipDownload();
+    });
+  }
+
+  if (missingModal) {
+    missingModal.addEventListener('click', (e) => {
+      if (e.target === missingModal) {
+        missingModal.classList.add('hidden');
+      }
+    });
+  }
 }
 
 function openMissingModal(unattachedSlots, attachedCount) {
