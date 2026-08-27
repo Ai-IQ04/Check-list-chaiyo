@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.7.1';
+const CURRENT_APP_VERSION = '2.8.0';
 
 // Application State
 const state = {
@@ -242,7 +242,7 @@ function selectCategory(catId) {
   loadSlotsForCurrentSubProduct();
 }
 
-// 3. Apple Single-Row Sub-Product Switcher Rail
+// 3. Pure Neumorphic Sub-Product Switcher Panel
 function renderSubProductPills() {
   subProductPills.innerHTML = '';
   const catData = window.LOAN_CHECKLISTS[state.currentCategory];
@@ -252,8 +252,8 @@ function renderSubProductPills() {
     const btn = document.createElement('button');
     const isActive = state.currentSubType === st.id;
 
-    btn.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
-      isActive ? 'apple-pill-active' : 'text-slate-700'
+    btn.className = `neu-btn px-4 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none ${
+      isActive ? 'neu-pill-active' : 'text-slate-700'
     }`;
 
     btn.innerText = st.name;
@@ -277,31 +277,22 @@ function loadSlotsForCurrentSubProduct() {
 
   if (state.currentCategory === 'land') {
     if (sub === 'land_pledge') {
-      // จำนำโฉนด: Exclude Mortgage contracts DD01-DD04, Exclude Refinance C301
       items = items.filter((it) => !it.code.startsWith('DD') && it.code !== 'C301');
     } else if (sub === 'land_refinance_pledge') {
-      // รีไฟแนนซ์จำนำ: Exclude Mortgage contracts DD01-DD04, Include Refinance C301
       items = items.filter((it) => !it.code.startsWith('DD'));
     } else if (sub === 'land_mortgage') {
-      // จำนองที่ดิน: Include Mortgage contracts DD01-DD04, Exclude Refinance C301
       items = items.filter((it) => it.code !== 'C301');
     } else if (sub === 'land_refinance_mortgage') {
-      // รีไฟแนนซ์จำนอง: Include Everything
       items = items;
     } else if (sub === 'land_topup') {
-      // Top-up ที่ดิน: Streamlined documents
       items = items.filter((it) => ['A01', 'A02', 'A03', 'A05', 'B36', 'C105', 'AA01'].includes(it.code));
     }
   } else {
-    // Vehicles (Motorcycle, Car, Truck, Agri)
     if (sub === 'pledge') {
-      // จำนำเล่ม: Exclude Refinance C304 / C301
       items = items.filter((it) => it.code !== 'C304' && it.code !== 'C301');
     } else if (sub === 'refinance') {
-      // รีไฟแนนซ์: Include C304 & C301
       items = items;
     } else if (sub === 'topup') {
-      // Top-up ยานพาหนะ: Streamlined documents
       items = items.filter((it) => ['A01', 'A02', 'A03', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'C105', 'AA01'].includes(it.code));
     }
   }
@@ -333,7 +324,7 @@ function getAllSlots() {
   return [...state.slots, ...state.customSlots];
 }
 
-// 4. Apple Single-Row Document Group Filter Rail
+// 4. Pure Neumorphic Document Group Filter Board
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
   const allSlots = getAllSlots();
@@ -341,9 +332,9 @@ function renderGroupFilterPills() {
 
   // 1. "All" Pill
   const allPill = document.createElement('button');
-  allPill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
+  allPill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
     state.selectedGroupFilter === 'all'
-      ? 'apple-pill-active'
+      ? 'neu-pill-active'
       : 'text-slate-700'
   }`;
   allPill.innerHTML = `<span>✨ ทั้งหมด (${allSlots.length})</span>`;
@@ -357,12 +348,12 @@ function renderGroupFilterPills() {
   // 2. "Unattached" Filter Pill (Missing Items)
   if (unattachedCount > 0) {
     const missingPill = document.createElement('button');
-    missingPill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
+    missingPill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
       state.selectedGroupFilter === 'unattached'
-        ? 'bg-amber-500 text-white shadow-md border-amber-400'
-        : 'text-amber-800 border border-amber-300/80 bg-amber-50/50'
+        ? 'neu-pill-active text-amber-600'
+        : 'text-amber-700'
     }`;
-    missingPill.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 ${state.selectedGroupFilter === 'unattached' ? 'text-white' : 'text-amber-500'}"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
+    missingPill.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-500"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
     missingPill.addEventListener('click', () => {
       state.selectedGroupFilter = 'unattached';
       renderGroupFilterPills();
@@ -371,7 +362,7 @@ function renderGroupFilterPills() {
     groupFilterPills.appendChild(missingPill);
   }
 
-  // 3. Specific Group Pills (Clean & Grouped)
+  // 3. Specific Group Pills (Clean Neumorphic Chips)
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
@@ -384,9 +375,9 @@ function renderGroupFilterPills() {
     else if (groupName.startsWith('AA') || groupName.startsWith('BB') || groupName.startsWith('CC') || groupName.startsWith('DD')) iconPrefix = '📝';
 
     const pill = document.createElement('button');
-    pill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
+    pill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
       state.selectedGroupFilter === groupName
-        ? 'apple-pill-active'
+        ? 'neu-pill-active'
         : 'text-slate-700'
     }`;
     pill.innerHTML = `<span>${iconPrefix} ${groupName} (${attachedInGroup}/${countInGroup})</span>`;
@@ -595,16 +586,16 @@ function renderSlots() {
           </div>
 
           <!-- Footer Actions -->
-          <div class="pt-2.5 border-t border-[#dfe2eb] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-            <!-- Format Switch -->
-            <div class="flex items-center gap-1">
+          <div class="pt-3 border-t border-[#cbd5e1]/60 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+            <!-- Format Switch (Pure Neumorphic Toggle Switch) -->
+            <div class="flex items-center gap-1.5">
               <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
               <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
-                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
-                  att.targetFormat === 'JPG' ? 'apple-pill-active' : 'text-slate-600'
+                <button class="px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer btn-slot-jpg ${
+                  att.targetFormat === 'JPG' ? 'neu-pill-active shadow-xs' : 'text-slate-600 hover:text-orange-600'
                 }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
-                <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
-                  att.targetFormat === 'PDF' ? 'apple-pill-active' : 'text-slate-600'
+                <button class="px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer btn-slot-pdf ${
+                  att.targetFormat === 'PDF' ? 'neu-pill-active shadow-xs' : 'text-slate-600 hover:text-orange-600'
                 }" data-id="${slot.id}">PDF</button>
               </div>
             </div>
