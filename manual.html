@@ -2,9 +2,9 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อสาขา</title>
+  <title>คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อสาขา | Pure Neumorphism Guide</title>
   
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
   <style>
     @page {
       size: A4 portrait;
-      margin: 12mm 15mm 12mm 15mm;
+      margin: 10mm 12mm 10mm 12mm;
     }
 
     * {
@@ -23,10 +23,10 @@
 
     body {
       font-family: 'Prompt', sans-serif;
-      color: #2d3748;
-      background-color: #ffffff;
+      color: #313b4c;
+      background-color: #e0e5ec;
       line-height: 1.5;
-      font-size: 13px;
+      font-size: 12.5px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -34,356 +34,562 @@
     .page {
       width: 100%;
       page-break-after: always;
+      padding-bottom: 5px;
     }
     .page:last-child {
       page-break-after: avoid;
     }
 
-    /* Header */
-    .header-banner {
+    /* Pure Neumorphic Raised Plate */
+    .neu-raised {
+      background: #e0e5ec;
+      box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 18px;
+    }
+
+    /* Pure Neumorphic Deep Inset Well */
+    .neu-inset {
+      background: #e0e5ec;
+      box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+      border: 1px solid rgba(163, 177, 198, 0.25);
+      border-radius: 14px;
+    }
+
+    /* Pure Neumorphic Orange Accent Card */
+    .neu-orange-card {
       background: linear-gradient(135deg, #ff7a18 0%, #ff5200 100%);
-      color: white;
-      border-radius: 16px;
-      padding: 20px 24px;
-      margin-bottom: 20px;
+      color: #ffffff;
+      box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff, 0 0 14px rgba(255, 106, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 20px;
+    }
+
+    /* Header Banner */
+    .header-banner {
+      padding: 16px 20px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 12px rgba(255, 106, 0, 0.25);
     }
 
     .header-title h1 {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+      color: #ffffff;
+      margin-bottom: 2px;
     }
 
     .header-title p {
-      font-size: 12px;
-      opacity: 0.95;
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
     }
 
-    .badge-client-side {
-      background: rgba(255, 255, 255, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 6px 12px;
-      border-radius: 9999px;
+    .header-badge {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 12px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
+      color: #ffffff;
       text-align: right;
     }
 
-    /* Workflow Flowchart Box */
-    .workflow-box {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 14px;
+    /* Section Grid */
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-card {
       padding: 14px 16px;
-      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
       display: flex;
-      justify-content: space-around;
       align-items: center;
-      text-align: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(163, 177, 198, 0.3);
+      padding-bottom: 6px;
     }
 
-    .flow-step {
-      flex: 1;
-      position: relative;
-    }
-
-    .flow-num {
+    .icon-badge {
       width: 24px;
       height: 24px;
-      background: #ff6a00;
-      color: white;
-      border-radius: 50%;
+      border-radius: 8px;
+      background: #e0e5ec;
+      box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      color: #ff6a00;
       font-weight: 800;
-      margin-bottom: 4px;
+      font-size: 11px;
     }
 
-    .flow-text {
-      font-size: 12px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .flow-arrow {
-      color: #94a3b8;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    /* Step Section Cards */
-    .step-card {
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 16px 18px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
-
-    .step-header {
+    .step-list {
+      list-style: none;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 8px;
+      flex-direction: column;
+      gap: 7px;
     }
 
-    .step-icon-badge {
-      width: 32px;
-      height: 32px;
-      background: #fff7ed;
-      border: 1px solid #ffedd5;
-      color: #ea580c;
-      border-radius: 10px;
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 11.5px;
+    }
+
+    .step-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      background: #e0e5ec;
+      box-shadow: 2px 2px 5px #a3b1c6, -2px -2px 5px #ffffff;
+      color: #ff6a00;
+      font-size: 10px;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
-      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
-    .step-title {
-      font-size: 14px;
-      font-weight: 800;
+    .step-content strong {
       color: #0f172a;
-    }
-
-    .step-desc {
-      font-size: 11px;
-      color: #64748b;
-    }
-
-    .feature-list {
-      list-style: none;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 14px;
-    }
-
-    .feature-item {
-      font-size: 11.5px;
-      color: #334155;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    .feature-bullet {
-      color: #ff6a00;
-      font-weight: bold;
-      margin-top: -1px;
-    }
-
-    /* Highlighting Alert Callout */
-    .alert-tip {
-      background: #fffbeb;
-      border-left: 4px solid #f59e0b;
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin-top: 14px;
-      font-size: 11.5px;
-      color: #92400e;
-      display: flex;
-      gap: 8px;
-    }
-
-    /* Product Grid Table */
-    .product-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 11.5px;
-    }
-
-    .product-table th {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 8px 10px;
-      text-align: left;
       font-weight: 700;
-      border-bottom: 2px solid #cbd5e1;
     }
 
-    .product-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #e2e8f0;
+    /* Tag & Code Badges */
+    .pill-tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      margin: 0 2px;
+    }
+
+    .pill-pdf {
+      background: #e0e5ec;
+      box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
+      color: #dc2626;
+    }
+
+    .pill-jpg {
+      background: #e0e5ec;
+      box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
+      color: #2563eb;
+    }
+
+    .pill-orange {
+      background: #e0e5ec;
+      box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
+      color: #ea580c;
+    }
+
+    /* Product Matrix Table */
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 5px;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .matrix-table th {
+      background: #e0e5ec;
+      box-shadow: 3px 3px 6px #a3b1c6, -3px -3px 6px #ffffff;
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: 800;
       color: #334155;
+      border-radius: 8px;
+    }
+
+    .matrix-table td {
+      background: #e0e5ec;
+      box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
+      padding: 6px 10px;
+      color: #1e293b;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+
+    /* Pro Tip Callout */
+    .pro-tip {
+      padding: 10px 14px;
+      border-left: 3.5px solid #ff6a00;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    .pro-tip strong {
+      color: #ea580c;
     }
 
     /* Footer */
     .footer {
-      margin-top: 20px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(163, 177, 198, 0.4);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10.5px;
-      color: #94a3b8;
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
+  <!-- ================= PAGE 1 ================= -->
   <div class="page">
     
     <!-- Header Banner -->
-    <div class="header-banner">
+    <div class="neu-orange-card header-banner">
       <div class="header-title">
-        <h1>📑 คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อ (ฉบับย่อ)</h1>
-        <p>Auto Loan Document Checklist & Renamer • เปลี่ยนชื่อไฟล์และคุมขนาด &le; 5MB อัตโนมัติ</p>
+        <h1>คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อสาขา</h1>
+        <p>Auto Loan Document Optimizer & Renamer • Pure Neumorphism Edition</p>
       </div>
-      <div class="badge-client-side">
-        🔒 ประมวลผลในเครื่อง 100%<br>ข้อมูลรูปภาพปลอดภัยสูงสุด
-      </div>
-    </div>
-
-    <!-- Workflow Box -->
-    <div class="workflow-box">
-      <div class="flow-step">
-        <div class="flow-num">1</div>
-        <div class="flow-text">เลือกสินเชื่อ</div>
-      </div>
-      <div class="flow-arrow">&rarr;</div>
-      <div class="flow-step">
-        <div class="flow-num">2</div>
-        <div class="flow-text">แนบรูป/เอกสาร</div>
-      </div>
-      <div class="flow-arrow">&rarr;</div>
-      <div class="flow-step">
-        <div class="flow-num">3</div>
-        <div class="flow-text">พรีวิว/หมุนภาพ</div>
-      </div>
-      <div class="flow-arrow">&rarr;</div>
-      <div class="flow-step">
-        <div class="flow-num">4</div>
-        <div class="flow-text">ดาวน์โหลด .ZIP</div>
+      <div class="header-badge">
+        <div>เวอร์ชัน v2.9.0</div>
+        <div style="font-size: 9.5px; opacity: 0.9;">License: Anusat</div>
       </div>
     </div>
 
-    <!-- Step 1: Select Loan Category -->
-    <div class="step-card">
-      <div class="step-header">
-        <div class="step-icon-badge">1</div>
-        <div>
-          <div class="step-title">เลือกประเภทสินเชื่อ (แถบลอยด้านล่าง)</div>
-          <div class="step-desc">กดสลับประเภทสินเชื่อได้ทันทีจากเมนูด้านล่างสุดของหน้าจอ</div>
+    <!-- 2-Column Section Grid -->
+    <div class="section-grid">
+      
+      <!-- Card 1: 5 ประเภทสินเชื่อหลัก -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">1</span>
+          5 ประเภทสินเชื่อหลัก (เลือกจากแถบด้านล่าง)
         </div>
+        <table class="matrix-table">
+          <tr>
+            <th style="width: 28%;">สินเชื่อ</th>
+            <th>เอกสารสำคัญที่ต้องตรวจสอบ</th>
+          </tr>
+          <tr>
+            <td><b>🏍️ มอเตอร์ไซค์</b></td>
+            <td>เล่มทะเบียน [B101-B105], ป้ายภาษี [B107], รูปรถรอบคัน [B10-B14]</td>
+          </tr>
+          <tr>
+            <td><b>🚗 รถยนต์</b></td>
+            <td>เล่มทะเบียน, ป้ายภาษี, รูปรถ 8 มุม, รูปเลขตัวถัง/เครื่อง</td>
+          </tr>
+          <tr>
+            <td><b>🚛 รถบรรทุก</b></td>
+            <td>เล่มทะเบียน ขส., รูปรถรอบคัน, รูปยาง/กระบะบรรทุก</td>
+          </tr>
+          <tr>
+            <td><b>🚜 รถไถ/เกษตร</b></td>
+            <td>ใบตรวจสภาพอุปกรณ์ต่อพ่วง, ใบเช็คชีทสภาพแปลงเกษตร</td>
+          </tr>
+          <tr>
+            <td><b>🏠 ที่ดินและสิ่งปลูกสร้าง</b></td>
+            <td>โฉนดหน้า-หลัง [B201-B202], สัญญาจำนอง [DD01], ท.ด.21, แผนที่แปลง</td>
+          </tr>
+        </table>
       </div>
-      <table class="product-table">
-        <thead>
-          <tr>
-            <th>ประเภทสินเชื่อ</th>
-            <th>เอกสารมาตรฐาน</th>
-            <th>จุดเด่นเอกสารที่อัปเดต</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><b>🏠 สินเชื่อที่ดิน</b></td>
-            <td>55 รายการ</td>
-            <td>โฉนดหน้า-หลัง, ลายน้ำ, ประเมินที่ดิน, สัญญาจำนอง</td>
-          </tr>
-          <tr>
-            <td><b>🏍️ สินเชื่อรถจักรยานยนต์</b></td>
-            <td>44 รายการ</td>
-            <td>ป้ายภาษี, ใบคู่มือจดทะเบียน, ใบรับมอบสินค้า</td>
-          </tr>
-          <tr>
-            <td><b>🚛 สินเชื่อรถบรรทุก</b></td>
-            <td>51 รายการ</td>
-            <td>รูปรถ 1-11, ป้ายภาษี, หนังสือส่งมอบเล่มทะเบียน</td>
-          </tr>
-          <tr>
-            <td><b>🚗 สินเชื่อรถเก๋ง / กระบะ / ตู้</b></td>
-            <td>51 รายการ</td>
-            <td>รูปรถรอบคัน, ป้ายภาษี, หนังสือส่งมอบเล่มทะเบียน</td>
-          </tr>
-          <tr>
-            <td><b>🚜 สินเชื่อรถเพื่อการเกษตร</b></td>
-            <td>54 รายการ</td>
-            <td>รูปอุปกรณ์ต่อพ่วง, ป้ายภาษี, ใบรับมอบสินค้า</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <!-- Card 2: การแยกโปรดักต์ธุรกรรมย่อย -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">2</span>
+          แยกประเภทธุรกรรม (Sub-Products)
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">🏷️</span>
+            <div class="step-content">
+              <strong>จำนำเล่มทะเบียน:</strong> กรองเฉพาะสัญญากู้ยืมและเล่มตัวจริง (ซ่อนเอกสารรีไฟแนนซ์อัตโนมัติ)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">🔄</span>
+            <div class="step-content">
+              <strong>รีไฟแนนซ์:</strong> เพิ่มชุดเอกสาร <span class="pill-tag pill-pdf">C304</span> หนังสือส่งมอบเล่ม และสลิปปิดบัญชีหนี้เดิม
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">➕</span>
+            <div class="step-content">
+              <strong>Top-up (กู้เพิ่ม):</strong> ชุดเอกสารย่อสำหรับลูกค้าประวัติดี (บัตร ปชช., สัญญากู้เพิ่ม, รูปรถปัจจุบัน)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">🏛️</span>
+            <div class="step-content">
+              <strong>จำนองที่ดิน:</strong> เพิ่มเอกสารจดทะเบียน ณ สนง.ที่ดิน <span class="pill-tag pill-pdf">DD01</span> สัญญาจำนอง และหนังสือยินยอมคู่สมรส
+            </div>
+          </li>
+        </ul>
+      </div>
+
     </div>
 
-    <!-- Step 2: Attach & Multi-Image Merge -->
-    <div class="step-card">
-      <div class="step-header">
-        <div class="step-icon-badge">2</div>
-        <div>
-          <div class="step-title">การแนบไฟล์เอกสาร & รวมหลายรูปเป็น 1 PDF</div>
-          <div class="step-desc">รองรับไฟล์ JPG, PNG, WebP และ PDF ลากวางได้ทันที</div>
+    <!-- 2-Column Section Grid -->
+    <div class="section-grid">
+      
+      <!-- Card 3: ระบบสแกนและจัดหมวดด้วย AI -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">3</span>
+          ✨ ระบบถ่ายรูปด้วย AI (Context-Aware Scanner)
         </div>
-      </div>
-      <div class="feature-list">
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>แนบทีละช่อง:</b> คลิกหรือลากไฟล์ภาพ/PDF วางลงช่อง Checklist ที่ตรงกับรายการ</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>รวมหลายรูปเป็น 1 PDF:</b> ลาก 2 รูปขึ้นไปมาวางพร้อมกัน ระบบจะรวมเป็น 1 ไฟล์ PDF อัตโนมัติ</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>ปุ่ม "+ เพิ่มรูป":</b> กดบนการ์ดเพื่อแทรกรูปภาพหน้า 2, 3 เข้าไปในเอกสารเดียวกันได้ตลอดเวลา</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>ปุ่ม "+ เพิ่มเอกสารเอง":</b> เพิ่มช่องสำหรับแนบเอกสารพิเศษนอก Checklist และพิมพ์ตั้งชื่อไฟล์เอง</span>
-        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              แตะปุ่ม <strong>[✨ สแกน AI]</strong> บริเวณแถบเครื่องมือด้านบน
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              AI จะอ่านตัวอักษรและตรวจจับชนิดเอกสาร (บัตร ปชช., ทะเบียนบ้าน, เล่มทะเบียน, โฉนด, สลิป)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <strong>จำกัดขอบเขตตามหมวด:</strong> AI จะจับคู่กับช่องในหมวดที่คุณเปิดอยู่เป็นอันดับแรก พร้อมปุ่ม 1-Click แนบได้ทันที
+            </div>
+          </li>
+        </ul>
       </div>
 
-      <div class="alert-tip">
-        <span>💡</span>
-        <span><b>เคล็ดลับ:</b> หากมีรูปภาพจำนวนมาก สามารถกดปุ่ม <b>"โยนหลายรูปตามลำดับ"</b> ที่แถบด้านบน เพื่อให้ระบบนำรูปทั้งหมดไปหยอดลงช่อง Checklist ให้ตามลำดับอัตโนมัติ</span>
+      <!-- Card 4: การถ่ายรูปสดและแนบหลายรูป -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">4</span>
+          📷 ถ่ายรูปสด 1-Click & รวมหลายหน้า
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              แตะ <strong>[ถ่ายรูปสด]</strong> บนการ์ดเอกสาร เพื่อเปิดกล้องมือถือถ่ายได้ทันทีโดยไม่ติดขัด
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <strong>รวมหลายรูปเป็น 1 PDF:</strong> แตะ <span class="pill-tag pill-orange">+ เพิ่มรูป</span> ในช่องเดียวกัน ระบบจะรวมทุกรูปเข้าเป็น 1 ไฟล์ PDF ให้อัตโนมัติ
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              ป้ายนามสกุลไฟล์ <span class="pill-tag pill-pdf">PDF</span> และ <span class="pill-tag pill-jpg">JPG</span> แสดงประเภทไฟล์ที่จะได้รับชัดเจน
+            </div>
+          </li>
+        </ul>
       </div>
+
     </div>
 
-    <!-- Step 3 & 4: Preview & Download -->
-    <div class="step-card">
-      <div class="step-header">
-        <div class="step-icon-badge">3-4</div>
-        <div>
-          <div class="step-title">การพรีวิวรูปภาพขนาดใหญ่, ตรวจสอบ และดาวน์โหลด .ZIP</div>
-          <div class="step-desc">ระบบคุมขนาดไฟล์ &le; 5MB และเปลี่ยนชื่อไฟล์ถูกต้องตามมาตรฐานสาขา 100%</div>
-        </div>
-      </div>
-      <div class="feature-list">
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>คลิกดูรูปใหญ่ (Lightbox):</b> คลิกที่รูปตัวอย่างหรือไอคอน 👁️ เพื่อเปิดดูภาพขนาดเต็ม</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>ปุ่มหมุนภาพ 90°:</b> กด 🔄 เพื่อปรับทิศทางของรูปภาพให้ตั้งตรงและอ่านง่าย</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>ระบบแจ้งเตือนเอกสารขาด:</b> สังเกตป้ายสีส้ม ⚠️ ด้านบน และกดปุ่ม <b>"ยังไม่แนบ"</b> เพื่อกรองดูช่องที่ขาด</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">&bull;</span>
-          <span><b>ดาวน์โหลด .ZIP:</b> กดปุ่มสีส้ม <b>"ดาวน์โหลด ZIP"</b> ด้านบนขวาเพื่อรับไฟล์ทั้งหมดที่บีบอัดและเปลี่ยนชื่อเสร็จเรียบร้อย</span>
-        </div>
+    <!-- Pro Tip Callout -->
+    <div class="neu-inset pro-tip">
+      <span style="font-size: 16px;">💡</span>
+      <div>
+        <strong>ข้อแนะนำสำหรับสาขา:</strong> หากต้องการแนบเอกสารอื่นๆ ที่ไม่มีใน Checklist สามารถกดปุ่ม <strong>[+ เพิ่มเอกสารเอง]</strong> ด้านบนเพื่อสร้างช่องใหม่และพิมพ์ชื่อไฟล์ตามต้องการได้ทันที
       </div>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v2.8.4)</div>
-      <div>License: Anusat • GitHub: https://github.com/Ai-IQ04/Check-list-chaiyo</div>
+      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v2.9.0)</div>
+      <div>License: Anusat • หน้า 1/2</div>
+    </div>
+
+  </div>
+
+  <!-- ================= PAGE 2 ================= -->
+  <div class="page">
+    
+    <!-- Header Banner Mini -->
+    <div class="neu-orange-card header-banner" style="padding: 12px 20px; margin-bottom: 12px;">
+      <div class="header-title">
+        <h1 style="font-size: 16px;">ขั้นตอนการทำงาน & ฟังก์ชันอัจฉริยะ (Pro Features)</h1>
+      </div>
+      <div class="header-badge" style="padding: 4px 10px; font-size: 10px;">
+        License: Anusat
+      </div>
+    </div>
+
+    <!-- 2-Column Section Grid -->
+    <div class="section-grid">
+      
+      <!-- Card 5: ฟังก์ชันแต่งรูป & Time Stamp -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">5</span>
+          ⏰ ปั๊ม Time Stamp & ปรับแสงคมชัด
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">⏰</span>
+            <div class="step-content">
+              <strong>ปั๊ม Time Stamp:</strong> แตะปุ่มนาฬิกาบนการ์ด ระบบจะประทับ วันที่-เวลา ปัจจุบันลงบนมุมรูปภาพเพื่อเป็นหลักฐานการตรวจสภาพสด
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">✨</span>
+            <div class="step-content">
+              <strong>ปรับความคมชัด (Enhance):</strong> ในหน้าต่างพรีวิว กดปุ่ม [ปรับความคมชัด] ระบบจะลบเงาดำ ปรับพื้นหลังขาว และเพิ่มคอนทราสต์ตัวหนังสือให้อ่านง่าย
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">🔄</span>
+            <div class="step-content">
+              <strong>หมุนภาพ (Rotate 90°):</strong> หมุนภาพให้ถูกทิศทางก่อนแปลงเป็น PDF ได้ในคลิกเดียว
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Card 6: การบันทึกร่างเคส (Drafts Management) -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">6</span>
+          💾 การบันทึกเคส (Save Drafts)
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              แตะปุ่ม <strong>[เซฟเคส]</strong> ด้านบน พิมพ์ชื่อลูกค้า/เคส เพื่อบันทึกรูปภาพและข้อมูลเก็บไว้ในเครื่อง
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              เมื่อต้องการทำต่อ แตะปุ่ม <strong>[เคสที่เซฟ]</strong> เพื่อเลือกเปิดเคสเดิมขึ้นมาทำต่อได้ทันที
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <strong>ความปลอดภัย:</strong> ข้อมูลเคสจัดเก็บบน IndexedDB ในเบราว์เซอร์เครื่องสาขา ปลอดภัย ไม่รั่วไหล
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- 2-Column Section Grid -->
+    <div class="section-grid">
+      
+      <!-- Card 7: การรวมไฟล์ ZIP ขนาดไม่เกิน 5MB -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">7</span>
+          📦 บีบอัด & ดาวน์โหลด ZIP (< 5MB)
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              แตะปุ่ม <strong>[ดาวน์โหลด ZIP]</strong> เมื่อแนบเอกสารครบถ้วน
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <strong>ระบบแจ้งเตือนเอกสารขาด:</strong> หากยังมีเอกสารไม่ครบ ระบบจะแสดงรายการที่ขาดให้ตรวจสอบก่อนยืนยันดาวน์โหลด
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              ระบบบีบอัดไฟล์ภาพและเอกสาร PDF ทุกไฟล์ให้คมชัดระดับ Ultra-HD โดยควบคุมขนาด **ไม่เกิน 5 MB** ตามข้อกำหนดระบบงาน
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Card 8: การอัปเดตเวอร์ชันอัตโนมัติ -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">8</span>
+          🚀 ระบบอัปเดตเวอร์ชันอัตโนมัติ
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              ระบบมีกลไก <strong>Auto Version Checker</strong> ตรวจสอบเวอร์ชันล่าสุดทุก 45 วินาที
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              เมื่อมีการอัปเดต จะมีป้ายสีส้มเด้งเตือนด้านบน <strong>[🚀 มีการอัปเดตเวอร์ชันใหม่! (รีเฟรชทันที)]</strong>
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              กดปุ่มรีเฟรชเพียง 1 คลิก เบราว์เซอร์จะล้างแคชเก่าและโหลดฟังก์ชันใหม่ล่าสุดให้ทันที
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Summary Checklist Matrix Box -->
+    <div class="neu-raised section-card" style="margin-top: 4px;">
+      <div class="section-title" style="margin-bottom: 6px;">
+        <span class="icon-badge">✓</span>
+        สรุปรหัสมาตรฐานการตั้งชื่อไฟล์อัตโนมัติ
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; font-size: 11px;">
+        <div class="neu-inset" style="padding: 6px 8px;">
+          <strong style="color: #4f46e5;">หมวด A:</strong> ยืนยันตัวตน<br>
+          <span style="font-size: 10px; color: #64748b;">A01 บัตร ปชช., A03 ทะเบียนบ้าน</span>
+        </div>
+        <div class="neu-inset" style="padding: 6px 8px;">
+          <strong style="color: #ea580c;">หมวด B:</strong> หลักประกัน/รถ<br>
+          <span style="font-size: 10px; color: #64748b;">B10-B14 รูปรถ, B101 เล่มทะเบียน</span>
+        </div>
+        <div class="neu-inset" style="padding: 6px 8px;">
+          <strong style="color: #059669;">หมวด C:</strong> รายได้/อนุมัติ<br>
+          <span style="font-size: 10px; color: #64748b;">C105 สลิปเงินเดือน, C107 Statement</span>
+        </div>
+        <div class="neu-inset" style="padding: 6px 8px;">
+          <strong style="color: #9333ea;">หมวด AA/DD:</strong> สัญญา<br>
+          <span style="font-size: 10px; color: #64748b;">AA01 สัญญากู้ยืม, DD01 สัญญาจำนอง</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer" style="margin-top: 10px;">
+      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v2.9.0)</div>
+      <div>License: Anusat • หน้า 2/2</div>
     </div>
 
   </div>
