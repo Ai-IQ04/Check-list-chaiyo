@@ -1,6 +1,6 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Slot-based Checklist, Custom User-Defined Document & Missing Warning System
+ * Clean Layout with Floating Bottom Dock for Product Selection
  */
 
 // Application State
@@ -20,8 +20,6 @@ const missingText = document.getElementById('missingText');
 const groupFilterPills = document.getElementById('groupFilterPills');
 const slotsContainer = document.getElementById('slotsContainer');
 const attachedCountBadge = document.getElementById('attachedCountBadge');
-const sumOriginalSize = document.getElementById('sumOriginalSize');
-const sumEstimatedSize = document.getElementById('sumEstimatedSize');
 const btnDownloadZip = document.getElementById('btnDownloadZip');
 const btnAddCustomSlot = document.getElementById('btnAddCustomSlot');
 const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
@@ -48,24 +46,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  renderCategoryTabs();
+  renderBottomDock();
   selectCategory('land');
   setupGlobalEventListeners();
 });
 
-// 2. Category Selection & Slots Initialization
-function renderCategoryTabs() {
+// 2. Render Floating Bottom Dock
+function renderBottomDock() {
   loanCategoryTabs.innerHTML = '';
   const categories = Object.values(window.LOAN_CHECKLISTS);
 
   categories.forEach((cat) => {
     const btn = document.createElement('button');
-    btn.className = `p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-slate-700 hover:text-orange-600 cursor-pointer ${
-      state.currentCategory === cat.id ? 'neu-tab-active font-extrabold' : 'neu-btn font-bold'
+    const isActive = state.currentCategory === cat.id;
+    btn.className = `px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-slate-700 hover:text-orange-600 cursor-pointer ${
+      isActive ? 'neu-dock-active font-extrabold text-orange-600' : 'neu-btn font-bold text-xs'
     }`;
+    
+    // Short clean name for mobile
+    let shortName = cat.name.replace('สินเชื่อ', '').trim();
+    if (shortName.length > 10) shortName = shortName.split('/')[0].trim();
+
     btn.innerHTML = `
-      <span class="text-2xl filter drop-shadow-sm">${cat.icon}</span>
-      <span class="text-xs text-center line-clamp-1">${cat.name.replace('สินเชื่อ', '')}</span>
+      <span class="text-lg sm:text-xl filter drop-shadow-sm leading-none">${cat.icon}</span>
+      <span class="text-[11px] sm:text-xs text-center whitespace-nowrap leading-none">${shortName}</span>
     `;
     btn.addEventListener('click', () => selectCategory(cat.id));
     loanCategoryTabs.appendChild(btn);
@@ -77,17 +81,10 @@ function selectCategory(catId) {
   state.selectedGroupFilter = 'all';
 
   const catData = window.LOAN_CHECKLISTS[catId];
-  currentLoanBadge.innerText = `กำลังเลือก: ${catData.name}`;
+  currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
 
-  // Update tabs highlight
-  Array.from(loanCategoryTabs.children).forEach((tab, index) => {
-    const cat = Object.values(window.LOAN_CHECKLISTS)[index];
-    if (cat.id === catId) {
-      tab.className = 'p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all neu-tab-active font-extrabold cursor-pointer';
-    } else {
-      tab.className = 'neu-btn p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-slate-700 hover:text-orange-600 font-bold cursor-pointer';
-    }
-  });
+  // Update Bottom Dock highlighting
+  renderBottomDock();
 
   // Initialize Slots from Checklist
   state.slots = catData.items.map((item) => ({
@@ -408,7 +405,7 @@ function attachSlotEvents() {
     });
   });
 
-  // Custom Slot Name input change (when not yet attached)
+  // Custom Slot Name input change
   document.querySelectorAll('.input-custom-name').forEach((inp) => {
     inp.addEventListener('input', (e) => {
       const id = e.target.dataset.id;
@@ -657,10 +654,8 @@ function setupGlobalEventListeners() {
     }
 
     if (unattachedSlots.length > 0) {
-      // Show Missing Warning Modal
       openMissingModal(unattachedSlots, attachedSlots.length);
     } else {
-      // Complete 100%! Directly generate ZIP
       executeZipDownload();
     }
   });
@@ -668,7 +663,6 @@ function setupGlobalEventListeners() {
   // Modal Actions
   btnModalBackToAttach.addEventListener('click', () => {
     missingModal.classList.add('hidden');
-    // Filter to unattached slots so user immediately sees what to attach!
     state.selectedGroupFilter = 'unattached';
     renderGroupFilterPills();
     renderSlots();
@@ -719,28 +713,12 @@ function updateSummaryMetrics() {
 
   // Update Header Missing Indicator
   if (unattachedChecklistCount === 0 && state.slots.length > 0) {
-    missingCountBadge.className = 'flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-emerald-700 font-bold';
-    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i> ครบถ้วน 100%</span>`;
+    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-emerald-700 font-bold text-xs';
+    missingText.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> ครบ 100%</span>`;
   } else {
-    missingCountBadge.className = 'flex items-center gap-2 px-3.5 py-2 rounded-2xl neu-inset text-amber-700 font-bold';
-    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i> ยังขาด ${unattachedChecklistCount} เอกสาร</span>`;
+    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-amber-700 font-bold text-xs';
+    missingText.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i> ขาด ${unattachedChecklistCount}</span>`;
   }
-
-  let totalOriginalBytes = 0;
-  let totalEstimatedBytes = 0;
-
-  attachedSlots.forEach((s) => {
-    const att = s.attached;
-    totalOriginalBytes += att.size;
-    if (att.size > 5 * 1024 * 1024) {
-      totalEstimatedBytes += 2.8 * 1024 * 1024;
-    } else {
-      totalEstimatedBytes += Math.min(att.size, 2.5 * 1024 * 1024);
-    }
-  });
-
-  sumOriginalSize.innerText = formatFileSize(totalOriginalBytes);
-  sumEstimatedSize.innerText = `~${formatFileSize(totalEstimatedBytes)}`;
 
   btnDownloadZip.disabled = attachedSlots.length === 0;
   lucide.createIcons();
@@ -874,7 +852,7 @@ async function executeZipDownload() {
   }
 
   btnDownloadZip.disabled = true;
-  btnDownloadZip.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>กำลังรวมไฟล์ ZIP...</span>`;
+  btnDownloadZip.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>กำลังรวม ZIP...</span>`;
   lucide.createIcons();
   showToast('กำลังบีบอัดและรวมไฟล์เป็น ZIP...', 'info');
 
@@ -912,7 +890,7 @@ async function executeZipDownload() {
     showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP', 'error');
   } finally {
     btnDownloadZip.disabled = false;
-    btnDownloadZip.innerHTML = `<i data-lucide="archive" class="w-4 h-4"></i><span>ดาวน์โหลดเอกสารที่แนบ (.ZIP)</span>`;
+    btnDownloadZip.innerHTML = `<i data-lucide="archive" class="w-3.5 h-3.5"></i><span>ดาวน์โหลด ZIP</span>`;
     lucide.createIcons();
   }
 }
