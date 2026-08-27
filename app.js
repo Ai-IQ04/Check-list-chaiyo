@@ -1,6 +1,6 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Clean Layout with Floating Bottom Dock, Fullscreen Preview Lightbox & Rich Smooth Animations
+ * Multi-Image Merge to Single PDF, Clean Layout, Lightbox Preview & Rich Motion
  */
 
 // Application State
@@ -11,6 +11,7 @@ const state = {
   customSlots: [], // User-added custom document slots
   customCounter: 1,
   activePreviewSlotId: null, // Track slot currently being previewed
+  activePreviewPageIndex: 0, // Track active page within the previewed slot
 };
 
 // DOM Elements
@@ -33,6 +34,10 @@ const previewModalCode = document.getElementById('previewModalCode');
 const previewModalTitle = document.getElementById('previewModalTitle');
 const previewModalSubtitle = document.getElementById('previewModalSubtitle');
 const previewModalFormat = document.getElementById('previewModalFormat');
+const previewPageIndicator = document.getElementById('previewPageIndicator');
+const previewNavButtons = document.getElementById('previewNavButtons');
+const btnPreviewPrevPage = document.getElementById('btnPreviewPrevPage');
+const btnPreviewNextPage = document.getElementById('btnPreviewNextPage');
 const previewModalImg = document.getElementById('previewModalImg');
 const previewModalPdf = document.getElementById('previewModalPdf');
 const btnPreviewRotate = document.getElementById('btnPreviewRotate');
@@ -126,7 +131,7 @@ function renderGroupFilterPills() {
 
   // 1. "All" Pill
   const allPill = document.createElement('button');
-  allPill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+  allPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
     state.selectedGroupFilter === 'all'
       ? 'neu-pill-active'
       : 'neu-btn text-slate-600 hover:text-slate-900'
@@ -142,12 +147,12 @@ function renderGroupFilterPills() {
   // 2. "Unattached" Filter Pill (Missing Items)
   if (unattachedCount > 0) {
     const missingPill = document.createElement('button');
-    missingPill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+    missingPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
       state.selectedGroupFilter === 'unattached'
         ? 'bg-amber-500 text-white shadow-md'
         : 'neu-btn text-amber-700 hover:text-amber-900 border border-amber-300'
     }`;
-    missingPill.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> ยังไม่แนบ (${unattachedCount})</span>`;
+    missingPill.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ยังไม่แนบ (${unattachedCount})</span>`;
     missingPill.addEventListener('click', () => {
       state.selectedGroupFilter = 'unattached';
       renderGroupFilterPills();
@@ -156,7 +161,7 @@ function renderGroupFilterPills() {
     groupFilterPills.appendChild(missingPill);
   }
 
-  // 3. Specific Group Pills
+  // 3. Specific Group Pills (No Substring Clipping!)
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
@@ -180,7 +185,7 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 3. Render Checklist Topic Slots & Custom Slots with Stagger Animations
+// 3. Render Checklist Topic Slots & Custom Slots with Multi-Image Merge Support
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
@@ -224,7 +229,7 @@ function renderSlots() {
       <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_8px_#ff6a00]"></span>
-          หมวด ${groupName}
+          ${groupName}
         </h3>
         <span class="text-xs font-bold text-slate-500">
           ${slotsInGroup.filter((s) => s.attached).length} / ${slotsInGroup.length} แนบแล้ว
@@ -249,11 +254,12 @@ function renderSlots() {
       card.style.animationDelay = `${animDelay}ms`;
 
       const slotInputId = `slot_input_${slot.id}`;
+      const appendInputId = `slot_append_${slot.id}`;
 
       if (!isAttached) {
-        // Empty Slot
+        // Empty Slot (Allows multiple files)
         card.innerHTML = `
-          <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${slotInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start justify-between gap-3">
             <div class="space-y-1 flex-1 min-w-0">
@@ -284,24 +290,26 @@ function renderSlots() {
               <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-12 transition-all">
                 <i data-lucide="plus" class="w-4 h-4"></i>
               </div>
-              <span class="text-xs font-bold group-hover:translate-x-1 transition-transform">คลิกหรือลากไฟล์มาวางเพื่อแนบเอกสารนี้</span>
+              <span class="text-xs font-bold group-hover:translate-x-1 transition-transform">แนบ 1 หรือหลายรูป (จะรวมเป็น 1 PDF อัตโนมัติ)</span>
             </div>
           </div>
         `;
       } else {
-        // Attached Slot
+        // Attached Slot (With Multi-Image / Multi-Page Support)
         const att = slot.attached;
-        const formattedSize = formatFileSize(att.size);
+        const pageCount = att.pages.length;
+        const totalBytes = att.pages.reduce((acc, p) => acc + p.size, 0);
+        const formattedSize = formatFileSize(totalBytes);
 
-        card.innerHTML = `
-          <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
-          
-          <div class="flex items-start gap-3.5">
-            <!-- Thumbnail Preview Well (Clickable to view full-size lightbox) -->
-            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
+        // Render thumbnails strip
+        let thumbsHtml = '';
+        if (pageCount === 1) {
+          const p = att.pages[0];
+          thumbsHtml = `
+            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" data-page="0" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
               ${
-                att.dataUrl
-                  ? `<img src="${att.dataUrl}" style="transform: rotate(${att.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform duration-300" alt="Preview">`
+                p.dataUrl
+                  ? `<img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform duration-300" alt="Page 1">`
                   : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500 animate-pulse"></i><span class="text-[10px] font-bold">PDF</span></div>`
               }
               <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white backdrop-blur-[1px]">
@@ -311,13 +319,43 @@ function renderSlots() {
                 ${slot.code}
               </div>
             </div>
+          `;
+        } else {
+          // Multiple pages horizontal gallery
+          const pagesThumbs = att.pages
+            .map((p, idx) => `
+              <div class="w-16 h-16 rounded-xl neu-inset overflow-hidden flex-shrink-0 relative p-0.5 slot-preview-trigger group cursor-pointer border border-white/60" data-id="${slot.id}" data-page="${idx}" title="คลิกเพื่อดูหน้า ${idx + 1}">
+                <img src="${p.dataUrl}" style="transform: rotate(${p.rotation}deg);" class="w-full h-full object-cover rounded-lg" alt="Page ${idx + 1}">
+                <div class="absolute top-1 left-1 px-1 rounded bg-black/60 text-white text-[9px] font-bold">
+                  ${idx + 1}
+                </div>
+                <button class="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity btn-delete-page cursor-pointer" data-id="${slot.id}" data-page="${idx}" title="ลบหน้านี้">
+                  <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                </button>
+              </div>
+            `)
+            .join('');
+
+          thumbsHtml = `
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 flex-shrink-0 max-w-[200px] sm:max-w-[220px]">
+              ${pagesThumbs}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <input type="file" id="${slotInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${appendInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp" class="hidden slot-append-input">
+          
+          <div class="flex items-start gap-3.5">
+            ${thumbsHtml}
 
             <!-- Details & Renaming -->
             <div class="flex-1 min-w-0 space-y-1.5">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
-                <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset text-slate-600 font-semibold whitespace-nowrap">
-                  ${formattedSize}
+                <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-bold ${pageCount > 1 ? 'text-orange-600 bg-orange-50/50' : 'text-slate-600'} whitespace-nowrap">
+                  ${pageCount > 1 ? `📄 รวม ${pageCount} หน้า • ${formattedSize}` : formattedSize}
                 </span>
               </div>
 
@@ -329,14 +367,14 @@ function renderSlots() {
           </div>
 
           <!-- Footer Actions -->
-          <div class="pt-2.5 border-t border-[#dfe2eb] flex items-center justify-between gap-2">
+          <div class="pt-2.5 border-t border-[#dfe2eb] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
             <!-- Format Switch -->
             <div class="flex items-center gap-1">
               <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
               <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
                   att.targetFormat === 'JPG' ? 'neu-pill-active' : 'text-slate-600'
-                }" data-id="${slot.id}">JPG</button>
+                }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
                   att.targetFormat === 'PDF' ? 'neu-pill-active' : 'text-slate-600'
                 }" data-id="${slot.id}">PDF</button>
@@ -345,24 +383,23 @@ function renderSlots() {
 
             <!-- Action Buttons -->
             <div class="flex items-center gap-1.5">
-              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}">
+              <!-- Add more photos / pages button -->
+              <button class="px-2 py-1.5 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-append cursor-pointer hover:bg-orange-50/50" data-id="${slot.id}" title="เพิ่มรูปอีกหน้าในเอกสารนี้">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">+ เพิ่มรูป</span>
+              </button>
+
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}" data-page="0">
                 <i data-lucide="eye" class="w-3.5 h-3.5"></i>
               </button>
-              ${
-                att.dataUrl
-                  ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer hover:rotate-45 transition-all" title="หมุนภาพ 90°" data-id="${slot.id}">
-                      <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-                    </button>`
-                  : ''
-              }
-              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์นี้" data-id="${slot.id}">
+              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์ทั้งหมดในช่องนี้" data-id="${slot.id}">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               </button>
               <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>โหลด</span>
               </button>
-              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer hover:scale-105 transition-all" title="ลบไฟล์ที่แนบ" data-id="${slot.id}">
+              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer hover:scale-105 transition-all" title="ลบไฟล์ที่แนบทั้งหมดในช่องนี้" data-id="${slot.id}">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
               ${
@@ -388,14 +425,35 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 4. Attach Events to Slots with Drag Animations
+// 4. Attach Events to Slots with Multi-Image Support
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = el.dataset.id;
-      openPreviewModal(id);
+      const pageIdx = parseInt(el.dataset.page || '0', 10);
+      openPreviewModal(id, pageIdx);
+    });
+  });
+
+  // Delete specific page from multi-page slot
+  document.querySelectorAll('.btn-delete-page').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const pageIdx = parseInt(btn.dataset.page, 10);
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached && slot.attached.pages.length > 1) {
+        slot.attached.pages.splice(pageIdx, 1);
+        if (slot.attached.pages.length === 1 && slot.defaultFormat === 'JPG') {
+          slot.attached.targetFormat = 'JPG';
+        }
+        renderSlots();
+        updateSummaryMetrics();
+        showToast('ลบรูปภาพหน้านั้นออกแล้ว', 'info');
+      }
     });
   });
 
@@ -423,17 +481,36 @@ function attachSlotEvents() {
 
     el.addEventListener('drop', (e) => {
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        attachFileToSlotById(id, e.dataTransfer.files[0]);
+        attachFilesToSlotById(id, Array.from(e.dataTransfer.files));
       }
     });
   });
 
-  // Slot file inputs change
+  // Slot file inputs change (Initial attachment)
   document.querySelectorAll('.slot-file-input').forEach((inp) => {
     inp.addEventListener('change', (e) => {
       const id = e.target.dataset.id;
       if (e.target.files.length > 0) {
-        attachFileToSlotById(id, e.target.files[0]);
+        attachFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Append extra image / page to slot
+  document.querySelectorAll('.btn-slot-append').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = btn.dataset.id;
+      const appendInput = document.getElementById(`slot_append_${id}`);
+      if (appendInput) appendInput.click();
+    });
+  });
+
+  document.querySelectorAll('.slot-append-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await appendFilesToSlotById(id, Array.from(e.target.files));
         e.target.value = '';
       }
     });
@@ -490,6 +567,10 @@ function attachSlotEvents() {
       const all = getAllSlots();
       const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
+        if (slot.attached.pages.length > 1) {
+          showToast('เอกสารที่มีหลายรูปต้องรวมเป็นไฟล์ PDF', 'info');
+          return;
+        }
         slot.attached.targetFormat = 'JPG';
         renderSlots();
         updateSummaryMetrics();
@@ -507,19 +588,6 @@ function attachSlotEvents() {
         slot.attached.targetFormat = 'PDF';
         renderSlots();
         updateSummaryMetrics();
-      }
-    });
-  });
-
-  // Rotate image
-  document.querySelectorAll('.btn-slot-rotate').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.dataset.id;
-      const all = getAllSlots();
-      const slot = all.find((s) => s.id === id);
-      if (slot && slot.attached) {
-        slot.attached.rotation = (slot.attached.rotation + 90) % 360;
-        renderSlots();
       }
     });
   });
@@ -561,23 +629,124 @@ function attachSlotEvents() {
   });
 }
 
-// 5. Fullscreen Image Lightbox Preview Functions
-function openPreviewModal(slotId) {
+// 5. Multi-Image Attach & Append Engine
+async function attachFilesToSlotById(id, files) {
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === id);
+  if (!slot || files.length === 0) return;
+
+  const pages = [];
+  for (const file of files) {
+    const dataUrl = await readFileAsDataURL(file);
+    pages.push({
+      file: file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      dataUrl: dataUrl,
+      rotation: 0,
+    });
+  }
+
+  // If more than 1 image, default to PDF
+  const defaultFormat = pages.length > 1 ? 'PDF' : slot.defaultFormat;
+
+  slot.attached = {
+    pages: pages,
+    targetName: slot.targetName || files[0].name.replace(/\.[^/.]+$/, ''),
+    targetFormat: defaultFormat,
+  };
+
+  renderSlots();
+  renderGroupFilterPills();
+  updateSummaryMetrics();
+  showToast(`แนบ ${pages.length} ไฟล์ลงใน [${slot.code}] ${slot.attached.targetName} สำเร็จ!`, 'success');
+}
+
+async function appendFilesToSlotById(id, files) {
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === id);
+  if (!slot || !slot.attached || files.length === 0) return;
+
+  for (const file of files) {
+    const dataUrl = await readFileAsDataURL(file);
+    slot.attached.pages.push({
+      file: file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      dataUrl: dataUrl,
+      rotation: 0,
+    });
+  }
+
+  // Automatically switch to PDF when multiple images are attached
+  slot.attached.targetFormat = 'PDF';
+
+  renderSlots();
+  renderGroupFilterPills();
+  updateSummaryMetrics();
+  showToast(`เพิ่มรูปภาพเป็น ${slot.attached.pages.length} หน้า (รวมเป็น 1 PDF อัตโนมัติ)`, 'success');
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      resolve(null);
+    }
+  });
+}
+
+// 6. Fullscreen Image & Multi-Page Lightbox Preview
+function openPreviewModal(slotId, pageIdx = 0) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === slotId);
   if (!slot || !slot.attached) return;
 
   state.activePreviewSlotId = slotId;
+  state.activePreviewPageIndex = pageIdx;
+
+  updatePreviewModalDisplay();
+  previewModal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function updatePreviewModalDisplay() {
+  if (!state.activePreviewSlotId) return;
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === state.activePreviewSlotId);
+  if (!slot || !slot.attached) return;
+
   const att = slot.attached;
+  const totalPages = att.pages.length;
+  const currIdx = Math.min(state.activePreviewPageIndex, totalPages - 1);
+  state.activePreviewPageIndex = currIdx;
+
+  const currentPage = att.pages[currIdx];
 
   previewModalCode.innerText = slot.code;
   previewModalTitle.innerText = att.targetName || slot.targetName;
-  previewModalSubtitle.innerText = `${slot.desc} • ขนาด ${formatFileSize(att.size)}`;
+  previewModalSubtitle.innerText = `${slot.desc} • ขนาดหน้านี้ ${formatFileSize(currentPage.size)}`;
   previewModalFormat.innerText = att.targetFormat;
 
-  if (att.dataUrl) {
-    previewModalImg.src = att.dataUrl;
-    previewModalImg.style.transform = `rotate(${att.rotation}deg)`;
+  if (totalPages > 1) {
+    previewPageIndicator.innerText = `หน้า ${currIdx + 1}/${totalPages}`;
+    previewPageIndicator.classList.remove('hidden');
+    previewNavButtons.classList.remove('hidden');
+    btnPreviewPrevPage.disabled = currIdx === 0;
+    btnPreviewNextPage.disabled = currIdx === totalPages - 1;
+  } else {
+    previewPageIndicator.classList.add('hidden');
+    previewNavButtons.classList.add('hidden');
+  }
+
+  if (currentPage.dataUrl) {
+    previewModalImg.src = currentPage.dataUrl;
+    previewModalImg.style.transform = `rotate(${currentPage.rotation}deg)`;
     previewModalImg.classList.remove('hidden');
     previewModalPdf.classList.add('hidden');
     btnPreviewRotate.classList.remove('hidden');
@@ -586,9 +755,6 @@ function openPreviewModal(slotId) {
     previewModalPdf.classList.remove('hidden');
     btnPreviewRotate.classList.add('hidden');
   }
-
-  previewModal.classList.remove('hidden');
-  lucide.createIcons();
 }
 
 function closePreviewModal() {
@@ -609,6 +775,36 @@ function setupPreviewModalListeners() {
     if (e.key === 'Escape') {
       closePreviewModal();
       missingModal.classList.add('hidden');
+    } else if (e.key === 'ArrowLeft') {
+      if (state.activePreviewSlotId && state.activePreviewPageIndex > 0) {
+        state.activePreviewPageIndex--;
+        updatePreviewModalDisplay();
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (state.activePreviewSlotId) {
+        const all = getAllSlots();
+        const slot = all.find((s) => s.id === state.activePreviewSlotId);
+        if (slot && slot.attached && state.activePreviewPageIndex < slot.attached.pages.length - 1) {
+          state.activePreviewPageIndex++;
+          updatePreviewModalDisplay();
+        }
+      }
+    }
+  });
+
+  btnPreviewPrevPage.addEventListener('click', () => {
+    if (state.activePreviewPageIndex > 0) {
+      state.activePreviewPageIndex--;
+      updatePreviewModalDisplay();
+    }
+  });
+
+  btnPreviewNextPage.addEventListener('click', () => {
+    const all = getAllSlots();
+    const slot = all.find((s) => s.id === state.activePreviewSlotId);
+    if (slot && slot.attached && state.activePreviewPageIndex < slot.attached.pages.length - 1) {
+      state.activePreviewPageIndex++;
+      updatePreviewModalDisplay();
     }
   });
 
@@ -617,8 +813,9 @@ function setupPreviewModalListeners() {
     const all = getAllSlots();
     const slot = all.find((s) => s.id === state.activePreviewSlotId);
     if (slot && slot.attached) {
-      slot.attached.rotation = (slot.attached.rotation + 90) % 360;
-      previewModalImg.style.transform = `rotate(${slot.attached.rotation}deg)`;
+      const page = slot.attached.pages[state.activePreviewPageIndex];
+      page.rotation = (page.rotation + 90) % 360;
+      previewModalImg.style.transform = `rotate(${page.rotation}deg)`;
       renderSlots();
     }
   });
@@ -641,46 +838,8 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 6. Attach File To Specific Slot by ID
-async function attachFileToSlotById(id, file) {
-  const all = getAllSlots();
-  const slot = all.find((s) => s.id === id);
-  if (!slot) return;
-
-  const dataUrl = await readFileAsDataURL(file);
-
-  slot.attached = {
-    file: file,
-    name: file.name,
-    size: file.size,
-    type: file.type,
-    dataUrl: dataUrl,
-    rotation: 0,
-    targetName: slot.targetName || file.name.replace(/\.[^/.]+$/, ''),
-    targetFormat: slot.defaultFormat,
-  };
-
-  renderSlots();
-  renderGroupFilterPills();
-  updateSummaryMetrics();
-  showToast(`แนบไฟล์ใน [${slot.code}] ${slot.attached.targetName} สำเร็จ!`, 'success');
-}
-
-function readFileAsDataURL(file) {
-  return new Promise((resolve) => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.readAsDataURL(file);
-    } else {
-      resolve(null);
-    }
-  });
-}
-
 // 7. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
-  // Add Custom Slot Button
   btnAddCustomSlot.addEventListener('click', () => {
     const customId = `custom_${Date.now()}`;
     const customNumber = state.customCounter++;
@@ -721,12 +880,16 @@ function setupGlobalEventListeners() {
           const file = files[fileIdx];
           const dataUrl = await readFileAsDataURL(file);
           all[i].attached = {
-            file: file,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            dataUrl: dataUrl,
-            rotation: 0,
+            pages: [
+              {
+                file: file,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                dataUrl: dataUrl,
+                rotation: 0,
+              },
+            ],
             targetName: all[i].targetName || file.name.replace(/\.[^/.]+$/, ''),
             targetFormat: all[i].defaultFormat,
           };
@@ -801,7 +964,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
         <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 font-extrabold text-[10px]">${slot.code}</span>
         <span class="font-bold text-slate-800 truncate">${slot.targetName}</span>
       </div>
-      <span class="text-[10px] text-slate-500 font-semibold whitespace-nowrap ml-2">หมวด ${slot.group.substring(0, 12)}</span>
+      <span class="text-[10px] text-slate-500 font-semibold whitespace-nowrap ml-2">${slot.group}</span>
     `;
     missingItemsList.appendChild(row);
   });
@@ -825,7 +988,6 @@ function updateSummaryMetrics() {
 
   attachedCountBadge.innerText = `${attachedSlots.length} / ${all.length} ไฟล์`;
 
-  // Update Header Missing Indicator
   if (unattachedChecklistCount === 0 && state.slots.length > 0) {
     missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-emerald-700 font-bold text-xs';
     missingText.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> ครบ 100%</span>`;
@@ -838,36 +1000,68 @@ function updateSummaryMetrics() {
   lucide.createIcons();
 }
 
-// 9. Image & Document Processing Engine (< 5MB Guaranteed)
+// 9. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-async function processAttachedFile(item) {
-  const targetExt = item.targetFormat.toLowerCase();
-  const cleanName = (item.targetName || 'เอกสาร').replace(/[\\/:*?"<>|]/g, '_');
-  const finalFilename = `${cleanName}.${targetExt}`;
+async function processAttachedFile(attachedObj) {
+  const pages = attachedObj.pages;
+  const isMultiPage = pages.length > 1;
+  const targetFormat = isMultiPage ? 'PDF' : attachedObj.targetFormat;
+  const cleanName = (attachedObj.targetName || 'เอกสาร').replace(/[\\/:*?"<>|]/g, '_');
+  const finalFilename = `${cleanName}.${targetFormat.toLowerCase()}`;
 
-  // Case 1: Target is JPG
-  if (item.targetFormat === 'JPG') {
-    if (item.dataUrl) {
-      const blob = await compressImageToBlob(item.dataUrl, item.rotation, MAX_FILE_SIZE_BYTES);
+  // Case 1: Single JPG file
+  if (targetFormat === 'JPG' && !isMultiPage) {
+    const p = pages[0];
+    if (p.dataUrl) {
+      const blob = await compressImageToBlob(p.dataUrl, p.rotation, MAX_FILE_SIZE_BYTES);
       return { blob, finalFilename };
     } else {
-      return { blob: item.file, finalFilename: `${cleanName}.pdf` };
+      return { blob: p.file, finalFilename: `${cleanName}.pdf` };
     }
   }
 
-  // Case 2: Target is PDF
-  if (item.targetFormat === 'PDF') {
-    if (item.file.type === 'application/pdf') {
-      return { blob: item.file, finalFilename };
-    } else if (item.dataUrl) {
-      const compressedImgBlob = await compressImageToBlob(item.dataUrl, item.rotation, 4.5 * 1024 * 1024);
-      const pdfBlob = await convertImageBlobToPdf(compressedImgBlob);
-      return { blob: pdfBlob, finalFilename };
+  // Case 2: Multi-Image or Single PDF target
+  if (targetFormat === 'PDF') {
+    // If it is a single already-PDF file
+    if (!isMultiPage && pages[0].file.type === 'application/pdf') {
+      return { blob: pages[0].file, finalFilename };
     }
+
+    // Compile multiple images (or single image) into one multi-page PDF (< 5MB)
+    const perPageMaxBytes = Math.max(Math.floor((4.5 * 1024 * 1024) / pages.length), 600 * 1024);
+    const pdfDoc = await PDFLib.PDFDocument.create();
+
+    for (let i = 0; i < pages.length; i++) {
+      const p = pages[i];
+      if (p.dataUrl) {
+        const compressedImgBlob = await compressImageToBlob(p.dataUrl, p.rotation, perPageMaxBytes);
+        const arrayBuffer = await compressedImgBlob.arrayBuffer();
+
+        let pdfImage;
+        try {
+          pdfImage = await pdfDoc.embedJpg(arrayBuffer);
+        } catch (e) {
+          pdfImage = await pdfDoc.embedPng(arrayBuffer);
+        }
+
+        const { width, height } = pdfImage.scale(1);
+        const page = pdfDoc.addPage([width, height]);
+        page.drawImage(pdfImage, {
+          x: 0,
+          y: 0,
+          width: width,
+          height: height,
+        });
+      }
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+    return { blob: pdfBlob, finalFilename };
   }
 
-  return { blob: item.file, finalFilename };
+  return { blob: pages[0].file, finalFilename };
 }
 
 /**
@@ -917,7 +1111,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
           break;
         }
 
-        quality -= 0.12;
+        quality -= 0.14;
         width = Math.round(width * 0.85);
         height = Math.round(height * 0.85);
       }
@@ -927,33 +1121,6 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
     img.onerror = reject;
     img.src = dataUrl;
   });
-}
-
-/**
- * Convert Image to PDF
- */
-async function convertImageBlobToPdf(imageBlob) {
-  const arrayBuffer = await imageBlob.arrayBuffer();
-  const pdfDoc = await PDFLib.PDFDocument.create();
-
-  let pdfImage;
-  try {
-    pdfImage = await pdfDoc.embedJpg(arrayBuffer);
-  } catch (e) {
-    pdfImage = await pdfDoc.embedPng(arrayBuffer);
-  }
-
-  const { width, height } = pdfImage.scale(1);
-  const page = pdfDoc.addPage([width, height]);
-  page.drawImage(pdfImage, {
-    x: 0,
-    y: 0,
-    width: width,
-    height: height,
-  });
-
-  const pdfBytes = await pdfDoc.save();
-  return new Blob([pdfBytes], { type: 'application/pdf' });
 }
 
 // 10. Batch Download as .ZIP

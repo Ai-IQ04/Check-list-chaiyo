@@ -278,7 +278,7 @@
               🏠 สินเชื่อที่ดิน
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">แนบไฟล์ตรงตาม Checklist • กดดูพรีวิวรูปใหญ่ • คุมขนาดไม่เกิน 5MB</p>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">แนบหลายรูปเป็น 1 PDF ได้ • กดพรีวิวรูปใหญ่ • คุมขนาดไม่เกิน 5MB</p>
         </div>
       </div>
 
@@ -320,13 +320,13 @@
         <span class="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
           <i data-lucide="filter" class="w-3.5 h-3.5 text-orange-500"></i> หมวดหมู่:
         </span>
-        <div id="groupFilterPills" class="flex flex-wrap gap-1.5">
+        <div id="groupFilterPills" class="flex flex-wrap gap-1.5 overflow-x-auto pb-1 max-w-full">
           <!-- Injected by JavaScript -->
         </div>
       </div>
 
       <!-- Quick Batch Actions -->
-      <div class="flex items-center gap-2 self-end sm:self-auto">
+      <div class="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
         <input type="file" id="batchFileInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden">
         <button id="btnBatchAutoFill" class="neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer hover:text-orange-600" title="เลือกรูปหลายๆ ไฟล์เพื่อใส่ลงช่อง Checklist ตามลำดับอัตโนมัติ">
           <i data-lucide="upload" class="w-3 h-3 text-slate-500"></i>
@@ -364,7 +364,7 @@
     </nav>
   </div>
 
-  <!-- FULLSCREEN IMAGE & DOCUMENT PREVIEW MODAL (LIGHTBOX) -->
+  <!-- FULLSCREEN IMAGE & MULTI-PAGE DOCUMENT PREVIEW MODAL (LIGHTBOX) -->
   <div id="previewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4 sm:p-6 transition-all duration-300">
     <div class="neu-raised max-w-4xl w-full rounded-3xl p-5 space-y-4 max-h-[92vh] flex flex-col border border-white/80 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       
@@ -375,18 +375,33 @@
             <span id="previewModalCode" class="text-xs">A01</span>
           </div>
           <div class="min-w-0">
-            <h3 id="previewModalTitle" class="text-sm sm:text-base font-extrabold text-slate-800 truncate">
-              ชื่อไฟล์พรีวิว
-            </h3>
+            <div class="flex items-center gap-2">
+              <h3 id="previewModalTitle" class="text-sm sm:text-base font-extrabold text-slate-800 truncate">
+                ชื่อไฟล์พรีวิว
+              </h3>
+              <span id="previewPageIndicator" class="text-[10px] px-2 py-0.5 rounded-full neu-inset text-orange-600 font-extrabold">
+                หน้า 1/1
+              </span>
+            </div>
             <p id="previewModalSubtitle" class="text-xs text-slate-500 font-medium truncate">
               คำอธิบายเอกสาร • ขนาด 1.2 MB
             </p>
           </div>
         </div>
 
-        <!-- Controls (Rotate, Download, Close) -->
+        <!-- Controls (Prev/Next Page, Rotate, Download, Close) -->
         <div class="flex items-center gap-2">
-          <button id="btnPreviewRotate" class="p-2.5 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer" title="หมุนภาพ 90°">
+          <!-- Multi-page navigation -->
+          <div id="previewNavButtons" class="flex items-center gap-1">
+            <button id="btnPreviewPrevPage" class="p-2 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="หน้าก่อนหน้า">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button id="btnPreviewNextPage" class="p-2 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="หน้าถัดไป">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <button id="btnPreviewRotate" class="p-2.5 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer" title="หมุนภาพหน้านี้ 90°">
             <i data-lucide="rotate-cw" class="w-4 h-4"></i>
           </button>
           <button id="btnPreviewDownload" class="px-3 py-2 rounded-xl neu-btn text-xs font-bold text-orange-600 hover:bg-orange-50 cursor-pointer flex items-center gap-1.5" title="ดาวน์โหลดไฟล์นี้">
@@ -404,7 +419,7 @@
         <img id="previewModalImg" src="" alt="Full Preview" class="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg transition-transform duration-200">
         <div id="previewModalPdf" class="flex flex-col items-center justify-center gap-3 text-slate-500 p-8 hidden">
           <i data-lucide="file-text" class="w-16 h-16 text-red-500"></i>
-          <p class="text-sm font-bold text-slate-700">เอกสาร PDF พร้อมสำหรับการแปลงหรือดาวน์โหลด</p>
+          <p class="text-sm font-bold text-slate-700">เอกสาร PDF พร้อมสำหรับการดาวน์โหลด</p>
         </div>
       </div>
 
