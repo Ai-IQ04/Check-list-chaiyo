@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.8.0';
+const CURRENT_APP_VERSION = '2.8.1';
 
 // Application State
 const state = {
@@ -193,7 +193,15 @@ function showUpdateBanner(newVersion) {
   }
 }
 
-// 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
+// 2. Render Modern 3D Vector Bottom Navigation Deck
+const PRODUCT_VECTOR_ICONS = {
+  motorcycle: 'bike',
+  car: 'car',
+  truck: 'truck',
+  agriculture: 'tractor',
+  land: 'map-pin',
+};
+
 function renderBottomDock() {
   loanCategoryTabs.innerHTML = '';
   const categories = Object.values(window.LOAN_CHECKLISTS);
@@ -202,17 +210,24 @@ function renderBottomDock() {
     const btn = document.createElement('button');
     btn.type = 'button';
     const isActive = state.currentCategory === cat.id;
+    const iconName = PRODUCT_VECTOR_ICONS[cat.id] || 'layers';
     
-    btn.className = `py-2 sm:py-2.5 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer w-full text-center select-none ${
+    btn.className = `py-2.5 sm:py-3 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer w-full text-center select-none ${
       isActive
-        ? 'neu-product-active font-extrabold shadow-lg'
+        ? 'neu-product-active font-extrabold shadow-inner'
         : 'neu-product-btn font-bold text-slate-700 hover:text-orange-600'
     }`;
     
     let cleanName = cat.name.replace('สินเชื่อ', '').trim();
 
     btn.innerHTML = `
-      <span class="text-xl sm:text-2xl filter drop-shadow-sm leading-none pointer-events-none">${cat.icon}</span>
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center ${
+        isActive
+          ? 'neu-inset text-orange-600 shadow-inner'
+          : 'neu-raised text-slate-600'
+      } pointer-events-none transition-transform">
+        <i data-lucide="${iconName}" class="w-4 h-4"></i>
+      </div>
       <span class="text-[11px] sm:text-xs tracking-tight line-clamp-1 leading-tight font-extrabold pointer-events-none">${cleanName}</span>
     `;
     btn.onclick = (e) => {
@@ -221,6 +236,8 @@ function renderBottomDock() {
     };
     loanCategoryTabs.appendChild(btn);
   });
+
+  lucide.createIcons();
 }
 
 function selectCategory(catId) {
@@ -228,7 +245,8 @@ function selectCategory(catId) {
   state.selectedGroupFilter = 'all';
 
   const catData = window.LOAN_CHECKLISTS[catId];
-  currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
+  const iconName = PRODUCT_VECTOR_ICONS[catId] || 'layers';
+  currentLoanBadge.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 inline mr-1"></i> ${catData.name}`;
 
   // Default Sub-Type
   if (catData.subTypes && catData.subTypes.length > 0) {
@@ -240,6 +258,7 @@ function selectCategory(catId) {
   renderBottomDock();
   renderSubProductPills();
   loadSlotsForCurrentSubProduct();
+  lucide.createIcons();
 }
 
 // 3. Pure Neumorphic Sub-Product Switcher Panel
@@ -324,7 +343,7 @@ function getAllSlots() {
   return [...state.slots, ...state.customSlots];
 }
 
-// 4. Pure Neumorphic Document Group Filter Board
+// 4. Modern Vector Duotone Document Group Filter Board
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
   const allSlots = getAllSlots();
@@ -337,7 +356,7 @@ function renderGroupFilterPills() {
       ? 'neu-pill-active'
       : 'text-slate-700'
   }`;
-  allPill.innerHTML = `<span>✨ ทั้งหมด (${allSlots.length})</span>`;
+  allPill.innerHTML = `<i data-lucide="layout-grid" class="w-3.5 h-3.5 text-orange-500"></i><span>ทั้งหมด (${allSlots.length})</span>`;
   allPill.addEventListener('click', () => {
     state.selectedGroupFilter = 'all';
     renderGroupFilterPills();
@@ -353,7 +372,7 @@ function renderGroupFilterPills() {
         ? 'neu-pill-active text-amber-600'
         : 'text-amber-700'
     }`;
-    missingPill.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-500"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
+    missingPill.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
     missingPill.addEventListener('click', () => {
       state.selectedGroupFilter = 'unattached';
       renderGroupFilterPills();
@@ -362,17 +381,28 @@ function renderGroupFilterPills() {
     groupFilterPills.appendChild(missingPill);
   }
 
-  // 3. Specific Group Pills (Clean Neumorphic Chips)
+  // 3. Specific Group Pills (Clean Modern Vector Chips)
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
     const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
 
-    let iconPrefix = '📁';
-    if (groupName.startsWith('A')) iconPrefix = '🪪';
-    else if (groupName.startsWith('B')) iconPrefix = state.currentCategory === 'land' ? '🏠' : '🚗';
-    else if (groupName.startsWith('C')) iconPrefix = '💰';
-    else if (groupName.startsWith('AA') || groupName.startsWith('BB') || groupName.startsWith('CC') || groupName.startsWith('DD')) iconPrefix = '📝';
+    let iconName = 'folder';
+    let iconColor = 'text-slate-500';
+
+    if (groupName.startsWith('A')) {
+      iconName = 'user-check';
+      iconColor = 'text-indigo-500';
+    } else if (groupName.startsWith('B')) {
+      iconName = state.currentCategory === 'land' ? 'map-pin' : 'shield-check';
+      iconColor = 'text-orange-500';
+    } else if (groupName.startsWith('C')) {
+      iconName = 'banknote';
+      iconColor = 'text-emerald-600';
+    } else if (groupName.startsWith('AA') || groupName.startsWith('BB') || groupName.startsWith('CC') || groupName.startsWith('DD')) {
+      iconName = 'file-signature';
+      iconColor = 'text-purple-600';
+    }
 
     const pill = document.createElement('button');
     pill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
@@ -380,7 +410,7 @@ function renderGroupFilterPills() {
         ? 'neu-pill-active'
         : 'text-slate-700'
     }`;
-    pill.innerHTML = `<span>${iconPrefix} ${groupName} (${attachedInGroup}/${countInGroup})</span>`;
+    pill.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${groupName} (${attachedInGroup}/${countInGroup})</span>`;
     pill.addEventListener('click', () => {
       state.selectedGroupFilter = groupName;
       renderGroupFilterPills();

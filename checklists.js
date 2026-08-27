@@ -3,25 +3,17 @@
  * Clean 100% accurate human-verified document descriptions and filenames
  */
 window.LOAN_CHECKLISTS = {
-  "motorcycle": {
-    "id": "motorcycle",
-    "name": "สินเชื่อรถจักรยานยนต์",
-    "icon": "🏍️",
-    "subTypes": [
-      {
-        "id": "pledge",
-        "name": "🏷️ จำนำเล่มทะเบียน"
-      },
-      {
-        "id": "refinance",
-        "name": "🔄 รีไฟแนนซ์"
-      },
-      {
-        "id": "topup",
-        "name": "➕ Top-up (กู้เพิ่ม)"
-      }
+  motorcycle: {
+    id: 'motorcycle',
+    name: 'สินเชื่อรถมอเตอร์ไซค์',
+    icon: 'bike',
+    iconBadge: 'bg-orange-500 text-white',
+    subTypes: [
+      { id: 'pledge', name: '🏷️ จำนำเล่มทะเบียน' },
+      { id: 'refinance', name: '🔄 รีไฟแนนซ์' },
+      { id: 'topup', name: '➕ Top-up (กู้เพิ่ม)' }
     ],
-    "items": [
+    items: [
       {
         "code": "A01",
         "group": "A ยืนยันตัวตน",
@@ -52,7 +44,6 @@ window.LOAN_CHECKLISTS = {
       },
       {
         "code": "A05",
-        "group": "A ยืนยันตัวตน",
         "desc": "ใบเปลี่ยนชื่อ-นามสกุล (ถ้ามี)",
         "targetName": "ใบเปลี่ยนชื่อนามสกุล",
         "format": "PDF"
