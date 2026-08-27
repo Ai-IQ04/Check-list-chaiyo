@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อสาขา</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm 12mm 15mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      color: #2d3748;
+      background-color: #ffffff;
+      line-height: 1.5;
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      width: 100%;
+      page-break-after: always;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Header */
+    .header-banner {
+      background: linear-gradient(135deg, #ff7a18 0%, #ff5200 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(255, 106, 0, 0.25);
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      opacity: 0.95;
+    }
+
+    .badge-client-side {
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    /* Workflow Flowchart Box */
+    .workflow-box {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      text-align: center;
+    }
+
+    .flow-step {
+      flex: 1;
+      position: relative;
+    }
+
+    .flow-num {
+      width: 24px;
+      height: 24px;
+      background: #ff6a00;
+      color: white;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .flow-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .flow-arrow {
+      color: #94a3b8;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* Step Section Cards */
+    .step-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 8px;
+    }
+
+    .step-icon-badge {
+      width: 32px;
+      height: 32px;
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      color: #ea580c;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .step-desc {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+    }
+
+    .feature-item {
+      font-size: 11.5px;
+      color: #334155;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .feature-bullet {
+      color: #ff6a00;
+      font-weight: bold;
+      margin-top: -1px;
+    }
+
+    /* Highlighting Alert Callout */
+    .alert-tip {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      font-size: 11.5px;
+      color: #92400e;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Product Grid Table */
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 11.5px;
+    }
+
+    .product-table th {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    .product-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #334155;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+    
+    <!-- Header Banner -->
+    <div class="header-banner">
+      <div class="header-title">
+        <h1>📑 คู่มือการใช้งานระบบจัดการเอกสารสินเชื่อ (ฉบับย่อ)</h1>
+        <p>Auto Loan Document Checklist & Renamer • เปลี่ยนชื่อไฟล์และคุมขนาด &le; 5MB อัตโนมัติ</p>
+      </div>
+      <div class="badge-client-side">
+        🔒 ประมวลผลในเครื่อง 100%<br>ข้อมูลรูปภาพปลอดภัยสูงสุด
+      </div>
+    </div>
+
+    <!-- Workflow Box -->
+    <div class="workflow-box">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-text">เลือกสินเชื่อ</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-text">แนบรูป/เอกสาร</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-text">พรีวิว/หมุนภาพ</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-text">ดาวน์โหลด .ZIP</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Select Loan Category -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-icon-badge">1</div>
+        <div>
+          <div class="step-title">เลือกประเภทสินเชื่อ (แถบลอยด้านล่าง)</div>
+          <div class="step-desc">กดสลับประเภทสินเชื่อได้ทันทีจากเมนูด้านล่างสุดของหน้าจอ</div>
+        </div>
+      </div>
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>ประเภทสินเชื่อ</th>
+            <th>เอกสารมาตรฐาน</th>
+            <th>จุดเด่นเอกสารที่อัปเดต</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>🏠 สินเชื่อที่ดิน</b></td>
+            <td>55 รายการ</td>
+            <td>โฉนดหน้า-หลัง, ลายน้ำ, ประเมินที่ดิน, สัญญาจำนอง</td>
+          </tr>
+          <tr>
+            <td><b>🏍️ สินเชื่อรถจักรยานยนต์</b></td>
+            <td>44 รายการ</td>
+            <td>ป้ายภาษี, ใบคู่มือจดทะเบียน, ใบรับมอบสินค้า</td>
+          </tr>
+          <tr>
+            <td><b>🚛 สินเชื่อรถบรรทุก</b></td>
+            <td>51 รายการ</td>
+            <td>รูปรถ 1-11, ป้ายภาษี, หนังสือส่งมอบเล่มทะเบียน</td>
+          </tr>
+          <tr>
+            <td><b>🚗 สินเชื่อรถเก๋ง / กระบะ / ตู้</b></td>
+            <td>51 รายการ</td>
+            <td>รูปรถรอบคัน, ป้ายภาษี, หนังสือส่งมอบเล่มทะเบียน</td>
+          </tr>
+          <tr>
+            <td><b>🚜 สินเชื่อรถเพื่อการเกษตร</b></td>
+            <td>54 รายการ</td>
+            <td>รูปอุปกรณ์ต่อพ่วง, ป้ายภาษี, ใบรับมอบสินค้า</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Step 2: Attach & Multi-Image Merge -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-icon-badge">2</div>
+        <div>
+          <div class="step-title">การแนบไฟล์เอกสาร & รวมหลายรูปเป็น 1 PDF</div>
+          <div class="step-desc">รองรับไฟล์ JPG, PNG, WebP และ PDF ลากวางได้ทันที</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>แนบทีละช่อง:</b> คลิกหรือลากไฟล์ภาพ/PDF วางลงช่อง Checklist ที่ตรงกับรายการ</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>รวมหลายรูปเป็น 1 PDF:</b> ลาก 2 รูปขึ้นไปมาวางพร้อมกัน ระบบจะรวมเป็น 1 ไฟล์ PDF อัตโนมัติ</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>ปุ่ม "+ เพิ่มรูป":</b> กดบนการ์ดเพื่อแทรกรูปภาพหน้า 2, 3 เข้าไปในเอกสารเดียวกันได้ตลอดเวลา</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>ปุ่ม "+ เพิ่มเอกสารเอง":</b> เพิ่มช่องสำหรับแนบเอกสารพิเศษนอก Checklist และพิมพ์ตั้งชื่อไฟล์เอง</span>
+        </div>
+      </div>
+
+      <div class="alert-tip">
+        <span>💡</span>
+        <span><b>เคล็ดลับ:</b> หากมีรูปภาพจำนวนมาก สามารถกดปุ่ม <b>"โยนหลายรูปตามลำดับ"</b> ที่แถบด้านบน เพื่อให้ระบบนำรูปทั้งหมดไปหยอดลงช่อง Checklist ให้ตามลำดับอัตโนมัติ</span>
+      </div>
+    </div>
+
+    <!-- Step 3 & 4: Preview & Download -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-icon-badge">3-4</div>
+        <div>
+          <div class="step-title">การพรีวิวรูปภาพขนาดใหญ่, ตรวจสอบ และดาวน์โหลด .ZIP</div>
+          <div class="step-desc">ระบบคุมขนาดไฟล์ &le; 5MB และเปลี่ยนชื่อไฟล์ถูกต้องตามมาตรฐานสาขา 100%</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>คลิกดูรูปใหญ่ (Lightbox):</b> คลิกที่รูปตัวอย่างหรือไอคอน 👁️ เพื่อเปิดดูภาพขนาดเต็ม</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>ปุ่มหมุนภาพ 90°:</b> กด 🔄 เพื่อปรับทิศทางของรูปภาพให้ตั้งตรงและอ่านง่าย</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>ระบบแจ้งเตือนเอกสารขาด:</b> สังเกตป้ายสีส้ม ⚠️ ด้านบน และกดปุ่ม <b>"ยังไม่แนบ"</b> เพื่อกรองดูช่องที่ขาด</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-bullet">&bull;</span>
+          <span><b>ดาวน์โหลด .ZIP:</b> กดปุ่มสีส้ม <b>"ดาวน์โหลด ZIP"</b> ด้านบนขวาเพื่อรับไฟล์ทั้งหมดที่บีบอัดและเปลี่ยนชื่อเสร็จเรียบร้อย</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer</div>
+      <div>GitHub: https://github.com/Ai-IQ04/Check-list-chaiyo</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
