@@ -1,13 +1,13 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Version 2.6.0
+ * Version 2.7.0
+ * Apple iOS Fluid Spring Aesthetic, Horizontal Single-Row Rail,
  * Sub-Product Filtering (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up without One-Time),
- * AI Smart Document Classifier & Scanner, Direct 1-Click Native Camera,
- * Time Stamp, Auto-Enhance, Multi-Image PDF & IndexedDB Drafts
+ * Context-Aware Scoped AI Document Classifier & Scanner
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.6.1';
+const CURRENT_APP_VERSION = '2.7.0';
 
 // Application State
 const state = {
@@ -242,7 +242,7 @@ function selectCategory(catId) {
   loadSlotsForCurrentSubProduct();
 }
 
-// 3. Sub-Product Switcher Bar (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up)
+// 3. Apple Single-Row Sub-Product Switcher Rail
 function renderSubProductPills() {
   subProductPills.innerHTML = '';
   const catData = window.LOAN_CHECKLISTS[state.currentCategory];
@@ -252,10 +252,8 @@ function renderSubProductPills() {
     const btn = document.createElement('button');
     const isActive = state.currentSubType === st.id;
 
-    btn.className = `px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-      isActive
-        ? 'neu-pill-active shadow-md'
-        : 'neu-btn text-slate-700 hover:text-orange-600'
+    btn.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
+      isActive ? 'apple-pill-active' : 'text-slate-700'
     }`;
 
     btn.innerText = st.name;
@@ -335,6 +333,7 @@ function getAllSlots() {
   return [...state.slots, ...state.customSlots];
 }
 
+// 4. Apple Single-Row Document Group Filter Rail
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
   const allSlots = getAllSlots();
@@ -342,12 +341,12 @@ function renderGroupFilterPills() {
 
   // 1. "All" Pill
   const allPill = document.createElement('button');
-  allPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+  allPill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
     state.selectedGroupFilter === 'all'
-      ? 'neu-pill-active'
-      : 'neu-btn text-slate-600 hover:text-slate-900'
+      ? 'apple-pill-active'
+      : 'text-slate-700'
   }`;
-  allPill.innerText = `ทั้งหมด (${allSlots.length})`;
+  allPill.innerHTML = `<span>✨ ทั้งหมด (${allSlots.length})</span>`;
   allPill.addEventListener('click', () => {
     state.selectedGroupFilter = 'all';
     renderGroupFilterPills();
@@ -358,12 +357,12 @@ function renderGroupFilterPills() {
   // 2. "Unattached" Filter Pill (Missing Items)
   if (unattachedCount > 0) {
     const missingPill = document.createElement('button');
-    missingPill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+    missingPill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
       state.selectedGroupFilter === 'unattached'
-        ? 'bg-amber-500 text-white shadow-md'
-        : 'neu-btn text-amber-700 hover:text-amber-900 border border-amber-300'
+        ? 'bg-amber-500 text-white shadow-md border-amber-400'
+        : 'text-amber-800 border border-amber-300/80 bg-amber-50/50'
     }`;
-    missingPill.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ยังไม่แนบ (${unattachedCount})</span>`;
+    missingPill.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 ${state.selectedGroupFilter === 'unattached' ? 'text-white' : 'text-amber-500'}"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
     missingPill.addEventListener('click', () => {
       state.selectedGroupFilter = 'unattached';
       renderGroupFilterPills();
@@ -372,19 +371,25 @@ function renderGroupFilterPills() {
     groupFilterPills.appendChild(missingPill);
   }
 
-  // 3. Specific Group Pills
+  // 3. Specific Group Pills (Clean & Grouped)
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
     const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
 
+    let iconPrefix = '📁';
+    if (groupName.startsWith('A')) iconPrefix = '🪪';
+    else if (groupName.startsWith('B')) iconPrefix = state.currentCategory === 'land' ? '🏠' : '🚗';
+    else if (groupName.startsWith('C')) iconPrefix = '💰';
+    else if (groupName.startsWith('AA') || groupName.startsWith('BB') || groupName.startsWith('CC') || groupName.startsWith('DD')) iconPrefix = '📝';
+
     const pill = document.createElement('button');
-    pill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+    pill.className = `apple-pill px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 ${
       state.selectedGroupFilter === groupName
-        ? 'neu-pill-active'
-        : 'neu-btn text-slate-600 hover:text-slate-900'
+        ? 'apple-pill-active'
+        : 'text-slate-700'
     }`;
-    pill.innerText = `${groupName} (${attachedInGroup}/${countInGroup})`;
+    pill.innerHTML = `<span>${iconPrefix} ${groupName} (${attachedInGroup}/${countInGroup})</span>`;
     pill.addEventListener('click', () => {
       state.selectedGroupFilter = groupName;
       renderGroupFilterPills();
@@ -396,7 +401,7 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 4. Render Checklist Slots with 2 Direct Buttons (Camera & File)
+// 5. Render Checklist Slots with Apple Fluid Spring Animations
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
@@ -410,7 +415,7 @@ function renderSlots() {
 
   if (visibleSlots.length === 0) {
     slotsContainer.innerHTML = `
-      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2 apple-spring-card">
         <i data-lucide="check-circle-2" class="w-10 h-10 mx-auto text-emerald-500 animate-bounce"></i>
         <p class="text-sm font-bold text-slate-700">ไม่มีรายการในหมวดหมู่นี้ หรือแนบครบทุกรายการแล้ว!</p>
       </div>
@@ -452,10 +457,10 @@ function renderSlots() {
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
       
-      const animDelay = Math.min(globalCardIndex * 25, 400);
+      const animDelay = Math.min(globalCardIndex * 28, 380);
       globalCardIndex++;
 
-      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 slot-card-animate ${
+      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 apple-spring-card ${
         isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
       }`;
       card.style.animationDelay = `${animDelay}ms`;
@@ -596,10 +601,10 @@ function renderSlots() {
               <span class="text-[11px] font-bold text-slate-500 mr-1">แปลงเป็น:</span>
               <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
-                  att.targetFormat === 'JPG' ? 'neu-pill-active' : 'text-slate-600'
+                  att.targetFormat === 'JPG' ? 'apple-pill-active' : 'text-slate-600'
                 }" data-id="${slot.id}" ${pageCount > 1 ? 'disabled title="หลายรูปต้องรวมเป็น PDF"' : ''}>JPG</button>
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
-                  att.targetFormat === 'PDF' ? 'neu-pill-active' : 'text-slate-600'
+                  att.targetFormat === 'PDF' ? 'apple-pill-active' : 'text-slate-600'
                 }" data-id="${slot.id}">PDF</button>
               </div>
             </div>
@@ -658,7 +663,7 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 5. Attach Events to Slots
+// 6. Attach Events to Slots
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
@@ -865,7 +870,7 @@ function attachSlotEvents() {
   });
 }
 
-// 6. AI Smart Document Scanner & Classifier Engine (Client-Side 100% Secure)
+// 7. AI Smart Document Scanner & Classifier Engine (Client-Side 100% Secure)
 function setupAiScannerListeners() {
   aiCameraInput.addEventListener('change', async (e) => {
     if (e.target.files.length === 0) return;
@@ -971,7 +976,6 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
   }
 
   // Context-Aware Priority Matching:
-  // Check active group filter
   const currentGroup = state.selectedGroupFilter;
   const isGroupFiltered = currentGroup && currentGroup !== 'all' && currentGroup !== 'unattached';
   
@@ -983,7 +987,6 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     const s1 = all.find((s) => s.code === 'A01');
     const s2 = all.find((s) => s.code === 'A02');
     
-    // Check if user is currently inside Group A
     const inActiveGroup = isGroupFiltered && currentGroup.includes('A');
     const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด A ยืนยันตัวตน)' : '';
 
@@ -1036,7 +1039,6 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     if (s1) suggestions.push({ slot: s1, label: `💰 แนบลง: [${s1.code}] เอกสารรายได้ผู้กู้${crossGroupTag}`, highlight: true });
     if (s2) suggestions.push({ slot: s2, label: `💰 แนบลง: [${s2.code}] เอกสารรายได้ผู้ค้ำ${crossGroupTag}`, highlight: false });
   } else {
-    // If inside a specific active group, prioritize unattached slots of THAT group first!
     if (isGroupFiltered) {
       const activeGroupUnattached = all.filter((s) => s.group === currentGroup && !s.attached);
       if (activeGroupUnattached.length > 0) {
@@ -1123,7 +1125,7 @@ async function assignPendingImageToSlot(slotId) {
   showToast(`✅ แนบลงช่อง [${slot.code}] ${slot.targetName} เรียบร้อย!`, 'success');
 }
 
-// 7. Multi-Image Attach & Append Engine
+// 8. Multi-Image Attach & Append Engine
 async function attachFilesToSlotById(id, files) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === id);
@@ -1193,7 +1195,7 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 8. Time Stamp & Auto-Enhance Image Canvas Filters
+// 9. Time Stamp & Auto-Enhance Image Canvas Filters
 async function applyTimeStampToImage(dataUrl, rotation = 0) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -1287,7 +1289,7 @@ async function enhanceDocumentImage(dataUrl) {
   });
 }
 
-// 9. Fullscreen Image & Multi-Page Lightbox Preview
+// 10. Fullscreen Image & Multi-Page Lightbox Preview
 function openPreviewModal(slotId, pageIdx = 0) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === slotId);
@@ -1462,7 +1464,7 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 10. Draft Management (IndexedDB Save & Resume)
+// 11. Draft Management (IndexedDB Save & Resume)
 function setupDraftModalListeners() {
   btnSaveDraft.addEventListener('click', () => {
     const attachedCount = getAllSlots().filter((s) => s.attached).length;
@@ -1609,7 +1611,7 @@ async function renderDraftsList() {
   }
 }
 
-// 11. Global Batch & Custom Slots Events
+// 12. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
   btnAddCustomSlot.addEventListener('click', () => {
     const customId = `custom_${Date.now()}`;
@@ -1747,7 +1749,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
   lucide.createIcons();
 }
 
-// 12. Metrics Calculation
+// 13. Metrics Calculation
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1767,7 +1769,7 @@ function updateSummaryMetrics() {
   lucide.createIcons();
 }
 
-// 13. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
+// 14. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 async function processAttachedFile(attachedObj) {
@@ -1894,7 +1896,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
   });
 }
 
-// 14. Batch Download as .ZIP
+// 15. Batch Download as .ZIP
 async function executeZipDownload() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1947,7 +1949,7 @@ async function executeZipDownload() {
   }
 }
 
-// 15. Utilities
+// 16. Utilities
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
