@@ -40,6 +40,35 @@ pdf_defs = [
     }
 ]
 
+# Standard Normalized Category Group Names
+def get_normalized_group(code):
+    c = code.upper()
+    if c.startswith('AA') and c != 'AA023':
+        return 'AA สัญญาสำหรับผู้กู้'
+    elif c.startswith('BB'):
+        return 'BB สัญญาสำหรับผู้ค้ำประกัน'
+    elif c.startswith('CC'):
+        return 'CC Sales Sheet'
+    elif c.startswith('DD'):
+        return 'DD เอกสารหลังจดจำนองที่ดิน'
+    elif c.startswith('A'):
+        return 'A ยืนยันตัวตน'
+    elif c.startswith('B'):
+        return 'B ตรวจสอบหลักประกัน'
+    elif c.startswith('C1'):
+        return 'C1 รายได้'
+    elif c.startswith('C2'):
+        return 'C2 ยืนยันการประกอบอาชีพ'
+    elif c.startswith('C3'):
+        return 'C3 เอกสารเพิ่มเติม รีไฟแนนซ์/ต่อสัญญา'
+    elif c.startswith('C5'):
+        return 'C5 เอกสารรถเกษตรใหม่'
+    elif c.startswith('C'):
+        return 'C พิจารณาอนุมัติสินเชื่อ'
+    elif c.startswith('D'):
+        return 'D เอกสารอนุโลม'
+    return 'ทั่วไป'
+
 # Comprehensive Master Mapping of Document Codes
 doc_master_map = {
     # หมวด A: ยืนยันตัวตน
@@ -126,7 +155,6 @@ doc_master_map = {
     'C01': {'desc': 'สำเนาสมุดคู่ฝากธนาคารเพื่อใช้ในการโอนเงิน (บัญชีลูกค้าเท่านั้น)', 'targetName': 'สำเนาบัญชีธนาคาร', 'format': 'PDF'},
     'C02': {'desc': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'targetName': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'format': 'PDF'},
     'C03': {'desc': 'สำเนาทะเบียนคู่สมรส (กรณีมี)', 'targetName': 'สำเนาทะเบียนคู่สมรส', 'format': 'PDF'},
-    # เปลี่ยน C04 เป็น หนังสือให้ติดตามทวงถามหนี้
     'C04': {'desc': 'หนังสือให้ติดตามทวงถามหนี้', 'targetName': 'หนังสือให้ติดตามทวงถามหนี้', 'format': 'PDF'},
     'C05': {'desc': 'แบบฟอร์มตรวจที่พักอาศัย (ถ้ามี)', 'targetName': 'แบบฟอร์มตรวจที่พักอาศัย', 'format': 'PDF'},
     'C06': {'desc': 'อีเมลผล ABC (ถ้ามี)', 'targetName': 'ผล ABC', 'format': 'PDF'},
@@ -178,16 +206,10 @@ def extract_clean_items(p_def):
     
     for pidx, page in enumerate(reader.pages):
         lines = page.extract_text().split('\n')
-        current_group = 'ทั่วไป'
         
         for line in lines:
             line = line.strip()
             if not line: continue
-            
-            # Detect group headers
-            if re.match(r'^(A|B|C|C1|C2|C3|C5|D|DD|AA|BB|CC)\s+[^\d]', line):
-                current_group = line.replace('ส าหรับ', 'สำหรับ').replace('ผู้ค ้า', 'ผู้ค้ำ').replace('จ านอง', 'จำนอง').strip()
-                continue
             
             # Match document code
             m = re.match(r'^\d+\s+([A-Za-z]+[0-9]+[A-Za-z0-9]*)', line)
@@ -209,9 +231,11 @@ def extract_clean_items(p_def):
                 elif code == 'D02':
                     target_name = 'อนุโลมประกัน'
                 
+                group_name = get_normalized_group(code)
+                
                 items.append({
                     'code': code,
-                    'group': current_group,
+                    'group': group_name,
                     'desc': desc,
                     'targetName': target_name,
                     'format': fmt
@@ -220,22 +244,20 @@ def extract_clean_items(p_def):
                 
     # If it is a Vehicle category (motorcycle, truck, car, agri), ensure 'ป้ายภาษี' and 'ใบรับมอบสินค้า' exist
     if p_def['id'] in ['motorcycle', 'truck', 'car', 'agri']:
-        # Ensure B107 (ป้ายภาษี) is present
         if 'B107' not in seen_codes:
             items.append({
                 'code': 'B107',
-                'group': 'หมวด B ตรวจสอบหลักประกัน',
+                'group': 'B ตรวจสอบหลักประกัน',
                 'desc': 'รูปภาพป้ายภาษี',
                 'targetName': 'ป้ายภาษี',
                 'format': 'JPG'
             })
             seen_codes.add('B107')
             
-        # Ensure ใบรับมอบสินค้า is present
         if 'AA12' not in seen_codes and 'B109' not in seen_codes:
             items.append({
                 'code': 'AA12',
-                'group': 'หมวด AA สัญญานิติกรรม',
+                'group': 'AA สัญญาสำหรับผู้กู้',
                 'desc': 'ใบรับมอบสินค้า (สำหรับรถ)',
                 'targetName': 'ใบรับมอบสินค้า',
                 'format': 'PDF'
@@ -261,9 +283,4 @@ js_content += 'window.LOAN_CHECKLISTS = ' + json.dumps(dataset, ensure_ascii=Fal
 with open('checklists.js', 'w', encoding='utf-8') as f:
     f.write(js_content)
 
-print('Regenerated checklists.js with clean descriptions and exact target names.')
-for k, v in dataset.items():
-    print(f"=== {v['name']} ({len(v['items'])} items) ===")
-    for item in v['items']:
-        if any(w in item['targetName'] for w in ['ติดตามทวงถามหนี้', 'ป้ายภาษี', 'ใบรับมอบสินค้า']):
-            print(f"  [{item['code']}] {item['targetName']} ({item['format']}) - {item['desc']}")
+print('Regenerated checklists.js with standardized category groups.')

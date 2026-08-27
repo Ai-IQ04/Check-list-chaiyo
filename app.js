@@ -163,12 +163,12 @@ function renderGroupFilterPills() {
     const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
 
     const pill = document.createElement('button');
-    pill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+    pill.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
       state.selectedGroupFilter === groupName
         ? 'neu-pill-active'
         : 'neu-btn text-slate-600 hover:text-slate-900'
     }`;
-    pill.innerText = `${groupName.substring(0, 16)} (${attachedInGroup}/${countInGroup})`;
+    pill.innerText = `${groupName} (${attachedInGroup}/${countInGroup})`;
     pill.addEventListener('click', () => {
       state.selectedGroupFilter = groupName;
       renderGroupFilterPills();
