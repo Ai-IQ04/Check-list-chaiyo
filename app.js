@@ -1,13 +1,15 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Slot-based Checklist Attachment Engine (True Neumorphism Soft UI)
+ * Slot-based Checklist & Custom User-Defined Document Attachment Engine
  */
 
 // Application State
 const state = {
   currentCategory: 'land',
   selectedGroupFilter: 'all',
-  slots: [], // Array of slot items: { code, group, desc, targetName, format, attached: null }
+  slots: [], // Standard Checklist slots
+  customSlots: [], // User-added custom document slots
+  customCounter: 1,
 };
 
 // DOM Elements
@@ -19,6 +21,7 @@ const attachedCountBadge = document.getElementById('attachedCountBadge');
 const sumOriginalSize = document.getElementById('sumOriginalSize');
 const sumEstimatedSize = document.getElementById('sumEstimatedSize');
 const btnDownloadZip = document.getElementById('btnDownloadZip');
+const btnAddCustomSlot = document.getElementById('btnAddCustomSlot');
 const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
@@ -77,12 +80,14 @@ function selectCategory(catId) {
 
   // Initialize Slots from Checklist
   state.slots = catData.items.map((item) => ({
+    id: `slot_${item.code}`,
     code: item.code,
     group: item.group,
     desc: item.desc,
     targetName: item.targetName,
     defaultFormat: item.format || 'JPG',
-    attached: null, // { file, name, size, type, dataUrl, rotation: 0, targetFormat, targetName }
+    isCustom: false,
+    attached: null,
   }));
 
   renderGroupFilterPills();
@@ -90,11 +95,16 @@ function selectCategory(catId) {
   updateSummaryMetrics();
 }
 
+function getAllSlots() {
+  return [...state.slots, ...state.customSlots];
+}
+
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
+  const allSlots = getAllSlots();
 
   // Get unique groups
-  const groups = Array.from(new Set(state.slots.map((s) => s.group)));
+  const groups = Array.from(new Set(allSlots.map((s) => s.group)));
 
   // "All" Pill
   const allPill = document.createElement('button');
@@ -103,7 +113,7 @@ function renderGroupFilterPills() {
       ? 'neu-pill-active'
       : 'neu-btn text-slate-600 hover:text-slate-900'
   }`;
-  allPill.innerText = `ทั้งหมด (${state.slots.length})`;
+  allPill.innerText = `ทั้งหมด (${allSlots.length})`;
   allPill.addEventListener('click', () => {
     state.selectedGroupFilter = 'all';
     renderGroupFilterPills();
@@ -113,8 +123,8 @@ function renderGroupFilterPills() {
 
   // Specific Group Pills
   groups.forEach((groupName) => {
-    const countInGroup = state.slots.filter((s) => s.group === groupName).length;
-    const attachedInGroup = state.slots.filter((s) => s.group === groupName && s.attached).length;
+    const countInGroup = allSlots.filter((s) => s.group === groupName).length;
+    const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
 
     const pill = document.createElement('button');
     pill.className = `px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -122,7 +132,7 @@ function renderGroupFilterPills() {
         ? 'neu-pill-active'
         : 'neu-btn text-slate-600 hover:text-slate-900'
     }`;
-    pill.innerText = `${groupName.substring(0, 16)} (${attachedInGroup}/${countInGroup})`;
+    pill.innerText = `${groupName.substring(0, 18)} (${attachedInGroup}/${countInGroup})`;
     pill.addEventListener('click', () => {
       state.selectedGroupFilter = groupName;
       renderGroupFilterPills();
@@ -132,15 +142,16 @@ function renderGroupFilterPills() {
   });
 }
 
-// 3. Render Checklist Topic Slots
+// 3. Render Checklist Topic Slots & Custom Slots
 function renderSlots() {
   slotsContainer.innerHTML = '';
+  const allSlots = getAllSlots();
 
   // Filter slots
   const visibleSlots =
     state.selectedGroupFilter === 'all'
-      ? state.slots
-      : state.slots.filter((s) => s.group === state.selectedGroupFilter);
+      ? allSlots
+      : allSlots.filter((s) => s.group === state.selectedGroupFilter);
 
   // Group visible slots
   const grouped = {};
@@ -153,11 +164,13 @@ function renderSlots() {
     const groupSection = document.createElement('div');
     groupSection.className = 'space-y-3';
 
+    const isCustomGroup = groupName === 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)';
+
     // Group Header
     groupSection.innerHTML = `
       <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_6px_#ff6a00]"></span>
+          <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_6px_#ff6a00]"></span>
           หมวด ${groupName}
         </h3>
         <span class="text-xs font-bold text-slate-500">
@@ -174,45 +187,56 @@ function renderSlots() {
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
       card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 ${
-        isAttached ? 'neu-slot-attached' : ''
+        isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
       }`;
 
-      // Hidden file input for this specific slot
-      const slotInputId = `slot_input_${slot.code}`;
+      const slotInputId = `slot_input_${slot.id}`;
 
       if (!isAttached) {
-        // Empty Slot (Ready for Attachment)
+        // Empty Slot
         card.innerHTML = `
-          <input type="file" id="${slotInputId}" data-code="${slot.code}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start justify-between gap-3">
-            <div class="space-y-1 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold text-orange-600">${slot.code}</span>
-                <span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
+                ${
+                  slot.isCustom
+                    ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
+                    : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
+                }
                 <span class="text-[10px] px-2 py-0.5 rounded-md neu-inset font-bold text-slate-500">${slot.defaultFormat}</span>
               </div>
               <p class="text-xs text-slate-500 line-clamp-2">${slot.desc}</p>
             </div>
+
+            ${
+              slot.isCustom
+                ? `<button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer" data-id="${slot.id}" title="ลบช่องเอกสารเพิ่มเติมนี้">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>`
+                : ''
+            }
           </div>
 
           <!-- Click / Drop Target Area -->
-          <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-code="${slot.code}">
+          <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
             <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
               <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform">
                 <i data-lucide="plus" class="w-4 h-4"></i>
               </div>
-              <span class="text-xs font-bold">คลิกหรือลากรูปมาวางเพื่อแนบเอกสารนี้</span>
+              <span class="text-xs font-bold">คลิกหรือลากไฟล์มาวางเพื่อแนบเอกสารนี้</span>
             </div>
           </div>
         `;
       } else {
-        // Attached Slot (With File Preview & Controls)
+        // Attached Slot
         const att = slot.attached;
         const formattedSize = formatFileSize(att.size);
 
         card.innerHTML = `
-          <input type="file" id="${slotInputId}" data-code="${slot.code}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start gap-3.5">
             <!-- Thumbnail Preview Well -->
@@ -237,8 +261,8 @@ function renderSlots() {
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก:</label>
-                <input type="text" value="${att.targetName}" data-code="${slot.code}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name">
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก (แก้ไขได้):</label>
+                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name">
               </div>
             </div>
           </div>
@@ -251,10 +275,10 @@ function renderSlots() {
               <div class="flex items-center p-1 rounded-xl neu-inset gap-1">
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-jpg ${
                   att.targetFormat === 'JPG' ? 'neu-pill-active' : 'text-slate-600'
-                }" data-code="${slot.code}">JPG</button>
+                }" data-id="${slot.id}">JPG</button>
                 <button class="px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer btn-slot-pdf ${
                   att.targetFormat === 'PDF' ? 'neu-pill-active' : 'text-slate-600'
-                }" data-code="${slot.code}">PDF</button>
+                }" data-id="${slot.id}">PDF</button>
               </div>
             </div>
 
@@ -262,21 +286,28 @@ function renderSlots() {
             <div class="flex items-center gap-1.5">
               ${
                 att.dataUrl
-                  ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer" title="หมุนภาพ 90°" data-code="${slot.code}">
+                  ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer" title="หมุนภาพ 90°" data-id="${slot.id}">
                       <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                     </button>`
                   : ''
               }
-              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer" title="เปลี่ยนไฟล์นี้" data-code="${slot.code}">
+              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer" title="เปลี่ยนไฟล์นี้" data-id="${slot.id}">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               </button>
-              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer" data-code="${slot.code}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
+              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>โหลด</span>
               </button>
-              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer" title="ลบไฟล์ที่แนบ" data-code="${slot.code}">
+              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer" title="ลบไฟล์ที่แนบ" data-id="${slot.id}">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
+              ${
+                slot.isCustom
+                  ? `<button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer" title="ลบช่องเอกสารเพิ่มเติมนี้ทิ้ง" data-id="${slot.id}">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>`
+                  : ''
+              }
             </div>
           </div>
         `;
@@ -297,11 +328,10 @@ function renderSlots() {
 function attachSlotEvents() {
   // Click drop target to trigger slot input
   document.querySelectorAll('.slot-drop-target').forEach((el) => {
-    const code = el.dataset.code;
-    const input = document.getElementById(`slot_input_${code}`);
+    const id = el.dataset.id;
+    const input = document.getElementById(`slot_input_${id}`);
     el.addEventListener('click', () => input.click());
 
-    // Drag & drop on slot
     ['dragenter', 'dragover'].forEach((evt) => {
       el.addEventListener(evt, (e) => {
         e.preventDefault();
@@ -320,7 +350,7 @@ function attachSlotEvents() {
 
     el.addEventListener('drop', (e) => {
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        attachFileToSlot(code, e.dataTransfer.files[0]);
+        attachFileToSlotById(id, e.dataTransfer.files[0]);
       }
     });
   });
@@ -328,28 +358,52 @@ function attachSlotEvents() {
   // Slot file inputs change
   document.querySelectorAll('.slot-file-input').forEach((inp) => {
     inp.addEventListener('change', (e) => {
-      const code = e.target.dataset.code;
+      const id = e.target.dataset.id;
       if (e.target.files.length > 0) {
-        attachFileToSlot(code, e.target.files[0]);
+        attachFileToSlotById(id, e.target.files[0]);
         e.target.value = '';
       }
+    });
+  });
+
+  // Custom Slot Name input change (when not yet attached)
+  document.querySelectorAll('.input-custom-name').forEach((inp) => {
+    inp.addEventListener('input', (e) => {
+      const id = e.target.dataset.id;
+      const customSlot = state.customSlots.find((s) => s.id === id);
+      if (customSlot) {
+        customSlot.targetName = e.target.value;
+      }
+    });
+  });
+
+  // Delete Custom Slot
+  document.querySelectorAll('.btn-delete-custom-slot').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      state.customSlots = state.customSlots.filter((s) => s.id !== id);
+      renderSlots();
+      renderGroupFilterPills();
+      updateSummaryMetrics();
+      showToast('ลบช่องเอกสารเพิ่มเติมแล้ว', 'info');
     });
   });
 
   // Change file button
   document.querySelectorAll('.btn-slot-change').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const code = e.currentTarget.dataset.code;
-      const input = document.getElementById(`slot_input_${code}`);
+      const id = e.currentTarget.dataset.id;
+      const input = document.getElementById(`slot_input_${id}`);
       if (input) input.click();
     });
   });
 
-  // Rename input
+  // Rename input (when attached)
   document.querySelectorAll('.input-slot-name').forEach((inp) => {
     inp.addEventListener('input', (e) => {
-      const code = e.target.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.target.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
         slot.attached.targetName = e.target.value;
       }
@@ -359,8 +413,9 @@ function attachSlotEvents() {
   // Format toggle JPG
   document.querySelectorAll('.btn-slot-jpg').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const code = e.currentTarget.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
         slot.attached.targetFormat = 'JPG';
         renderSlots();
@@ -372,8 +427,9 @@ function attachSlotEvents() {
   // Format toggle PDF
   document.querySelectorAll('.btn-slot-pdf').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const code = e.currentTarget.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
         slot.attached.targetFormat = 'PDF';
         renderSlots();
@@ -385,8 +441,9 @@ function attachSlotEvents() {
   // Rotate image
   document.querySelectorAll('.btn-slot-rotate').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const code = e.currentTarget.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
         slot.attached.rotation = (slot.attached.rotation + 90) % 360;
         renderSlots();
@@ -397,8 +454,9 @@ function attachSlotEvents() {
   // Single download
   document.querySelectorAll('.btn-slot-download').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
-      const code = e.currentTarget.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
         showToast(`กำลังเตรียมไฟล์ ${slot.attached.targetName}...`, 'info');
         try {
@@ -416,22 +474,24 @@ function attachSlotEvents() {
   // Remove attached file
   document.querySelectorAll('.btn-slot-remove').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const code = e.currentTarget.dataset.code;
-      const slot = state.slots.find((s) => s.code === code);
+      const id = e.currentTarget.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
       if (slot) {
         slot.attached = null;
         renderSlots();
         renderGroupFilterPills();
         updateSummaryMetrics();
-        showToast(`ลบไฟล์ออกจากหัวข้อ [${code}] เรียบร้อย`, 'info');
+        showToast(`ลบไฟล์ออกจาก [${slot.code}] เรียบร้อย`, 'info');
       }
     });
   });
 }
 
-// 5. Attach File To Specific Slot
-async function attachFileToSlot(code, file) {
-  const slot = state.slots.find((s) => s.code === code);
+// 5. Attach File To Specific Slot by ID
+async function attachFileToSlotById(id, file) {
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === id);
   if (!slot) return;
 
   const dataUrl = await readFileAsDataURL(file);
@@ -443,14 +503,14 @@ async function attachFileToSlot(code, file) {
     type: file.type,
     dataUrl: dataUrl,
     rotation: 0,
-    targetName: slot.targetName,
+    targetName: slot.targetName || file.name.replace(/\.[^/.]+$/, ''),
     targetFormat: slot.defaultFormat,
   };
 
   renderSlots();
   renderGroupFilterPills();
   updateSummaryMetrics();
-  showToast(`แนบไฟล์ใน [${code}] ${slot.targetName} สำเร็จ!`, 'success');
+  showToast(`แนบไฟล์ใน [${slot.code}] ${slot.attached.targetName} สำเร็จ!`, 'success');
 }
 
 function readFileAsDataURL(file) {
@@ -465,29 +525,58 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 6. Global Batch Events (Auto-Fill & Clear)
+// 6. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
+  // Add Custom Slot Button
+  btnAddCustomSlot.addEventListener('click', () => {
+    const customId = `custom_${Date.now()}`;
+    const customNumber = state.customCounter++;
+    const defaultName = `เอกสารเพิ่มเติม ${customNumber}`;
+
+    state.customSlots.push({
+      id: customId,
+      code: `EXTRA-${customNumber}`,
+      group: 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)',
+      desc: 'เอกสารเพิ่มเติมที่ผู้ใช้ระบุชื่อไฟล์เอง',
+      targetName: defaultName,
+      defaultFormat: 'PDF',
+      isCustom: true,
+      attached: null,
+    });
+
+    renderSlots();
+    renderGroupFilterPills();
+    updateSummaryMetrics();
+    showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
+
+    // Scroll to custom slots
+    const targetElement = document.getElementById(`slot_input_${customId}`);
+    if (targetElement) {
+      targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
   // Batch Auto-fill button
   btnBatchAutoFill.addEventListener('click', () => batchFileInput.click());
   batchFileInput.addEventListener('change', async (e) => {
     if (e.target.files.length > 0) {
       const files = Array.from(e.target.files);
+      const all = getAllSlots();
       let fileIdx = 0;
 
-      // Find first empty slot and fill
-      for (let i = 0; i < state.slots.length && fileIdx < files.length; i++) {
-        if (!state.slots[i].attached) {
+      for (let i = 0; i < all.length && fileIdx < files.length; i++) {
+        if (!all[i].attached) {
           const file = files[fileIdx];
           const dataUrl = await readFileAsDataURL(file);
-          state.slots[i].attached = {
+          all[i].attached = {
             file: file,
             name: file.name,
             size: file.size,
             type: file.type,
             dataUrl: dataUrl,
             rotation: 0,
-            targetName: state.slots[i].targetName,
-            targetFormat: state.slots[i].defaultFormat,
+            targetName: all[i].targetName || file.name.replace(/\.[^/.]+$/, ''),
+            targetFormat: all[i].defaultFormat,
           };
           fileIdx++;
         }
@@ -497,17 +586,18 @@ function setupGlobalEventListeners() {
       renderSlots();
       renderGroupFilterPills();
       updateSummaryMetrics();
-      showToast(`ใส่ไฟล์ลงช่อง Checklist สำเร็จ ${fileIdx} ไฟล์`, 'success');
+      showToast(`ใส่ไฟล์ลงช่องตามลำดับสำเร็จ ${fileIdx} ไฟล์`, 'success');
     }
   });
 
   // Clear all attached files
   btnClearAllAttached.addEventListener('click', () => {
-    const attachedCount = state.slots.filter((s) => s.attached).length;
+    const all = getAllSlots();
+    const attachedCount = all.filter((s) => s.attached).length;
     if (attachedCount === 0) return;
 
     if (confirm('คุณต้องการล้างไฟล์ที่แนบทั้งหมดในหน้านี้หรือไม่?')) {
-      state.slots.forEach((s) => (s.attached = null));
+      all.forEach((s) => (s.attached = null));
       renderSlots();
       renderGroupFilterPills();
       updateSummaryMetrics();
@@ -520,8 +610,9 @@ function setupGlobalEventListeners() {
 
 // 7. Metrics Calculation
 function updateSummaryMetrics() {
-  const attachedSlots = state.slots.filter((s) => s.attached);
-  attachedCountBadge.innerText = `${attachedSlots.length} / ${state.slots.length} ไฟล์`;
+  const all = getAllSlots();
+  const attachedSlots = all.filter((s) => s.attached);
+  attachedCountBadge.innerText = `${attachedSlots.length} / ${all.length} ไฟล์`;
 
   let totalOriginalBytes = 0;
   let totalEstimatedBytes = 0;
@@ -662,7 +753,8 @@ async function convertImageBlobToPdf(imageBlob) {
 
 // 9. Batch Download as .ZIP
 async function handleDownloadZip() {
-  const attachedSlots = state.slots.filter((s) => s.attached);
+  const all = getAllSlots();
+  const attachedSlots = all.filter((s) => s.attached);
   if (attachedSlots.length === 0) {
     showToast('ไม่มีไฟล์ที่แนบสำหรับดาวน์โหลด', 'error');
     return;
