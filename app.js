@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.6.0';
+const CURRENT_APP_VERSION = '2.6.1';
 
 // Application State
 const state = {
@@ -970,6 +970,11 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     detectedKeywords.push('ภาพถ่ายสด');
   }
 
+  // Context-Aware Priority Matching:
+  // Check active group filter
+  const currentGroup = state.selectedGroupFilter;
+  const isGroupFiltered = currentGroup && currentGroup !== 'all' && currentGroup !== 'unattached';
+  
   const all = getAllSlots();
   const suggestions = [];
 
@@ -977,32 +982,46 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     summaryTitle = 'บัตรประจำตัวประชาชน';
     const s1 = all.find((s) => s.code === 'A01');
     const s2 = all.find((s) => s.code === 'A02');
-    if (s1) suggestions.push({ slot: s1, label: `🪪 แนบลง: [${s1.code}] บัตร ปชช. ผู้กู้ (แนะนำ)`, highlight: true });
-    if (s2) suggestions.push({ slot: s2, label: `🪪 แนบลง: [${s2.code}] บัตร ปชช. ผู้ค้ำประกัน`, highlight: false });
+    
+    // Check if user is currently inside Group A
+    const inActiveGroup = isGroupFiltered && currentGroup.includes('A');
+    const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด A ยืนยันตัวตน)' : '';
+
+    if (s1) suggestions.push({ slot: s1, label: `🪪 แนบลง: [${s1.code}] บัตร ปชช. ผู้กู้ (แนะนำ)${crossGroupTag}`, highlight: true });
+    if (s2) suggestions.push({ slot: s2, label: `🪪 แนบลง: [${s2.code}] บัตร ปชช. ผู้ค้ำประกัน${crossGroupTag}`, highlight: false });
   } else if (detectedType === 'HOUSE_REG') {
     summaryTitle = 'สำเนาทะเบียนบ้าน';
     const s1 = all.find((s) => s.code === 'A03');
     const s2 = all.find((s) => s.code === 'A04');
-    if (s1) suggestions.push({ slot: s1, label: `🏠 แนบลง: [${s1.code}] ทะเบียนบ้าน ผู้กู้`, highlight: true });
-    if (s2) suggestions.push({ slot: s2, label: `🏠 แนบลง: [${s2.code}] ทะเบียนบ้าน ผู้ค้ำ`, highlight: false });
+    const inActiveGroup = isGroupFiltered && currentGroup.includes('A');
+    const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด A ยืนยันตัวตน)' : '';
+
+    if (s1) suggestions.push({ slot: s1, label: `🏠 แนบลง: [${s1.code}] ทะเบียนบ้าน ผู้กู้${crossGroupTag}`, highlight: true });
+    if (s2) suggestions.push({ slot: s2, label: `🏠 แนบลง: [${s2.code}] ทะเบียนบ้าน ผู้ค้ำ${crossGroupTag}`, highlight: false });
   } else if (detectedType === 'TITLE_DEED') {
     summaryTitle = 'โฉนดที่ดิน';
     const s1 = all.find((s) => s.code === 'B201');
     const s2 = all.find((s) => s.code === 'B202');
     const s3 = all.find((s) => s.code === 'B203');
-    if (s1) suggestions.push({ slot: s1, label: `📄 แนบลง: [${s1.code}] หน้าโฉนดที่ดิน`, highlight: true });
-    if (s2) suggestions.push({ slot: s2, label: `📄 แนบลง: [${s2.code}] หลังโฉนดที่ดิน`, highlight: false });
-    if (s3) suggestions.push({ slot: s3, label: `🔍 แนบลง: [${s3.code}] ลายน้ำโฉนด`, highlight: false });
+    const inActiveGroup = isGroupFiltered && currentGroup.includes('B');
+    const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด B หลักประกัน)' : '';
+
+    if (s1) suggestions.push({ slot: s1, label: `📄 แนบลง: [${s1.code}] หน้าโฉนดที่ดิน${crossGroupTag}`, highlight: true });
+    if (s2) suggestions.push({ slot: s2, label: `📄 แนบลง: [${s2.code}] หลังโฉนดที่ดิน${crossGroupTag}`, highlight: false });
+    if (s3) suggestions.push({ slot: s3, label: `🔍 แนบลง: [${s3.code}] ลายน้ำโฉนด${crossGroupTag}`, highlight: false });
   } else if (detectedType === 'VEHICLE_BOOK') {
     summaryTitle = 'เล่มทะเบียนรถ (ใบคู่มือจดทะเบียน)';
     const s1 = all.find((s) => s.code === 'B102');
     const s2 = all.find((s) => s.code === 'B101');
     const s3 = all.find((s) => s.code === 'B105');
     const s4 = all.find((s) => s.code === 'B104');
-    if (s1) suggestions.push({ slot: s1, label: `🚗 แนบลง: [${s1.code}] เล่มหน้ารายการ (แนะนำ)`, highlight: true });
-    if (s2) suggestions.push({ slot: s2, label: `🚗 แนบลง: [${s2.code}] เล่มหน้าปก`, highlight: false });
-    if (s3) suggestions.push({ slot: s3, label: `🚗 แนบลง: [${s3.code}] เล่มหน้าบันทึก`, highlight: false });
-    if (s4) suggestions.push({ slot: s4, label: `🚗 แนบลง: [${s4.code}] เล่มหน้าภาษี`, highlight: false });
+    const inActiveGroup = isGroupFiltered && currentGroup.includes('B');
+    const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด B เล่มทะเบียน)' : '';
+
+    if (s1) suggestions.push({ slot: s1, label: `🚗 แนบลง: [${s1.code}] เล่มหน้ารายการ (แนะนำ)${crossGroupTag}`, highlight: true });
+    if (s2) suggestions.push({ slot: s2, label: `🚗 แนบลง: [${s2.code}] เล่มหน้าปก${crossGroupTag}`, highlight: false });
+    if (s3) suggestions.push({ slot: s3, label: `🚗 แนบลง: [${s3.code}] เล่มหน้าบันทึก${crossGroupTag}`, highlight: false });
+    if (s4) suggestions.push({ slot: s4, label: `🚗 แนบลง: [${s4.code}] เล่มหน้าภาษี${crossGroupTag}`, highlight: false });
   } else if (detectedType === 'TAX_SIGN') {
     summaryTitle = 'ป้ายภาษี / ป้ายวงกลม';
     const s1 = all.find((s) => s.code === 'B107');
@@ -1011,15 +1030,29 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     summaryTitle = 'สลิปเงินเดือน / เอกสารรายได้';
     const s1 = all.find((s) => s.code === 'C105');
     const s2 = all.find((s) => s.code === 'C106');
-    if (s1) suggestions.push({ slot: s1, label: `💰 แนบลง: [${s1.code}] เอกสารรายได้ผู้กู้`, highlight: true });
-    if (s2) suggestions.push({ slot: s2, label: `💰 แนบลง: [${s2.code}] เอกสารรายได้ผู้ค้ำ`, highlight: false });
+    const inActiveGroup = isGroupFiltered && currentGroup.includes('C');
+    const crossGroupTag = !inActiveGroup && isGroupFiltered ? ' (หมวด C เอกสารรายได้)' : '';
+
+    if (s1) suggestions.push({ slot: s1, label: `💰 แนบลง: [${s1.code}] เอกสารรายได้ผู้กู้${crossGroupTag}`, highlight: true });
+    if (s2) suggestions.push({ slot: s2, label: `💰 แนบลง: [${s2.code}] เอกสารรายได้ผู้ค้ำ${crossGroupTag}`, highlight: false });
   } else {
-    // Car photo sequence
-    const unattachedCarSlots = all.filter((s) => s.code.startsWith('B') && !s.attached);
-    if (unattachedCarSlots.length > 0) {
-      unattachedCarSlots.slice(0, 3).forEach((s, idx) => {
-        suggestions.push({ slot: s, label: `🚘 แนบลง: [${s.code}] ${s.targetName}`, highlight: idx === 0 });
-      });
+    // If inside a specific active group, prioritize unattached slots of THAT group first!
+    if (isGroupFiltered) {
+      const activeGroupUnattached = all.filter((s) => s.group === currentGroup && !s.attached);
+      if (activeGroupUnattached.length > 0) {
+        activeGroupUnattached.slice(0, 3).forEach((s, idx) => {
+          suggestions.push({ slot: s, label: `📂 แนบลงในหมวดปัจจุบัน: [${s.code}] ${s.targetName}`, highlight: idx === 0 });
+        });
+      }
+    }
+
+    if (suggestions.length === 0) {
+      const unattachedCarSlots = all.filter((s) => !s.attached);
+      if (unattachedCarSlots.length > 0) {
+        unattachedCarSlots.slice(0, 3).forEach((s, idx) => {
+          suggestions.push({ slot: s, label: `📷 แนบลง: [${s.code}] ${s.targetName}`, highlight: idx === 0 });
+        });
+      }
     }
   }
 
