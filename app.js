@@ -63,7 +63,6 @@ function renderBottomDock() {
       isActive ? 'neu-dock-active font-extrabold text-orange-600' : 'neu-btn font-bold text-xs'
     }`;
     
-    // Short clean name for mobile
     let shortName = cat.name.replace('สินเชื่อ', '').trim();
     if (shortName.length > 10) shortName = shortName.split('/')[0].trim();
 
@@ -83,7 +82,6 @@ function selectCategory(catId) {
   const catData = window.LOAN_CHECKLISTS[catId];
   currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
 
-  // Update Bottom Dock highlighting
   renderBottomDock();
 
   // Initialize Slots from Checklist
@@ -237,7 +235,7 @@ function renderSlots() {
           <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start justify-between gap-3">
-            <div class="space-y-1.5 flex-1">
+            <div class="space-y-1 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
                 ${
@@ -247,7 +245,7 @@ function renderSlots() {
                 }
                 <span class="text-[10px] px-2 py-0.5 rounded-md neu-inset font-bold text-slate-500">${slot.defaultFormat}</span>
               </div>
-              <p class="text-xs text-slate-500 line-clamp-2">${slot.desc}</p>
+              <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
             </div>
 
             ${
@@ -293,7 +291,7 @@ function renderSlots() {
             <!-- Details & Renaming -->
             <div class="flex-1 min-w-0 space-y-1.5">
               <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.desc}</span>
+                <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
                 <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset text-slate-600 font-semibold whitespace-nowrap">
                   ${formattedSize}
                 </span>
