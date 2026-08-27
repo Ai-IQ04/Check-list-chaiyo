@@ -40,7 +40,7 @@ pdf_defs = [
     }
 ]
 
-# Comprehensive Master Mapping of Document Codes across all PDFs
+# Comprehensive Master Mapping of Document Codes
 doc_master_map = {
     # หมวด A: ยืนยันตัวตน
     'A01': {'desc': 'สำเนาบัตรประชาชน ผู้กู้', 'targetName': 'สำเนาบัตร ปชช.ผู้กู้', 'format': 'PDF'},
@@ -120,12 +120,14 @@ doc_master_map = {
     'B106': {'desc': 'ผลเช็คต้น (ตามเงื่อนไข)', 'targetName': 'เช็คต้น', 'format': 'JPG'},
     'B107': {'desc': 'รูปภาพป้ายภาษี', 'targetName': 'ป้ายภาษี', 'format': 'JPG'},
     'B108': {'desc': 'หน้าตรวจสอบการชำระภาษีจากเว็บกรมการขนส่งทางบก', 'targetName': 'เว็บขนส่ง', 'format': 'JPG'},
+    'B109': {'desc': 'ใบรับมอบสินค้า (สำหรับรถ)', 'targetName': 'ใบรับมอบสินค้า', 'format': 'PDF'},
 
     # หมวด C: พิจารณาอนุมัติ / รายได้
     'C01': {'desc': 'สำเนาสมุดคู่ฝากธนาคารเพื่อใช้ในการโอนเงิน (บัญชีลูกค้าเท่านั้น)', 'targetName': 'สำเนาบัญชีธนาคาร', 'format': 'PDF'},
     'C02': {'desc': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'targetName': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'format': 'PDF'},
     'C03': {'desc': 'สำเนาทะเบียนคู่สมรส (กรณีมี)', 'targetName': 'สำเนาทะเบียนคู่สมรส', 'format': 'PDF'},
-    'C04': {'desc': 'ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)', 'targetName': 'ใบประเมินความสามารถ 1,2,3,4', 'format': 'PDF'},
+    # เปลี่ยน C04 เป็น หนังสือให้ติดตามทวงถามหนี้
+    'C04': {'desc': 'หนังสือให้ติดตามทวงถามหนี้', 'targetName': 'หนังสือให้ติดตามทวงถามหนี้', 'format': 'PDF'},
     'C05': {'desc': 'แบบฟอร์มตรวจที่พักอาศัย (ถ้ามี)', 'targetName': 'แบบฟอร์มตรวจที่พักอาศัย', 'format': 'PDF'},
     'C06': {'desc': 'อีเมลผล ABC (ถ้ามี)', 'targetName': 'ผล ABC', 'format': 'PDF'},
     'C101': {'desc': 'แบบฟอร์มประเมินรายได้ ผู้กู้', 'targetName': 'ประเมินรายได้ผู้กู้', 'format': 'PDF'},
@@ -160,6 +162,7 @@ doc_master_map = {
     'AA08': {'desc': 'แบบคำขอโอนและรับโอน', 'targetName': 'แบบคำขอโอนรับโอน', 'format': 'PDF'},
     'AA10': {'desc': 'ตั๋วสัญญาใช้เงิน', 'targetName': 'ตั๋วใช้เงิน', 'format': 'PDF'},
     'AA11': {'desc': 'Checklist เอกสารมอบให้ลูกค้าทำสินเชื่อ', 'targetName': 'เอกสารมอบให้ลูกค้า', 'format': 'PDF'},
+    'AA12': {'desc': 'ใบรับมอบสินค้า (สำหรับรถ)', 'targetName': 'ใบรับมอบสินค้า', 'format': 'PDF'},
     'AA021': {'desc': 'รายละเอียดหลักประกัน (เอกสารแนบ ก.)', 'targetName': 'เอกสารแนบ ก.', 'format': 'PDF'},
     'AA022': {'desc': 'หนังสือสัญญาต่อท้ายสัญญาจำนองที่ดิน/ห้องชุดเป็นประกัน', 'targetName': 'สัญญาต่อท้ายสัญญาจำนอง', 'format': 'PDF'},
     'BB01': {'desc': 'สัญญาค้ำประกัน', 'targetName': 'สัญญาค้ำ', 'format': 'PDF'},
@@ -167,7 +170,8 @@ doc_master_map = {
     'CC03': {'desc': 'Sale Sheet (มีลายเซ็นผู้กู้ลงนาม)', 'targetName': 'Sale Sheet', 'format': 'JPG'},
 }
 
-def extract_clean_items(filepath):
+def extract_clean_items(p_def):
+    filepath = p_def['file']
     reader = pypdf.PdfReader(filepath)
     items = []
     seen_codes = set()
@@ -190,7 +194,6 @@ def extract_clean_items(filepath):
             if m:
                 code = m.group(1).upper()
                 
-                # Check against master dictionary
                 if code in doc_master_map:
                     info = doc_master_map[code]
                     target_name = info['targetName']
@@ -201,7 +204,6 @@ def extract_clean_items(filepath):
                     desc = code
                     fmt = 'PDF'
                 
-                # If land D02
                 if code == 'D02' and 'ที่ดิน' in filepath:
                     target_name = 'ประกัน'
                 elif code == 'D02':
@@ -214,12 +216,37 @@ def extract_clean_items(filepath):
                     'targetName': target_name,
                     'format': fmt
                 })
+                seen_codes.add(code)
                 
+    # If it is a Vehicle category (motorcycle, truck, car, agri), ensure 'ป้ายภาษี' and 'ใบรับมอบสินค้า' exist
+    if p_def['id'] in ['motorcycle', 'truck', 'car', 'agri']:
+        # Ensure B107 (ป้ายภาษี) is present
+        if 'B107' not in seen_codes:
+            items.append({
+                'code': 'B107',
+                'group': 'หมวด B ตรวจสอบหลักประกัน',
+                'desc': 'รูปภาพป้ายภาษี',
+                'targetName': 'ป้ายภาษี',
+                'format': 'JPG'
+            })
+            seen_codes.add('B107')
+            
+        # Ensure ใบรับมอบสินค้า is present
+        if 'AA12' not in seen_codes and 'B109' not in seen_codes:
+            items.append({
+                'code': 'AA12',
+                'group': 'หมวด AA สัญญานิติกรรม',
+                'desc': 'ใบรับมอบสินค้า (สำหรับรถ)',
+                'targetName': 'ใบรับมอบสินค้า',
+                'format': 'PDF'
+            })
+            seen_codes.add('AA12')
+            
     return items
 
 dataset = {}
 for p in pdf_defs:
-    items = extract_clean_items(p['file'])
+    items = extract_clean_items(p)
     dataset[p['id']] = {
         'id': p['id'],
         'name': p['name'],
@@ -237,5 +264,6 @@ with open('checklists.js', 'w', encoding='utf-8') as f:
 print('Regenerated checklists.js with clean descriptions and exact target names.')
 for k, v in dataset.items():
     print(f"=== {v['name']} ({len(v['items'])} items) ===")
-    for item in v['items'][:6]:
-        print(f"  [{item['code']}] {item['targetName']} ({item['format']}) - {item['desc']}")
+    for item in v['items']:
+        if any(w in item['targetName'] for w in ['ติดตามทวงถามหนี้', 'ป้ายภาษี', 'ใบรับมอบสินค้า']):
+            print(f"  [{item['code']}] {item['targetName']} ({item['format']}) - {item['desc']}")

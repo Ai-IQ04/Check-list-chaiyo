@@ -182,8 +182,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)",
-        "targetName": "ใบประเมินความสามารถ 1,2,3,4",
+        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF"
       },
       {
@@ -544,8 +544,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจำรณำอนุมัติสินเชื่อ",
-        "desc": "ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)",
-        "targetName": "ใบประเมินความสามารถ 1,2,3,4",
+        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF"
       },
       {
@@ -715,6 +715,13 @@ window.LOAN_CHECKLISTS = {
         "desc": "Sale Sheet (มีลายเซ็นผู้กู้ลงนาม)",
         "targetName": "Sale Sheet",
         "format": "JPG"
+      },
+      {
+        "code": "AA12",
+        "group": "หมวด AA สัญญานิติกรรม",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF"
       }
     ]
   },
@@ -893,8 +900,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "B109",
         "group": "B ตรวจสอบหลักประกัน / รูปถ่ายหลักประกัน (Time Stamp)",
-        "desc": "B109",
-        "targetName": "B109",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
         "format": "PDF"
       },
       {
@@ -907,8 +914,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจำรณำอนุมัติสินเชื่อ",
-        "desc": "ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)",
-        "targetName": "ใบประเมินความสามารถ 1,2,3,4",
+        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF"
       },
       {
@@ -1264,8 +1271,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจำรณำอนุมัติสินเชื่อ",
-        "desc": "ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)",
-        "targetName": "ใบประเมินความสามารถ 1,2,3,4",
+        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF"
       },
       {
@@ -1449,6 +1456,13 @@ window.LOAN_CHECKLISTS = {
         "desc": "Sale Sheet (มีลายเซ็นผู้กู้ลงนาม)",
         "targetName": "Sale Sheet",
         "format": "JPG"
+      },
+      {
+        "code": "AA12",
+        "group": "หมวด AA สัญญานิติกรรม",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF"
       }
     ]
   },
@@ -1628,8 +1642,8 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจำรณำอนุมัติสินเชื่อ",
-        "desc": "ใบประเมินความสามารถลูกค้า (ผ่าน Branch App)",
-        "targetName": "ใบประเมินความสามารถ 1,2,3,4",
+        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF"
       },
       {
@@ -1834,6 +1848,13 @@ window.LOAN_CHECKLISTS = {
         "desc": "Sale Sheet (มีลายเซ็นผู้กู้ลงนาม)",
         "targetName": "Sale Sheet",
         "format": "JPG"
+      },
+      {
+        "code": "AA12",
+        "group": "หมวด AA สัญญานิติกรรม",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF"
       }
     ]
   }
