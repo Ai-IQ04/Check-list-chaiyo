@@ -12,7 +12,7 @@
   <style>
     @page {
       size: A4 portrait;
-      margin: 10mm 12mm 10mm 12mm;
+      margin: 8mm 10mm 8mm 10mm;
     }
 
     * {
@@ -25,8 +25,8 @@
       font-family: 'Prompt', sans-serif;
       color: #313b4c;
       background-color: #e0e5ec;
-      line-height: 1.5;
-      font-size: 12.5px;
+      line-height: 1.45;
+      font-size: 11.5px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -34,7 +34,7 @@
     .page {
       width: 100%;
       page-break-after: always;
-      padding-bottom: 5px;
+      padding-bottom: 4px;
     }
     .page:last-child {
       page-break-after: avoid;
@@ -45,7 +45,7 @@
       background: #e0e5ec;
       box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: 18px;
+      border-radius: 16px;
     }
 
     /* Pure Neumorphic Deep Inset Well */
@@ -53,7 +53,7 @@
       background: #e0e5ec;
       box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
       border: 1px solid rgba(163, 177, 198, 0.25);
-      border-radius: 14px;
+      border-radius: 12px;
     }
 
     /* Pure Neumorphic Orange Accent Card */
@@ -62,20 +62,20 @@
       color: #ffffff;
       box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff, 0 0 14px rgba(255, 106, 0, 0.35);
       border: 1px solid rgba(255, 255, 255, 0.4);
-      border-radius: 20px;
+      border-radius: 18px;
     }
 
     /* Header Banner */
     .header-banner {
-      padding: 16px 20px;
-      margin-bottom: 14px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .header-title h1 {
-      font-size: 19px;
+      font-size: 17.5px;
       font-weight: 800;
       letter-spacing: -0.3px;
       color: #ffffff;
@@ -83,8 +83,8 @@
     }
 
     .header-title p {
-      font-size: 11.5px;
-      color: rgba(255, 255, 255, 0.9);
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.92);
       font-weight: 500;
     }
 
@@ -92,9 +92,9 @@
       background: rgba(255, 255, 255, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(8px);
-      padding: 6px 14px;
-      border-radius: 12px;
-      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 10.5px;
       font-weight: 800;
       color: #ffffff;
       text-align: right;
@@ -104,30 +104,30 @@
     .section-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .section-card {
-      padding: 14px 16px;
+      padding: 12px 14px;
     }
 
     .section-title {
-      font-size: 13.5px;
+      font-size: 12.5px;
       font-weight: 800;
       color: #1e293b;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       border-bottom: 1px solid rgba(163, 177, 198, 0.3);
-      padding-bottom: 6px;
+      padding-bottom: 5px;
     }
 
     .icon-badge {
-      width: 24px;
-      height: 24px;
-      border-radius: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
       background: #e0e5ec;
       box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
       display: inline-flex;
@@ -135,31 +135,31 @@
       justify-content: center;
       color: #ff6a00;
       font-weight: 800;
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .step-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
 
     .step-item {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      font-size: 11.5px;
+      gap: 7px;
+      font-size: 10.5px;
     }
 
     .step-num {
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
+      width: 17px;
+      height: 17px;
+      border-radius: 5px;
       background: #e0e5ec;
-      box-shadow: 2px 2px 5px #a3b1c6, -2px -2px 5px #ffffff;
+      box-shadow: 2px 2px 4px #a3b1c6, -2px -2px 4px #ffffff;
       color: #ff6a00;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -176,11 +176,11 @@
     /* Tag & Code Badges */
     .pill-tag {
       display: inline-block;
-      padding: 1px 7px;
-      border-radius: 6px;
-      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 9.5px;
       font-weight: 800;
-      margin: 0 2px;
+      margin: 0 1px;
     }
 
     .pill-pdf {
@@ -205,54 +205,64 @@
     .matrix-table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 0 5px;
-      font-size: 11px;
-      margin-top: 4px;
+      border-spacing: 0 4px;
+      font-size: 10px;
+      margin-top: 2px;
     }
 
     .matrix-table th {
       background: #e0e5ec;
-      box-shadow: 3px 3px 6px #a3b1c6, -3px -3px 6px #ffffff;
-      padding: 6px 10px;
+      box-shadow: 2px 2px 5px #a3b1c6, -2px -2px 5px #ffffff;
+      padding: 5px 8px;
       text-align: left;
       font-weight: 800;
       color: #334155;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
     .matrix-table td {
       background: #e0e5ec;
       box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
-      padding: 6px 10px;
+      padding: 5px 8px;
       color: #1e293b;
       font-weight: 500;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
     /* Pro Tip Callout */
     .pro-tip {
-      padding: 10px 14px;
-      border-left: 3.5px solid #ff6a00;
+      padding: 8px 12px;
+      border-left: 3px solid #ff6a00;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 11px;
-      margin-top: 8px;
+      gap: 8px;
+      font-size: 10px;
+      margin-top: 6px;
     }
 
     .pro-tip strong {
       color: #ea580c;
     }
 
+    /* Security Highlight Box */
+    .security-box {
+      padding: 10px 12px;
+      border-left: 3.5px solid #059669;
+      background: #e0e5ec;
+      box-shadow: 4px 4px 10px #a3b1c6, -4px -4px 10px #ffffff;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+
     /* Footer */
     .footer {
-      margin-top: 10px;
-      padding-top: 8px;
+      margin-top: 8px;
+      padding-top: 6px;
       border-top: 1px solid rgba(163, 177, 198, 0.4);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 9.5px;
       color: #64748b;
       font-weight: 600;
     }
@@ -270,8 +280,8 @@
         <p>Auto Loan Document Optimizer & Renamer • Pure Neumorphism Edition</p>
       </div>
       <div class="header-badge">
-        <div>เวอร์ชัน v2.9.0</div>
-        <div style="font-size: 9.5px; opacity: 0.9;">License: Anusat</div>
+        <div>เวอร์ชัน v3.2.0</div>
+        <div style="font-size: 9px; opacity: 0.9;">License: Anusat</div>
       </div>
     </div>
 
@@ -286,7 +296,7 @@
         </div>
         <table class="matrix-table">
           <tr>
-            <th style="width: 28%;">สินเชื่อ</th>
+            <th style="width: 30%;">สินเชื่อ</th>
             <th>เอกสารสำคัญที่ต้องตรวจสอบ</th>
           </tr>
           <tr>
@@ -334,7 +344,7 @@
           <li class="step-item">
             <span class="step-num">➕</span>
             <div class="step-content">
-              <strong>Top-up (กู้เพิ่ม):</strong> ชุดเอกสารย่อสำหรับลูกค้าประวัติดี (บัตร ปชช., สัญญากู้เพิ่ม, รูปรถปัจจุบัน)
+              <strong>Top-up (กู้เพิ่ม):</strong> ชุดเอกสารย่อสำหรับลูกค้าเดิม (บัตร ปชช., สัญญากู้เพิ่ม, รูปรถปัจจุบัน)
             </div>
           </li>
           <li class="step-item">
@@ -401,7 +411,7 @@
           <li class="step-item">
             <span class="step-num">3</span>
             <div class="step-content">
-              ป้ายนามสกุลไฟล์ <span class="pill-tag pill-pdf">PDF</span> และ <span class="pill-tag pill-jpg">JPG</span> แสดงประเภทไฟล์ที่จะได้รับชัดเจน
+              สวิตช์แปลงไฟล์ Pure Neumorphic สลับระหว่าง <span class="pill-tag pill-pdf">PDF</span> และ <span class="pill-tag pill-jpg">JPG</span> ได้อย่างนุ่มนวล
             </div>
           </li>
         </ul>
@@ -409,18 +419,32 @@
 
     </div>
 
-    <!-- Pro Tip Callout -->
-    <div class="neu-inset pro-tip">
-      <span style="font-size: 16px;">💡</span>
-      <div>
-        <strong>ข้อแนะนำสำหรับสาขา:</strong> หากต้องการแนบเอกสารอื่นๆ ที่ไม่มีใน Checklist สามารถกดปุ่ม <strong>[+ เพิ่มเอกสารเอง]</strong> ด้านบนเพื่อสร้างช่องใหม่และพิมพ์ชื่อไฟล์ตามต้องการได้ทันที
+    <!-- Security & Privacy Card on Page 1 -->
+    <div class="security-box">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="font-size: 14px;">🛡️</span>
+        <strong style="color: #047857; font-size: 11.5px;">มาตรฐานความปลอดภัยระดับไฟล์ & การคุ้มครองข้อมูลส่วนบุคคล (PDPA 100%)</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 10px; color: #1e293b;">
+        <div class="neu-inset" style="padding: 5px 8px;">
+          <b style="color: #047857;">1. Client-Side Processing:</b><br>
+          ไฟล์รูปภาพและข้อมูลเอกสารทั้งหมดถูกประมวลผลบน RAM ของเบราว์เซอร์เครื่องสาขา <b>100% ไม่มีการส่งไฟล์ออกไปยังเซิร์ฟเวอร์ภายนอก</b>
+        </div>
+        <div class="neu-inset" style="padding: 5px 8px;">
+          <b style="color: #047857;">2. Sandboxed DB:</b><br>
+          ระบบบันทึกเคส (Drafts) ถูกจัดเก็บบน IndexedDB ภายใน Sandbox ของเครื่อง ปลอดภัยต่อการรั่วไหล แอปภายนอกไม่สามารถดึงข้อมูลได้
+        </div>
+        <div class="neu-inset" style="padding: 5px 8px;">
+          <b style="color: #047857;">3. High-Fidelity Optimizer:</b><br>
+          รูปภาพถูกบีบอัดและรวมไฟล์ ZIP ในเครื่อง โดยล้าง Metadata แฝงที่ไม่จำเป็นออก ปลอดภัยตามเกณฑ์ระบบงานสินเชื่อ
+        </div>
       </div>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v3.1.0)</div>
-      <div>License: Anusat • GitHub: https://github.com/Ai-IQ04/Check-list-chaiyo</div>
+      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v3.2.0)</div>
+      <div>License: Anusat • หน้า 1/2</div>
     </div>
 
   </div>
@@ -429,11 +453,11 @@
   <div class="page">
     
     <!-- Header Banner Mini -->
-    <div class="neu-orange-card header-banner" style="padding: 12px 20px; margin-bottom: 12px;">
+    <div class="neu-orange-card header-banner" style="padding: 10px 18px; margin-bottom: 10px;">
       <div class="header-title">
-        <h1 style="font-size: 16px;">ขั้นตอนการทำงาน & ฟังก์ชันอัจฉริยะ (Pro Features)</h1>
+        <h1 style="font-size: 15px;">ขั้นตอนการทำงาน & ฟังก์ชันระดับโปร (Pro Features)</h1>
       </div>
-      <div class="header-badge" style="padding: 4px 10px; font-size: 10px;">
+      <div class="header-badge" style="padding: 4px 10px; font-size: 9.5px;">
         License: Anusat
       </div>
     </div>
@@ -445,25 +469,24 @@
       <div class="neu-raised section-card">
         <div class="section-title">
           <span class="icon-badge">5</span>
-          ⏰ ปั๊ม Time Stamp & ปรับแสงคมชัด
+          📍 GPS Satellite & Thai Address Time Stamp
         </div>
         <ul class="step-list">
           <li class="step-item">
             <span class="step-num">⏰</span>
             <div class="step-content">
-              <strong>ปั๊ม Time Stamp:</strong> แตะปุ่มนาฬิกาบนการ์ด ระบบจะประทับ วันที่-เวลา ปัจจุบันลงบนมุมรูปภาพเพื่อเป็นหลักฐานการตรวจสภาพสด
+              <strong>ปั๊มพิกัดดาวเทียม & วันที่เวลา:</strong> แตะปุ่มนาฬิกาบนการ์ด ระบบจะประทับ:
+              <div style="font-family: monospace; font-size: 9px; margin-top: 2px; padding: 2px 4px; background: #cbd5e1/40; border-radius: 4px;">
+                28 ส.ค. 2026 18:04:30<br>
+                13.71740757N 99.772852E<br>
+                ตำบล เตาปูน / อำเภอ โพธาราม / ราชบุรี
+              </div>
             </div>
           </li>
           <li class="step-item">
             <span class="step-num">✨</span>
             <div class="step-content">
               <strong>ปรับความคมชัด (Enhance):</strong> ในหน้าต่างพรีวิว กดปุ่ม [ปรับความคมชัด] ระบบจะลบเงาดำ ปรับพื้นหลังขาว และเพิ่มคอนทราสต์ตัวหนังสือให้อ่านง่าย
-            </div>
-          </li>
-          <li class="step-item">
-            <span class="step-num">🔄</span>
-            <div class="step-content">
-              <strong>หมุนภาพ (Rotate 90°):</strong> หมุนภาพให้ถูกทิศทางก่อนแปลงเป็น PDF ได้ในคลิกเดียว
             </div>
           </li>
         </ul>
@@ -491,7 +514,7 @@
           <li class="step-item">
             <span class="step-num">3</span>
             <div class="step-content">
-              <strong>ความปลอดภัย:</strong> ข้อมูลเคสจัดเก็บบน IndexedDB ในเบราว์เซอร์เครื่องสาขา ปลอดภัย ไม่รั่วไหล
+              <strong>ความปลอดภัย:</strong> ข้อมูลเคสจัดเก็บบน IndexedDB ในเครื่องสาขา 100% ปลอดภัย ไม่ผ่านคลาวด์สาธารณะ
             </div>
           </li>
         </ul>
@@ -561,34 +584,34 @@
     </div>
 
     <!-- Summary Checklist Matrix Box -->
-    <div class="neu-raised section-card" style="margin-top: 4px;">
-      <div class="section-title" style="margin-bottom: 6px;">
+    <div class="neu-raised section-card" style="margin-top: 2px;">
+      <div class="section-title" style="margin-bottom: 5px;">
         <span class="icon-badge">✓</span>
         สรุปรหัสมาตรฐานการตั้งชื่อไฟล์อัตโนมัติ
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; font-size: 11px;">
-        <div class="neu-inset" style="padding: 6px 8px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; font-size: 10px;">
+        <div class="neu-inset" style="padding: 5px 7px;">
           <strong style="color: #4f46e5;">หมวด A:</strong> ยืนยันตัวตน<br>
-          <span style="font-size: 10px; color: #64748b;">A01 บัตร ปชช., A03 ทะเบียนบ้าน</span>
+          <span style="font-size: 9.5px; color: #64748b;">A01 บัตร ปชช., A03 ทะเบียนบ้าน</span>
         </div>
-        <div class="neu-inset" style="padding: 6px 8px;">
+        <div class="neu-inset" style="padding: 5px 7px;">
           <strong style="color: #ea580c;">หมวด B:</strong> หลักประกัน/รถ<br>
-          <span style="font-size: 10px; color: #64748b;">B10-B14 รูปรถ, B101 เล่มทะเบียน</span>
+          <span style="font-size: 9.5px; color: #64748b;">B10-B14 รูปรถ, B101 เล่มทะเบียน</span>
         </div>
-        <div class="neu-inset" style="padding: 6px 8px;">
+        <div class="neu-inset" style="padding: 5px 7px;">
           <strong style="color: #059669;">หมวด C:</strong> รายได้/อนุมัติ<br>
-          <span style="font-size: 10px; color: #64748b;">C105 สลิปเงินเดือน, C107 Statement</span>
+          <span style="font-size: 9.5px; color: #64748b;">C105 สลิปเงินเดือน, C107 Statement</span>
         </div>
-        <div class="neu-inset" style="padding: 6px 8px;">
+        <div class="neu-inset" style="padding: 5px 7px;">
           <strong style="color: #9333ea;">หมวด AA/DD:</strong> สัญญา<br>
-          <span style="font-size: 10px; color: #64748b;">AA01 สัญญากู้ยืม, DD01 สัญญาจำนอง</span>
+          <span style="font-size: 9.5px; color: #64748b;">AA01 สัญญากู้ยืม, DD01 สัญญาจำนอง</span>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="footer" style="margin-top: 10px;">
-      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v2.9.0)</div>
+    <div class="footer" style="margin-top: 8px;">
+      <div>ระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer & Renamer (v3.2.0)</div>
       <div>License: Anusat • หน้า 2/2</div>
     </div>
 

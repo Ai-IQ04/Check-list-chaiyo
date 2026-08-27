@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.1.0';
+const CURRENT_APP_VERSION = '3.2.0';
 
 // Application State
 const state = {
@@ -1717,8 +1717,23 @@ async function renderDraftsList() {
   }
 }
 
-// 12. Global Batch & Custom Slots Events
+// 12. Global Batch, Custom Slots & Manual Modal Events
 function setupGlobalEventListeners() {
+  const btnOpenManualModal = document.getElementById('btnOpenManualModal');
+  const btnCloseManualModal = document.getElementById('btnCloseManualModal');
+  const manualModal = document.getElementById('manualModal');
+
+  if (btnOpenManualModal && manualModal) {
+    btnOpenManualModal.addEventListener('click', () => {
+      manualModal.classList.remove('hidden');
+    });
+  }
+  if (btnCloseManualModal && manualModal) {
+    btnCloseManualModal.addEventListener('click', () => {
+      manualModal.classList.add('hidden');
+    });
+  }
+
   btnAddCustomSlot.addEventListener('click', () => {
     const customId = `custom_${Date.now()}`;
     const customNumber = state.customCounter++;

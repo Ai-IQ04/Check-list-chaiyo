@@ -272,11 +272,11 @@
           <span class="hidden sm:inline">เคสที่เซฟ</span>
         </button>
 
-        <!-- View PDF Manual Button -->
-        <a href="คู่มือการใช้งาน_ระบบจัดการเอกสารสินเชื่อ.pdf" target="_blank" class="neu-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer" title="เปิดดูคู่มือการใช้งานฉบับย่อ (PDF)">
+        <!-- View In-App Manual Button -->
+        <button id="btnOpenManualModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer" title="เปิดดูคู่มือการใช้งานระบบ (In-App Manual Viewer)">
           <i data-lucide="book-open" class="w-3.5 h-3.5 text-orange-500"></i>
-          <span class="hidden sm:inline">คู่มือ PDF</span>
-        </a>
+          <span class="hidden sm:inline">คู่มือการใช้งาน</span>
+        </button>
 
         <!-- Add Custom Slot -->
         <button id="btnAddCustomSlot" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1.5 cursor-pointer" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
@@ -564,39 +564,45 @@
     </div>
   </div>
 
-  <!-- Missing Warning Modal -->
-  <div id="missingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4 transition-all duration-300">
-    <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+  <!-- IN-APP MANUAL VIEWER MODAL (100% Mobile & PC Compatible) -->
+  <div id="manualModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-3 sm:p-6 transition-all duration-300">
+    <div class="neu-raised max-w-5xl w-full rounded-3xl p-4 sm:p-6 space-y-4 max-h-[94vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       
-      <div class="flex items-center gap-3 pb-3 border-b border-[#cbd5e1]/60">
-        <div class="w-11 h-11 rounded-2xl neu-inset flex items-center justify-center text-amber-500 flex-shrink-0">
-          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      <!-- Manual Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl neu-inset text-orange-600 flex items-center justify-center shadow-inner">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-extrabold text-slate-800">คู่มือการใช้งานระบบ (User Manual)</h3>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold">v3.2.0 • Soft UI</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">ขั้นตอนการทำงาน • ระบบความปลอดภัยระดับไฟล์ (PDPA 100%) • แนะนำฟังก์ชัน</p>
+          </div>
         </div>
-        <div>
-          <h3 class="text-base font-extrabold text-slate-800">แจ้งเตือน: ยังแนบเอกสารไม่ครบ!</h3>
-          <p id="missingModalSubtitle" class="text-xs text-slate-500 font-medium">
-            มีรายการ Checklist ที่ยังไม่ได้แนบไฟล์
-          </p>
-        </div>
-      </div>
-
-      <div class="space-y-2 flex-1 overflow-y-auto pr-1">
-        <span class="text-xs font-bold text-slate-600 block">รายการที่ยังขาดอยู่:</span>
-        <div id="missingItemsList" class="space-y-2">
-          <!-- Injected by JavaScript -->
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-[#cbd5e1]/60 flex flex-col sm:flex-row items-center justify-end gap-2.5">
-        <button id="btnModalBackToAttach" class="neu-btn px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 w-full sm:w-auto hover:text-orange-600 cursor-pointer flex items-center justify-center gap-1.5">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          <span>กลับไปแนบให้ครบ</span>
-        </button>
         
-        <button id="btnModalConfirmDownload" class="neu-btn-orange px-5 py-2.5 rounded-xl text-xs font-extrabold w-full sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i>
-          <span>ดาวน์โหลดต่อไป (เฉพาะที่มี)</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- Direct PDF Download Link (ASCII safe filename) -->
+          <a href="manual_guide.pdf" download="คู่มือการใช้งาน_ระบบจัดการเอกสารสินเชื่อ.pdf" class="neu-btn-orange px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">โหลด PDF</span>
+          </a>
+          <button id="btnCloseManualModal" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Manual Content Iframe / Embed Container -->
+      <div class="flex-1 overflow-hidden rounded-2xl neu-inset p-1 bg-[#e0e5ec] min-h-[450px]">
+        <iframe id="manualIframe" src="manual.html" class="w-full h-full rounded-xl border-0" title="Manual Guide Viewer"></iframe>
+      </div>
+
+      <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1 border-t border-[#cbd5e1]/40">
+        <span>💡 สามารถเลื่อนอ่านคู่มือได้ในหน้านี้ หรือกดปุ่ม <b>โหลด PDF</b> เพื่อบันทึกเก็บไว้</span>
+        <span class="font-bold text-orange-600">License: Anusat</span>
       </div>
 
     </div>
@@ -625,8 +631,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.1.0"></script>
-  <script src="app.js?v=3.1.0"></script>
+  <script src="checklists.js?v=3.2.0"></script>
+  <script src="app.js?v=3.2.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
