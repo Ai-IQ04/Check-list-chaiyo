@@ -1219,11 +1219,11 @@ function showToast(message, type = 'info') {
 
   lucide.createIcons();
 
-  toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+  toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
   toast.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
   setTimeout(() => {
     toast.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-    toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
   }, 3500);
 }
