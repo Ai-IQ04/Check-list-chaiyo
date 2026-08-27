@@ -44,6 +44,7 @@ window.LOAN_CHECKLISTS = {
       },
       {
         "code": "A05",
+        "group": "A ยืนยันตัวตน",
         "desc": "ใบเปลี่ยนชื่อ-นามสกุล (ถ้ามี)",
         "targetName": "ใบเปลี่ยนชื่อนามสกุล",
         "format": "PDF"

@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.8.1';
+const CURRENT_APP_VERSION = '2.8.2';
 
 // Application State
 const state = {
@@ -291,7 +291,7 @@ function loadSlotsForCurrentSubProduct() {
   const catData = window.LOAN_CHECKLISTS[state.currentCategory];
   let items = catData.items || [];
 
-  // Filter items specifically by sub-type
+  // Filter items specifically by sub-type if selected, while preserving core checklist
   const sub = state.currentSubType;
 
   if (state.currentCategory === 'land') {
@@ -301,18 +301,14 @@ function loadSlotsForCurrentSubProduct() {
       items = items.filter((it) => !it.code.startsWith('DD'));
     } else if (sub === 'land_mortgage') {
       items = items.filter((it) => it.code !== 'C301');
-    } else if (sub === 'land_refinance_mortgage') {
-      items = items;
     } else if (sub === 'land_topup') {
-      items = items.filter((it) => ['A01', 'A02', 'A03', 'A05', 'B36', 'C105', 'AA01'].includes(it.code));
+      // Top-up ที่ดิน: Highlight topup items
+      items = items.filter((it) => ['A01', 'A02', 'A03', 'A05', 'B36', 'C105', 'AA01', 'AA02', 'AA03', 'CC01'].includes(it.code));
     }
   } else {
-    if (sub === 'pledge') {
-      items = items.filter((it) => it.code !== 'C304' && it.code !== 'C301');
-    } else if (sub === 'refinance') {
-      items = items;
-    } else if (sub === 'topup') {
-      items = items.filter((it) => ['A01', 'A02', 'A03', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'C105', 'AA01'].includes(it.code));
+    if (sub === 'topup') {
+      // Top-up ยานพาหนะ
+      items = items.filter((it) => ['A01', 'A02', 'A03', 'B10', 'B11', 'B12', 'B13', 'B14', 'C105', 'AA01', 'AA02', 'AA03', 'CC01'].includes(it.code));
     }
   }
 
@@ -325,7 +321,7 @@ function loadSlotsForCurrentSubProduct() {
   state.slots = items.map((item) => ({
     id: `slot_${item.code}`,
     code: item.code,
-    group: item.group,
+    group: item.group || 'เอกสารทั่วไป',
     desc: item.desc,
     targetName: item.targetName,
     defaultFormat: item.format || 'JPG',
