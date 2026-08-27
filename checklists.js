@@ -1,5 +1,5 @@
 /**
- * Loan Documents Checklists & Rules Master Database
+ * Loan Documents Checklists & Rules Master Database (v2.6.0)
  * Clean 100% accurate human-verified document descriptions and filenames
  */
 window.LOAN_CHECKLISTS = {
@@ -8,9 +8,18 @@ window.LOAN_CHECKLISTS = {
     "name": "สินเชื่อรถจักรยานยนต์",
     "icon": "🏍️",
     "subTypes": [
-      "จำนำ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ Top Up (ผ่อนรายเดือน)"
+      {
+        "id": "pledge",
+        "name": "🏷️ จำนำเล่มทะเบียน"
+      },
+      {
+        "id": "refinance",
+        "name": "🔄 รีไฟแนนซ์"
+      },
+      {
+        "id": "topup",
+        "name": "➕ Top-up (กู้เพิ่ม)"
+      }
     ],
     "items": [
       {
@@ -328,11 +337,18 @@ window.LOAN_CHECKLISTS = {
     "name": "สินเชื่อรถเก๋ง / กระบะ / รถตู้",
     "icon": "🚗",
     "subTypes": [
-      "จำนำ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ Top Up",
-      "จำนำ (One-Time)",
-      "ต่อสัญญา (One-Time)"
+      {
+        "id": "pledge",
+        "name": "🏷️ จำนำเล่มทะเบียน"
+      },
+      {
+        "id": "refinance",
+        "name": "🔄 รีไฟแนนซ์"
+      },
+      {
+        "id": "topup",
+        "name": "➕ Top-up (กู้เพิ่ม)"
+      }
     ],
     "items": [
       {
@@ -699,10 +715,18 @@ window.LOAN_CHECKLISTS = {
     "name": "สินเชื่อรถบรรทุก",
     "icon": "🚛",
     "subTypes": [
-      "จำนำ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ Top Up",
-      "ต่อสัญญา (One-Time)"
+      {
+        "id": "pledge",
+        "name": "🏷️ จำนำเล่มทะเบียน"
+      },
+      {
+        "id": "refinance",
+        "name": "🔄 รีไฟแนนซ์"
+      },
+      {
+        "id": "topup",
+        "name": "➕ Top-up (กู้เพิ่ม)"
+      }
     ],
     "items": [
       {
@@ -1069,11 +1093,18 @@ window.LOAN_CHECKLISTS = {
     "name": "สินเชื่อรถเพื่อการเกษตร",
     "icon": "🚜",
     "subTypes": [
-      "รถเกษตรใหม่ (Dealer)",
-      "จำนำรถเกษตรเก่า",
-      "รีไฟแนนซ์รถเกษตรเก่า",
-      "รีไฟแนนซ์ Top Up",
-      "ต่อสัญญา (One-Time)"
+      {
+        "id": "pledge",
+        "name": "🏷️ จำนำเล่มทะเบียน"
+      },
+      {
+        "id": "refinance",
+        "name": "🔄 รีไฟแนนซ์"
+      },
+      {
+        "id": "topup",
+        "name": "➕ Top-up (กู้เพิ่ม)"
+      }
     ],
     "items": [
       {
@@ -1461,14 +1492,26 @@ window.LOAN_CHECKLISTS = {
     "name": "สินเชื่อที่ดิน",
     "icon": "🏠",
     "subTypes": [
-      "จำนำ (ผ่อนรายเดือน)",
-      "จำนำ (One-Time)",
-      "รีไฟแนนซ์ (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์ (One-Time)",
-      "จำนอง (ผ่อนรายเดือน)",
-      "จำนอง (One-Time / รายปี)",
-      "รีไฟแนนซ์จำนอง (ผ่อนรายเดือน)",
-      "รีไฟแนนซ์จำนอง (One-Time / รายปี)"
+      {
+        "id": "land_pledge",
+        "name": "🟢 จำนำโฉนด"
+      },
+      {
+        "id": "land_refinance_pledge",
+        "name": "🔵 รีไฟแนนซ์จำนำ"
+      },
+      {
+        "id": "land_mortgage",
+        "name": "🟣 จำนองที่ดิน"
+      },
+      {
+        "id": "land_refinance_mortgage",
+        "name": "🟠 รีไฟแนนซ์จำนอง"
+      },
+      {
+        "id": "land_topup",
+        "name": "🟡 Top-up (กู้เพิ่ม)"
+      }
     ],
     "items": [
       {

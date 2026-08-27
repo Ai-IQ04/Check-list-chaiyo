@@ -309,10 +309,10 @@
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="text-[10px] px-1.5 py-0.5 rounded neu-inset text-slate-500 font-bold tracking-tight">
-              v2.5.1 • License: Anusat
+              v2.6.0 • License: Anusat
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">สแกนด้วย AI • ถ่ายรูปสด • ปั๊ม Time Stamp • บันทึกร่างเคส • คุมขนาด &le; 5MB</p>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">แยกโปรดักต์ชัดเจน (จำนำ/รีไฟแนนซ์/จำนอง/Top-up) • สแกน AI • ปั๊ม Time Stamp</p>
         </div>
       </div>
 
@@ -363,14 +363,31 @@
     </div>
   </header>
 
-  <!-- Workspace Sub-Header: Toolbar & Filters -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 w-full">
+  <!-- Workspace Sub-Header: Sub-Product & Category Filter Toolbars -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full space-y-3">
+    
+    <!-- Row 1: Sub-Product Selector Bar (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up) -->
+    <div class="neu-raised rounded-2xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-orange-200/80 bg-orange-50/30">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+          <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+        </div>
+        <span class="text-xs font-extrabold text-slate-800 whitespace-nowrap">
+          ประเภทธุรกรรม:
+        </span>
+      </div>
+      <div id="subProductPills" class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+        <!-- Injected dynamically by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Row 2: Document Group Filter & Batch AI Tools -->
     <div class="neu-raised rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
       
       <!-- Filter Pills -->
       <div class="flex flex-wrap items-center gap-2 flex-1">
         <span class="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
-          <i data-lucide="filter" class="w-3.5 h-3.5 text-orange-500"></i> หมวดหมู่:
+          <i data-lucide="filter" class="w-3.5 h-3.5 text-orange-500"></i> หมวดเอกสาร:
         </span>
         <div id="groupFilterPills" class="flex flex-wrap gap-1.5 overflow-x-auto pb-1 max-w-full">
           <!-- Injected by JavaScript -->
@@ -674,8 +691,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=2.5.1"></script>
-  <script src="app.js?v=2.5.1"></script>
+  <script src="checklists.js?v=2.6.0"></script>
+  <script src="app.js?v=2.6.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();

@@ -1,16 +1,18 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Version 2.5.0
+ * Version 2.6.0
+ * Sub-Product Filtering (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up without One-Time),
  * AI Smart Document Classifier & Scanner, Direct 1-Click Native Camera,
  * Time Stamp, Auto-Enhance, Multi-Image PDF & IndexedDB Drafts
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.5.1';
+const CURRENT_APP_VERSION = '2.6.0';
 
 // Application State
 const state = {
   currentCategory: 'motorcycle',
+  currentSubType: 'pledge', // Sub-type filter ID (e.g. 'pledge', 'refinance', 'topup', 'land_mortgage', etc.)
   selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
@@ -75,6 +77,7 @@ async function deleteDraftFromDB(id) {
 // DOM Elements
 const loanCategoryTabs = document.getElementById('loanCategoryTabs');
 const currentLoanBadge = document.getElementById('currentLoanBadge');
+const subProductPills = document.getElementById('subProductPills');
 const missingCountBadge = document.getElementById('missingCountBadge');
 const missingText = document.getElementById('missingText');
 const groupFilterPills = document.getElementById('groupFilterPills');
@@ -227,10 +230,91 @@ function selectCategory(catId) {
   const catData = window.LOAN_CHECKLISTS[catId];
   currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
 
-  renderBottomDock();
+  // Default Sub-Type
+  if (catData.subTypes && catData.subTypes.length > 0) {
+    state.currentSubType = catData.subTypes[0].id;
+  } else {
+    state.currentSubType = 'pledge';
+  }
 
-  // Initialize Slots from Checklist
-  state.slots = catData.items.map((item) => ({
+  renderBottomDock();
+  renderSubProductPills();
+  loadSlotsForCurrentSubProduct();
+}
+
+// 3. Sub-Product Switcher Bar (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up)
+function renderSubProductPills() {
+  subProductPills.innerHTML = '';
+  const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+  if (!catData || !catData.subTypes) return;
+
+  catData.subTypes.forEach((st) => {
+    const btn = document.createElement('button');
+    const isActive = state.currentSubType === st.id;
+
+    btn.className = `px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
+      isActive
+        ? 'neu-pill-active shadow-md'
+        : 'neu-btn text-slate-700 hover:text-orange-600'
+    }`;
+
+    btn.innerText = st.name;
+    btn.onclick = () => {
+      state.currentSubType = st.id;
+      renderSubProductPills();
+      loadSlotsForCurrentSubProduct();
+      showToast(`เลือกโปรดักต์: ${st.name}`, 'info');
+    };
+
+    subProductPills.appendChild(btn);
+  });
+}
+
+function loadSlotsForCurrentSubProduct() {
+  const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+  let items = catData.items || [];
+
+  // Filter items specifically by sub-type
+  const sub = state.currentSubType;
+
+  if (state.currentCategory === 'land') {
+    if (sub === 'land_pledge') {
+      // จำนำโฉนด: Exclude Mortgage contracts DD01-DD04, Exclude Refinance C301
+      items = items.filter((it) => !it.code.startsWith('DD') && it.code !== 'C301');
+    } else if (sub === 'land_refinance_pledge') {
+      // รีไฟแนนซ์จำนำ: Exclude Mortgage contracts DD01-DD04, Include Refinance C301
+      items = items.filter((it) => !it.code.startsWith('DD'));
+    } else if (sub === 'land_mortgage') {
+      // จำนองที่ดิน: Include Mortgage contracts DD01-DD04, Exclude Refinance C301
+      items = items.filter((it) => it.code !== 'C301');
+    } else if (sub === 'land_refinance_mortgage') {
+      // รีไฟแนนซ์จำนอง: Include Everything
+      items = items;
+    } else if (sub === 'land_topup') {
+      // Top-up ที่ดิน: Streamlined documents
+      items = items.filter((it) => ['A01', 'A02', 'A03', 'A05', 'B36', 'C105', 'AA01'].includes(it.code));
+    }
+  } else {
+    // Vehicles (Motorcycle, Car, Truck, Agri)
+    if (sub === 'pledge') {
+      // จำนำเล่ม: Exclude Refinance C304 / C301
+      items = items.filter((it) => it.code !== 'C304' && it.code !== 'C301');
+    } else if (sub === 'refinance') {
+      // รีไฟแนนซ์: Include C304 & C301
+      items = items;
+    } else if (sub === 'topup') {
+      // Top-up ยานพาหนะ: Streamlined documents
+      items = items.filter((it) => ['A01', 'A02', 'A03', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'C105', 'AA01'].includes(it.code));
+    }
+  }
+
+  // Preserve already attached files if matching code
+  const existingAttachedMap = {};
+  state.slots.forEach((s) => {
+    if (s.attached) existingAttachedMap[s.code] = s.attached;
+  });
+
+  state.slots = items.map((item) => ({
     id: `slot_${item.code}`,
     code: item.code,
     group: item.group,
@@ -238,9 +322,10 @@ function selectCategory(catId) {
     targetName: item.targetName,
     defaultFormat: item.format || 'JPG',
     isCustom: false,
-    attached: null,
+    attached: existingAttachedMap[item.code] || null,
   }));
 
+  state.selectedGroupFilter = 'all';
   renderGroupFilterPills();
   renderSlots();
   updateSummaryMetrics();
@@ -311,7 +396,7 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 3. Render Checklist Slots with 2 Direct Buttons (Camera & File)
+// 4. Render Checklist Slots with 2 Direct Buttons (Camera & File)
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
@@ -573,7 +658,7 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 4. Attach Events to Slots
+// 5. Attach Events to Slots
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
@@ -780,7 +865,7 @@ function attachSlotEvents() {
   });
 }
 
-// 5. AI Smart Document Scanner & Classifier Engine (Client-Side 100% Secure)
+// 6. AI Smart Document Scanner & Classifier Engine (Client-Side 100% Secure)
 function setupAiScannerListeners() {
   aiCameraInput.addEventListener('change', async (e) => {
     if (e.target.files.length === 0) return;
@@ -1005,7 +1090,7 @@ async function assignPendingImageToSlot(slotId) {
   showToast(`✅ แนบลงช่อง [${slot.code}] ${slot.targetName} เรียบร้อย!`, 'success');
 }
 
-// 6. Multi-Image Attach & Append Engine
+// 7. Multi-Image Attach & Append Engine
 async function attachFilesToSlotById(id, files) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === id);
@@ -1075,7 +1160,7 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 7. Time Stamp & Auto-Enhance Image Canvas Filters
+// 8. Time Stamp & Auto-Enhance Image Canvas Filters
 async function applyTimeStampToImage(dataUrl, rotation = 0) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -1169,7 +1254,7 @@ async function enhanceDocumentImage(dataUrl) {
   });
 }
 
-// 8. Fullscreen Image & Multi-Page Lightbox Preview
+// 9. Fullscreen Image & Multi-Page Lightbox Preview
 function openPreviewModal(slotId, pageIdx = 0) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === slotId);
@@ -1344,7 +1429,7 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 9. Draft Management (IndexedDB Save & Resume)
+// 10. Draft Management (IndexedDB Save & Resume)
 function setupDraftModalListeners() {
   btnSaveDraft.addEventListener('click', () => {
     const attachedCount = getAllSlots().filter((s) => s.attached).length;
@@ -1373,6 +1458,7 @@ function setupDraftModalListeners() {
       name: draftName,
       createdAt: new Date().toISOString(),
       category: state.currentCategory,
+      subType: state.currentSubType,
       slots: state.slots,
       customSlots: state.customSlots,
       customCounter: state.customCounter,
@@ -1451,6 +1537,7 @@ async function renderDraftsList() {
         const targetDraft = drafts.find((d) => d.id === id);
         if (targetDraft) {
           state.currentCategory = targetDraft.category;
+          state.currentSubType = targetDraft.subType || 'pledge';
           state.slots = targetDraft.slots;
           state.customSlots = targetDraft.customSlots || [];
           state.customCounter = targetDraft.customCounter || 1;
@@ -1460,6 +1547,7 @@ async function renderDraftsList() {
           currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
 
           renderBottomDock();
+          renderSubProductPills();
           renderGroupFilterPills();
           renderSlots();
           updateSummaryMetrics();
@@ -1488,7 +1576,7 @@ async function renderDraftsList() {
   }
 }
 
-// 10. Global Batch & Custom Slots Events
+// 11. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
   btnAddCustomSlot.addEventListener('click', () => {
     const customId = `custom_${Date.now()}`;
@@ -1626,7 +1714,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
   lucide.createIcons();
 }
 
-// 11. Metrics Calculation
+// 12. Metrics Calculation
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1646,7 +1734,7 @@ function updateSummaryMetrics() {
   lucide.createIcons();
 }
 
-// 12. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
+// 13. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 async function processAttachedFile(attachedObj) {
@@ -1773,7 +1861,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
   });
 }
 
-// 13. Batch Download as .ZIP
+// 14. Batch Download as .ZIP
 async function executeZipDownload() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1810,7 +1898,7 @@ async function executeZipDownload() {
 
     const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
     const timeStr = new Date().toISOString().slice(0, 10);
-    const zipName = `เอกสาร_${currentCat.name}_${timeStr}.zip`;
+    const zipName = `เอกสาร_${currentCat.name}_${state.currentSubType}_${timeStr}.zip`;
 
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(zipBlob, zipName);
@@ -1826,7 +1914,7 @@ async function executeZipDownload() {
   }
 }
 
-// 14. Utilities
+// 15. Utilities
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
