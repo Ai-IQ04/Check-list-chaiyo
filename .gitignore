@@ -1,0 +1,6 @@
+# Temporary & Cache files
+parsed_raw.json
+extracted_checklists.json
+*.log
+.DS_Store
+Thumbs.db
