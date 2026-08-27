@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.7.0';
+const CURRENT_APP_VERSION = '2.7.1';
 
 // Application State
 const state = {
