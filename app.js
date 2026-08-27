@@ -1,6 +1,6 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Clean Layout with Floating Bottom Dock for Product Selection
+ * Clean Layout with Floating Bottom Dock & Fullscreen Image Preview Lightbox
  */
 
 // Application State
@@ -10,6 +10,7 @@ const state = {
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
   customCounter: 1,
+  activePreviewSlotId: null, // Track slot currently being previewed
 };
 
 // DOM Elements
@@ -25,6 +26,18 @@ const btnAddCustomSlot = document.getElementById('btnAddCustomSlot');
 const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
+
+// Preview Modal DOM Elements
+const previewModal = document.getElementById('previewModal');
+const previewModalCode = document.getElementById('previewModalCode');
+const previewModalTitle = document.getElementById('previewModalTitle');
+const previewModalSubtitle = document.getElementById('previewModalSubtitle');
+const previewModalFormat = document.getElementById('previewModalFormat');
+const previewModalImg = document.getElementById('previewModalImg');
+const previewModalPdf = document.getElementById('previewModalPdf');
+const btnPreviewRotate = document.getElementById('btnPreviewRotate');
+const btnPreviewDownload = document.getElementById('btnPreviewDownload');
+const btnPreviewClose = document.getElementById('btnPreviewClose');
 
 // Missing Modal DOM Elements
 const missingModal = document.getElementById('missingModal');
@@ -49,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBottomDock();
   selectCategory('land');
   setupGlobalEventListeners();
+  setupPreviewModalListeners();
 });
 
 // 2. Render Floating Bottom Dock
@@ -276,13 +290,16 @@ function renderSlots() {
           <input type="file" id="${slotInputId}" data-id="${slot.id}" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
           
           <div class="flex items-start gap-3.5">
-            <!-- Thumbnail Preview Well -->
-            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1">
+            <!-- Thumbnail Preview Well (Clickable to view full-size lightbox) -->
+            <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
               ${
                 att.dataUrl
                   ? `<img src="${att.dataUrl}" style="transform: rotate(${att.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform" alt="Preview">`
                   : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500"></i><span class="text-[10px] font-bold">PDF</span></div>`
               }
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white">
+                <i data-lucide="zoom-in" class="w-5 h-5"></i>
+              </div>
               <div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-orange-600 text-white text-[9px] font-extrabold shadow-sm">
                 ${slot.code}
               </div>
@@ -321,6 +338,9 @@ function renderSlots() {
 
             <!-- Action Buttons -->
             <div class="flex items-center gap-1.5">
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer" title="ดูรูปขนาดใหญ่" data-id="${slot.id}">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              </button>
               ${
                 att.dataUrl
                   ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer" title="หมุนภาพ 90°" data-id="${slot.id}">
@@ -363,6 +383,15 @@ function renderSlots() {
 
 // 4. Attach Events to Slots
 function attachSlotEvents() {
+  // Click thumbnail or eye button to open Lightbox Preview
+  document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.id;
+      openPreviewModal(id);
+    });
+  });
+
   // Click drop target to trigger slot input
   document.querySelectorAll('.slot-drop-target').forEach((el) => {
     const id = el.dataset.id;
@@ -525,7 +554,92 @@ function attachSlotEvents() {
   });
 }
 
-// 5. Attach File To Specific Slot by ID
+// 5. Fullscreen Image Lightbox Preview Functions
+function openPreviewModal(slotId) {
+  const all = getAllSlots();
+  const slot = all.find((s) => s.id === slotId);
+  if (!slot || !slot.attached) return;
+
+  state.activePreviewSlotId = slotId;
+  const att = slot.attached;
+
+  previewModalCode.innerText = slot.code;
+  previewModalTitle.innerText = att.targetName || slot.targetName;
+  previewModalSubtitle.innerText = `${slot.desc} • ขนาด ${formatFileSize(att.size)}`;
+  previewModalFormat.innerText = att.targetFormat;
+
+  if (att.dataUrl) {
+    previewModalImg.src = att.dataUrl;
+    previewModalImg.style.transform = `rotate(${att.rotation}deg)`;
+    previewModalImg.classList.remove('hidden');
+    previewModalPdf.classList.add('hidden');
+    btnPreviewRotate.classList.remove('hidden');
+  } else {
+    // PDF File
+    previewModalImg.classList.add('hidden');
+    previewModalPdf.classList.remove('hidden');
+    btnPreviewRotate.classList.add('hidden');
+  }
+
+  previewModal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function closePreviewModal() {
+  previewModal.classList.add('hidden');
+  state.activePreviewSlotId = null;
+}
+
+function setupPreviewModalListeners() {
+  btnPreviewClose.addEventListener('click', closePreviewModal);
+
+  // Close on clicking modal backdrop outside card
+  previewModal.addEventListener('click', (e) => {
+    if (e.target === previewModal) {
+      closePreviewModal();
+    }
+  });
+
+  // Keyboard ESC support
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePreviewModal();
+      missingModal.classList.add('hidden');
+    }
+  });
+
+  // Rotate in preview modal
+  btnPreviewRotate.addEventListener('click', () => {
+    if (!state.activePreviewSlotId) return;
+    const all = getAllSlots();
+    const slot = all.find((s) => s.id === state.activePreviewSlotId);
+    if (slot && slot.attached) {
+      slot.attached.rotation = (slot.attached.rotation + 90) % 360;
+      previewModalImg.style.transform = `rotate(${slot.attached.rotation}deg)`;
+      renderSlots();
+    }
+  });
+
+  // Download single file from preview modal
+  btnPreviewDownload.addEventListener('click', async () => {
+    if (!state.activePreviewSlotId) return;
+    const all = getAllSlots();
+    const slot = all.find((s) => s.id === state.activePreviewSlotId);
+    if (slot && slot.attached) {
+      showToast(`กำลังเตรียมไฟล์ ${slot.attached.targetName}...`, 'info');
+      try {
+        const { blob, finalFilename } = await processAttachedFile(slot.attached);
+        downloadBlob(blob, finalFilename);
+        showToast(`ดาวน์โหลด ${finalFilename} เรียบร้อยแล้ว`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
+      }
+    }
+  });
+}
+
+// 6. Attach File To Specific Slot by ID
 async function attachFileToSlotById(id, file) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === id);
@@ -562,7 +676,7 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 6. Global Batch & Custom Slots Events
+// 7. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
   // Add Custom Slot Button
   btnAddCustomSlot.addEventListener('click', () => {
@@ -701,7 +815,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
   lucide.createIcons();
 }
 
-// 7. Metrics Calculation
+// 8. Metrics Calculation
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -722,7 +836,7 @@ function updateSummaryMetrics() {
   lucide.createIcons();
 }
 
-// 8. Image & Document Processing Engine (< 5MB Guaranteed)
+// 9. Image & Document Processing Engine (< 5MB Guaranteed)
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 async function processAttachedFile(item) {
@@ -840,7 +954,7 @@ async function convertImageBlobToPdf(imageBlob) {
   return new Blob([pdfBytes], { type: 'application/pdf' });
 }
 
-// 9. Batch Download as .ZIP
+// 10. Batch Download as .ZIP
 async function executeZipDownload() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -893,7 +1007,7 @@ async function executeZipDownload() {
   }
 }
 
-// 10. Utilities
+// 11. Utilities
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
