@@ -1,6 +1,6 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Clean Layout with Floating Bottom Dock & Fullscreen Image Preview Lightbox
+ * Clean Layout with Floating Bottom Dock, Fullscreen Preview Lightbox & Rich Smooth Animations
  */
 
 // Application State
@@ -74,14 +74,14 @@ function renderBottomDock() {
     const btn = document.createElement('button');
     const isActive = state.currentCategory === cat.id;
     btn.className = `px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-slate-700 hover:text-orange-600 cursor-pointer ${
-      isActive ? 'neu-dock-active font-extrabold text-orange-600' : 'neu-btn font-bold text-xs'
+      isActive ? 'neu-dock-active font-extrabold text-orange-600' : 'neu-btn font-bold text-xs hover:-translate-y-1'
     }`;
     
     let shortName = cat.name.replace('สินเชื่อ', '').trim();
     if (shortName.length > 10) shortName = shortName.split('/')[0].trim();
 
     btn.innerHTML = `
-      <span class="text-lg sm:text-xl filter drop-shadow-sm leading-none">${cat.icon}</span>
+      <span class="text-lg sm:text-xl filter drop-shadow-sm leading-none transition-transform group-hover:scale-110">${cat.icon}</span>
       <span class="text-[11px] sm:text-xs text-center whitespace-nowrap leading-none">${shortName}</span>
     `;
     btn.addEventListener('click', () => selectCategory(cat.id));
@@ -180,7 +180,7 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 3. Render Checklist Topic Slots & Custom Slots
+// 3. Render Checklist Topic Slots & Custom Slots with Stagger Animations
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
@@ -195,8 +195,8 @@ function renderSlots() {
 
   if (visibleSlots.length === 0) {
     slotsContainer.innerHTML = `
-      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2">
-        <i data-lucide="check-circle-2" class="w-10 h-10 mx-auto text-emerald-500"></i>
+      <div class="neu-raised rounded-3xl p-10 text-center text-slate-400 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+        <i data-lucide="check-circle-2" class="w-10 h-10 mx-auto text-emerald-500 animate-bounce"></i>
         <p class="text-sm font-bold text-slate-700">ไม่มีรายการในหมวดหมู่นี้ หรือแนบครบทุกรายการแล้ว!</p>
       </div>
     `;
@@ -211,6 +211,8 @@ function renderSlots() {
     grouped[slot.group].push(slot);
   });
 
+  let globalCardIndex = 0;
+
   for (const [groupName, slotsInGroup] of Object.entries(grouped)) {
     const groupSection = document.createElement('div');
     groupSection.className = 'space-y-3';
@@ -221,7 +223,7 @@ function renderSlots() {
     groupSection.innerHTML = `
       <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_6px_#ff6a00]"></span>
+          <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_8px_#ff6a00]"></span>
           หมวด ${groupName}
         </h3>
         <span class="text-xs font-bold text-slate-500">
@@ -237,9 +239,14 @@ function renderSlots() {
     slotsInGroup.forEach((slot) => {
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
-      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 ${
+      
+      const animDelay = Math.min(globalCardIndex * 25, 400);
+      globalCardIndex++;
+
+      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 slot-card-animate ${
         isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
       }`;
+      card.style.animationDelay = `${animDelay}ms`;
 
       const slotInputId = `slot_input_${slot.id}`;
 
@@ -264,7 +271,7 @@ function renderSlots() {
 
             ${
               slot.isCustom
-                ? `<button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer" data-id="${slot.id}" title="ลบช่องเอกสารเพิ่มเติมนี้">
+                ? `<button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-slot cursor-pointer transition-colors" data-id="${slot.id}" title="ลบช่องเอกสารเพิ่มเติมนี้">
                     <i data-lucide="x" class="w-3.5 h-3.5"></i>
                   </button>`
                 : ''
@@ -274,10 +281,10 @@ function renderSlots() {
           <!-- Click / Drop Target Area -->
           <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
             <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
-              <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-12 transition-all">
                 <i data-lucide="plus" class="w-4 h-4"></i>
               </div>
-              <span class="text-xs font-bold">คลิกหรือลากไฟล์มาวางเพื่อแนบเอกสารนี้</span>
+              <span class="text-xs font-bold group-hover:translate-x-1 transition-transform">คลิกหรือลากไฟล์มาวางเพื่อแนบเอกสารนี้</span>
             </div>
           </div>
         `;
@@ -294,11 +301,11 @@ function renderSlots() {
             <div class="w-20 h-20 rounded-2xl neu-inset overflow-hidden flex-shrink-0 flex items-center justify-center relative p-1 slot-preview-trigger group cursor-pointer" data-id="${slot.id}" title="คลิกเพื่อดูรูปพรีวิวขนาดใหญ่">
               ${
                 att.dataUrl
-                  ? `<img src="${att.dataUrl}" style="transform: rotate(${att.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform" alt="Preview">`
-                  : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500"></i><span class="text-[10px] font-bold">PDF</span></div>`
+                  ? `<img src="${att.dataUrl}" style="transform: rotate(${att.rotation}deg);" class="w-full h-full object-cover rounded-xl transition-transform duration-300" alt="Preview">`
+                  : `<div class="flex flex-col items-center text-slate-500"><i data-lucide="file-text" class="w-8 h-8 text-red-500 animate-pulse"></i><span class="text-[10px] font-bold">PDF</span></div>`
               }
-              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white">
-                <i data-lucide="zoom-in" class="w-5 h-5"></i>
+              <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white backdrop-blur-[1px]">
+                <i data-lucide="zoom-in" class="w-5 h-5 animate-bounce"></i>
               </div>
               <div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-orange-600 text-white text-[9px] font-extrabold shadow-sm">
                 ${slot.code}
@@ -316,7 +323,7 @@ function renderSlots() {
 
               <div>
                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก (แก้ไขได้):</label>
-                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name">
+                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name transition-all focus:ring-1 focus:ring-orange-400">
               </div>
             </div>
           </div>
@@ -338,24 +345,24 @@ function renderSlots() {
 
             <!-- Action Buttons -->
             <div class="flex items-center gap-1.5">
-              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer" title="ดูรูปขนาดใหญ่" data-id="${slot.id}">
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}">
                 <i data-lucide="eye" class="w-3.5 h-3.5"></i>
               </button>
               ${
                 att.dataUrl
-                  ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer" title="หมุนภาพ 90°" data-id="${slot.id}">
+                  ? `<button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-rotate cursor-pointer hover:rotate-45 transition-all" title="หมุนภาพ 90°" data-id="${slot.id}">
                       <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                     </button>`
                   : ''
               }
-              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer" title="เปลี่ยนไฟล์นี้" data-id="${slot.id}">
+              <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์นี้" data-id="${slot.id}">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               </button>
-              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
+              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>โหลด</span>
               </button>
-              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer" title="ลบไฟล์ที่แนบ" data-id="${slot.id}">
+              <button class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-slot-remove cursor-pointer hover:scale-105 transition-all" title="ลบไฟล์ที่แนบ" data-id="${slot.id}">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
               ${
@@ -381,7 +388,7 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 4. Attach Events to Slots
+// 4. Attach Events to Slots with Drag Animations
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
@@ -402,7 +409,7 @@ function attachSlotEvents() {
       el.addEventListener(evt, (e) => {
         e.preventDefault();
         e.stopPropagation();
-        el.classList.add('border-orange-500', 'bg-orange-50/30');
+        el.classList.add('slot-drag-hover');
       });
     });
 
@@ -410,7 +417,7 @@ function attachSlotEvents() {
       el.addEventListener(evt, (e) => {
         e.preventDefault();
         e.stopPropagation();
-        el.classList.remove('border-orange-500', 'bg-orange-50/30');
+        el.classList.remove('slot-drag-hover');
       });
     });
 
@@ -575,7 +582,6 @@ function openPreviewModal(slotId) {
     previewModalPdf.classList.add('hidden');
     btnPreviewRotate.classList.remove('hidden');
   } else {
-    // PDF File
     previewModalImg.classList.add('hidden');
     previewModalPdf.classList.remove('hidden');
     btnPreviewRotate.classList.add('hidden');
@@ -593,14 +599,12 @@ function closePreviewModal() {
 function setupPreviewModalListeners() {
   btnPreviewClose.addEventListener('click', closePreviewModal);
 
-  // Close on clicking modal backdrop outside card
   previewModal.addEventListener('click', (e) => {
     if (e.target === previewModal) {
       closePreviewModal();
     }
   });
 
-  // Keyboard ESC support
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closePreviewModal();
@@ -608,7 +612,6 @@ function setupPreviewModalListeners() {
     }
   });
 
-  // Rotate in preview modal
   btnPreviewRotate.addEventListener('click', () => {
     if (!state.activePreviewSlotId) return;
     const all = getAllSlots();
@@ -620,7 +623,6 @@ function setupPreviewModalListeners() {
     }
   });
 
-  // Download single file from preview modal
   btnPreviewDownload.addEventListener('click', async () => {
     if (!state.activePreviewSlotId) return;
     const all = getAllSlots();
