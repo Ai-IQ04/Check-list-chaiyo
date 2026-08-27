@@ -1,13 +1,14 @@
 /**
  * Auto Loan Document Optimizer & Renamer
  * Version 2.7.0
+ * Version 3.0.0
  * Apple iOS Fluid Spring Aesthetic, Horizontal Single-Row Rail,
  * Sub-Product Filtering (จำนำ / รีไฟแนนซ์ / จำนอง / Top-up without One-Time),
  * Context-Aware Scoped AI Document Classifier & Scanner
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.9.0';
+const CURRENT_APP_VERSION = '3.0.0';
 
 // Application State
 const state = {
@@ -1221,8 +1222,65 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 9. Time Stamp & Auto-Enhance Image Canvas Filters
+// 9. GPS Satellite & Thai Address Time Stamp Engine
+const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+async function getGpsAndAddressData() {
+  let lat = 13.71740757;
+  let lon = 99.77285200;
+  let subdistrict = 'เตาปูน';
+  let district = 'โพธาราม';
+  let province = 'ราชบุรี';
+
+  // Try HTML5 Geolocation API
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('No geolocation'));
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 60000,
+      });
+    });
+    lat = pos.coords.latitude;
+    lon = pos.coords.longitude;
+
+    // Reverse geocode via OpenStreetMap API
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=th`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (res.ok) {
+        const geo = await res.json();
+        const addr = geo.address || {};
+        subdistrict = addr.suburb || addr.village || addr.neighbourhood || addr.town || addr.quarter || subdistrict;
+        district = addr.city_district || addr.district || addr.county || district;
+        province = addr.province || addr.state || province;
+        
+        // Clean standard Thai prefixes
+        subdistrict = subdistrict.replace(/^ตำบล\s*/, '').replace(/^ต\.\s*/, '');
+        district = district.replace(/^อำเภอ\s*/, '').replace(/^อ\.\s*/, '');
+        province = province.replace(/^จังหวัด\s*/, '').replace(/^จ\.\s*/, '');
+      }
+    } catch (e) {
+      console.warn('Reverse geocode fallback');
+    }
+  } catch (e) {
+    console.warn('Using default branch GPS/Location');
+  }
+
+  return {
+    latStr: `${lat.toFixed(8)}N`,
+    lonStr: `${lon.toFixed(6)}E`,
+    subdistrict: `ตำบล ${subdistrict}`,
+    district: `อำเภอ ${district}`,
+    province: province,
+  };
+}
+
 async function applyTimeStampToImage(dataUrl, rotation = 0) {
+  const geoData = await getGpsAndAddressData();
+
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -1235,33 +1293,49 @@ async function applyTimeStampToImage(dataUrl, rotation = 0) {
 
       ctx.drawImage(img, 0, 0);
 
-      // Date & Time String
+      // 1. Date & Time Line: e.g. "27 ส.ค. 2026 17:58:48"
       const now = new Date();
-      const dateStr = now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const stampText = `📅 ${dateStr} ${timeStr} • AUTOX CHAIYO`;
+      const day = now.getDate();
+      const monthStr = THAI_MONTH_SHORT[now.getMonth()];
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
 
-      const fontSize = Math.max(Math.round(canvas.width * 0.024), 22);
+      const line1 = `${day} ${monthStr} ${year} ${hours}:${minutes}:${seconds}`;
+      const line2 = `${geoData.latStr} ${geoData.lonStr}`;
+      const line3 = geoData.subdistrict;
+      const line4 = geoData.district;
+      const line5 = geoData.province;
+
+      const lines = [line1, line2, line3, line4, line5];
+
+      // Proportional Font Size
+      const fontSize = Math.max(Math.round(canvas.width * 0.038), 24);
+      const lineHeight = fontSize * 1.35;
       ctx.font = `bold ${fontSize}px 'Prompt', sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'alphabetic';
 
-      const textMetrics = ctx.measureText(stampText);
-      const padding = fontSize * 0.5;
-      const boxWidth = textMetrics.width + padding * 2;
-      const boxHeight = fontSize * 1.5;
+      const paddingRight = fontSize * 1.2;
+      const paddingBottom = fontSize * 1.2;
 
-      const posX = canvas.width - boxWidth - padding;
-      const posY = canvas.height - boxHeight - padding;
+      const totalHeight = lines.length * lineHeight;
+      let startY = canvas.height - paddingBottom - (lines.length - 1) * lineHeight;
+      const startX = canvas.width - paddingRight;
 
-      // Dark Semi-transparent Badge
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
-      ctx.beginPath();
-      ctx.roundRect(posX, posY, boxWidth, boxHeight, fontSize * 0.35);
-      ctx.fill();
+      lines.forEach((lineText, idx) => {
+        const currentY = startY + idx * lineHeight;
 
-      // White Bold Text
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(stampText, posX + padding, posY + boxHeight / 2);
+        // Shadow / Outline for maximum contrast on any background
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.lineWidth = Math.max(fontSize * 0.12, 3);
+        ctx.strokeText(lineText, startX, currentY);
+
+        // White Text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(lineText, startX, currentY);
+      });
 
       resolve(canvas.toDataURL('image/jpeg', 0.95));
     };
