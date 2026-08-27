@@ -77,10 +77,11 @@ function renderBottomDock() {
 
   categories.forEach((cat) => {
     const btn = document.createElement('button');
+    btn.type = 'button';
     const isActive = state.currentCategory === cat.id;
     
     // Large, tall, easy-to-click button style
-    btn.className = `py-2 sm:py-2.5 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer w-full text-center ${
+    btn.className = `py-2 sm:py-2.5 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer w-full text-center select-none ${
       isActive
         ? 'neu-product-active font-extrabold shadow-lg'
         : 'neu-product-btn font-bold text-slate-700 hover:text-orange-600'
@@ -89,10 +90,13 @@ function renderBottomDock() {
     let cleanName = cat.name.replace('สินเชื่อ', '').trim();
 
     btn.innerHTML = `
-      <span class="text-xl sm:text-2xl filter drop-shadow-sm leading-none">${cat.icon}</span>
-      <span class="text-[11px] sm:text-xs tracking-tight line-clamp-1 leading-tight font-extrabold">${cleanName}</span>
+      <span class="text-xl sm:text-2xl filter drop-shadow-sm leading-none pointer-events-none">${cat.icon}</span>
+      <span class="text-[11px] sm:text-xs tracking-tight line-clamp-1 leading-tight font-extrabold pointer-events-none">${cleanName}</span>
     `;
-    btn.addEventListener('click', () => selectCategory(cat.id));
+    btn.onclick = (e) => {
+      e.preventDefault();
+      selectCategory(cat.id);
+    };
     loanCategoryTabs.appendChild(btn);
   });
 }
@@ -1215,11 +1219,11 @@ function showToast(message, type = 'info') {
 
   lucide.createIcons();
 
-  toast.classList.remove('translate-y-24', 'opacity-0');
-  toast.classList.add('translate-y-0', 'opacity-100');
+  toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+  toast.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
   setTimeout(() => {
-    toast.classList.remove('translate-y-0', 'opacity-100');
-    toast.classList.add('translate-y-24', 'opacity-0');
+    toast.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+    toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
   }, 3500);
 }
