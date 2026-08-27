@@ -43,6 +43,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- PDF-LIB -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <!-- Tesseract.js (Client-Side AI OCR) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
@@ -145,6 +147,20 @@
       border: 1px solid rgba(255, 255, 255, 0.4);
       transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    /* AI Magic Glowing Button */
+    .neu-btn-ai {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ff6a00 100%);
+      color: #ffffff;
+      box-shadow: 4px 4px 12px #cbced8, -4px -4px 12px #ffffff, 0 0 16px rgba(139, 92, 246, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .neu-btn-ai:hover {
+      box-shadow: 6px 6px 18px #cbced8, -6px -6px 18px #ffffff, 0 0 24px rgba(139, 92, 246, 0.6);
+      transform: translateY(-2px) scale(1.03);
     }
 
     @keyframes pulse-glow {
@@ -293,10 +309,10 @@
               🏠 สินเชื่อที่ดิน
             </span>
             <span class="text-[10px] px-1.5 py-0.5 rounded neu-inset text-slate-500 font-bold tracking-tight">
-              v2.4.2 • License: Anusat
+              v2.5.0 • License: Anusat
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">กล้องถ่ายสด • ปั๊ม Time Stamp • บันทึกร่างเคส • คุมขนาด &le; 5MB</p>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">สแกนด้วย AI • ถ่ายรูปสด • ปั๊ม Time Stamp • บันทึกร่างเคส • คุมขนาด &le; 5MB</p>
         </div>
       </div>
 
@@ -361,11 +377,18 @@
         </div>
       </div>
 
-      <!-- Quick Batch Actions -->
-      <div class="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+      <!-- Quick Batch Actions & AI Scanner Button -->
+      <div class="flex items-center gap-2 self-end sm:self-auto flex-shrink-0 flex-wrap sm:flex-nowrap">
+        <!-- AI SMART CAMERA TRIGGER -->
+        <input type="file" id="aiCameraInput" accept="image/*" capture="environment" class="hidden">
+        <label for="aiCameraInput" class="neu-btn-ai px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md select-none group">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-300 animate-spin group-hover:scale-110"></i>
+          <span>✨ ถ่ายด้วย AI</span>
+        </label>
+
         <input type="file" id="batchFileInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden">
-        <button id="btnBatchAutoFill" class="neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer hover:text-orange-600" title="เลือกรูปหลายๆ ไฟล์เพื่อใส่ลงช่อง Checklist ตามลำดับอัตโนมัติ">
-          <i data-lucide="upload" class="w-3 h-3 text-slate-500"></i>
+        <button id="btnBatchAutoFill" class="neu-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer hover:text-orange-600" title="เลือกรูปหลายๆ ไฟล์เพื่อใส่ลงช่อง Checklist ตามลำดับอัตโนมัติ">
+          <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>โยนหลายรูปตามลำดับ</span>
         </button>
         
@@ -400,6 +423,56 @@
     </div>
   </footer>
 
+  <!-- AI SMART DETECTION ASSIGNMENT MODAL -->
+  <div id="aiDetectionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4 transition-all duration-300">
+    <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 border-2 border-indigo-400/80 shadow-2xl animate-in zoom-in-95 duration-200">
+      
+      <!-- AI Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#dfe2eb]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md animate-pulse">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-extrabold text-slate-800">AI ตรวจพบเอกสาร</h3>
+              <span id="aiConfidenceBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 font-extrabold">ความมั่นใจ 95%</span>
+            </div>
+            <p id="aiDetectedDesc" class="text-xs font-bold text-indigo-600">ตรวจพบ: บัตรประจำตัวประชาชน</p>
+          </div>
+        </div>
+        <button id="btnCloseAiModal" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Scanned Image Thumbnail Preview -->
+      <div class="flex items-center gap-3 p-2.5 rounded-2xl neu-inset">
+        <img id="aiScannedImgPreview" src="" class="w-24 h-24 object-cover rounded-xl border border-white" alt="AI Scan Preview">
+        <div class="flex-1 min-w-0 space-y-1">
+          <span class="text-[11px] text-slate-500 font-bold block">กรุณาแตะเลือกช่องที่ต้องการแนบ:</span>
+          <p id="aiScannedKeywords" class="text-[10px] text-slate-400 truncate">คำที่ตรวจพบ: บัตรประจำตัวประชาชน, กรมการปกครอง</p>
+        </div>
+      </div>
+
+      <!-- Suggested 1-Click Assignment Options (Injected by JS) -->
+      <div id="aiSuggestedOptions" class="space-y-2">
+        <!-- Buttons injected dynamically -->
+      </div>
+
+      <!-- Manual Slot Selector Fallback -->
+      <div class="pt-2 border-t border-[#dfe2eb] flex items-center gap-2">
+        <select id="aiManualSlotSelect" class="text-xs font-bold text-slate-700 neu-inset rounded-xl px-3 py-2.5 flex-1 focus:outline-none focus:ring-1 focus:ring-orange-400">
+          <!-- Populated by JS -->
+        </select>
+        <button id="btnAiManualAssign" class="neu-btn px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-700 hover:text-orange-600 cursor-pointer">
+          แนบช่องนี้
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- FULLSCREEN IMAGE & MULTI-PAGE DOCUMENT PREVIEW MODAL (LIGHTBOX) -->
   <div id="previewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4 sm:p-6 transition-all duration-300">
     <div class="neu-raised max-w-4xl w-full rounded-3xl p-5 space-y-4 max-h-[92vh] flex flex-col border border-white/80 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -427,7 +500,6 @@
 
         <!-- Controls (Enhance, Time Stamp, Rotate, Download, Close) -->
         <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-          <!-- Multi-page navigation -->
           <div id="previewNavButtons" class="flex items-center gap-1">
             <button id="btnPreviewPrevPage" class="p-2 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="หน้าก่อนหน้า">
               <i data-lucide="chevron-left" class="w-4 h-4"></i>
@@ -541,59 +613,6 @@
     </div>
   </div>
 
-  <!-- MOBILE / DESKTOP MEDIA PICKER MODAL (CAMERA / GALLERY / PDF) -->
-  <div id="mediaPickerModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-0 sm:p-4 transition-all duration-300">
-    <div class="neu-raised w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 border border-white/80 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-[#dfe2eb]">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <span id="pickerSlotCode" class="text-xs px-2 py-0.5 rounded-lg neu-inset font-extrabold text-orange-600">A01</span>
-          <h3 id="pickerSlotName" class="text-sm sm:text-base font-extrabold text-slate-800 truncate">เลือกวิธีแนบเอกสาร</h3>
-        </div>
-        <button id="btnCloseMediaPicker" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- 3 Big Action Buttons -->
-      <div class="grid grid-cols-1 gap-3">
-        <!-- Option 1: Direct Camera -->
-        <button id="btnPickerCamera" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-400 text-white flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
-            <i data-lucide="camera" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-orange-600 transition-colors">📷 ถ่ายรูปทันที (เปิดกล้อง)</h4>
-            <p class="text-[11px] text-slate-500">เปิดกล้องมือถือถ่ายสด และบันทึกรูปสำรองลงเครื่อง</p>
-          </div>
-        </button>
-
-        <!-- Option 2: Photo Gallery -->
-        <button id="btnPickerGallery" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
-          <div class="w-12 h-12 rounded-2xl neu-inset text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-            <i data-lucide="image" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-orange-600 transition-colors">🖼️ เลือกรูปจากอัลบั้ม (Gallery)</h4>
-            <p class="text-[11px] text-slate-500">เลือกรูป 1 หรือหลายรูปเพื่อรวมเป็น PDF</p>
-          </div>
-        </button>
-
-        <!-- Option 3: PDF Document -->
-        <button id="btnPickerPdf" class="neu-btn p-4 rounded-2xl flex items-center gap-3.5 hover:border-orange-400 cursor-pointer text-left group">
-          <div class="w-12 h-12 rounded-2xl neu-inset text-red-500 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-            <i data-lucide="file-text" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h4 class="text-sm font-extrabold text-slate-800 group-hover:text-red-600 transition-colors">📄 เลือกไฟล์เอกสาร PDF</h4>
-            <p class="text-[11px] text-slate-500">เลือกไฟล์ PDF ที่บันทึกไว้ในอุปกรณ์</p>
-          </div>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
   <!-- Missing Warning Modal -->
   <div id="missingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4 transition-all duration-300">
     <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 max-h-[90vh] flex flex-col border border-white/80 animate-in fade-in zoom-in-95 duration-200">
@@ -632,14 +651,6 @@
     </div>
   </div>
 
-  <!-- Neumorphic Floating Toast Notification (Top Center) -->
-  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-20 opacity-0 transition-all duration-300 neu-raised text-slate-800 text-xs font-bold px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl pointer-events-none border border-white/90">
-    <div id="toastIconContainer" class="w-6 h-6 rounded-full neu-inset flex items-center justify-center text-orange-500 flex-shrink-0">
-      <i id="toastIcon" data-lucide="check" class="w-3.5 h-3.5"></i>
-    </div>
-    <span id="toastMsg" class="whitespace-nowrap">ข้อความแจ้งเตือน</span>
-  </div>
-
   <!-- NEW VERSION UPDATE NOTIFICATION BANNER (AUTO-DETECT) -->
   <div id="updateNotificationBanner" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-28 opacity-0 transition-all duration-300 neu-raised text-slate-800 text-xs font-bold px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border-2 border-orange-500 bg-orange-50/90 pointer-events-none">
     <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center animate-bounce flex-shrink-0">
@@ -654,9 +665,17 @@
     </button>
   </div>
 
+  <!-- Neumorphic Floating Toast Notification (Top Center) -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-20 opacity-0 transition-all duration-300 neu-raised text-slate-800 text-xs font-bold px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl pointer-events-none border border-white/90">
+    <div id="toastIconContainer" class="w-6 h-6 rounded-full neu-inset flex items-center justify-center text-orange-500 flex-shrink-0">
+      <i id="toastIcon" data-lucide="check" class="w-3.5 h-3.5"></i>
+    </div>
+    <span id="toastMsg" class="whitespace-nowrap">ข้อความแจ้งเตือน</span>
+  </div>
+
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=2.4.2"></script>
-  <script src="app.js?v=2.4.2"></script>
+  <script src="checklists.js?v=2.5.0"></script>
+  <script src="app.js?v=2.5.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
