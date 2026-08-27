@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.5.1';
+const CURRENT_APP_VERSION = '3.5.2';
 
 // Application State
 const state = {
@@ -1929,99 +1929,107 @@ function setupGlobalEventListeners() {
     });
   }
 
-  btnAddCustomSlot.addEventListener('click', () => {
-    const customId = `custom_${Date.now()}`;
-    const customNumber = state.customCounter++;
-    const defaultName = `เอกสารเพิ่มเติม ${customNumber}`;
+  if (btnAddCustomSlot) {
+    btnAddCustomSlot.addEventListener('click', () => {
+      const customId = `custom_${Date.now()}`;
+      const customNumber = state.customCounter++;
+      const defaultName = `เอกสารเพิ่มเติม ${customNumber}`;
 
-    state.customSlots.push({
-      id: customId,
-      code: `EXTRA-${customNumber}`,
-      group: 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)',
-      desc: 'เอกสารเพิ่มเติมที่ผู้ใช้ระบุชื่อไฟล์เอง',
-      targetName: defaultName,
-      defaultFormat: 'PDF',
-      isCustom: true,
-      attached: null,
+      state.customSlots.push({
+        id: customId,
+        code: `EXTRA-${customNumber}`,
+        group: 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)',
+        desc: 'เอกสารเพิ่มเติมที่ผู้ใช้ระบุชื่อไฟล์เอง',
+        targetName: defaultName,
+        defaultFormat: 'PDF',
+        isCustom: true,
+        attached: null,
+      });
+
+      renderSlots();
+      renderGroupFilterPills();
+      updateSummaryMetrics();
+      showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
+
+      const targetElement = document.getElementById(`slot_file_${customId}`);
+      if (targetElement) {
+        targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     });
+  }
 
-    renderSlots();
-    renderGroupFilterPills();
-    updateSummaryMetrics();
-    showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
+  if (btnBatchAutoFill && batchFileInput) {
+    btnBatchAutoFill.addEventListener('click', () => batchFileInput.click());
+    batchFileInput.addEventListener('change', async (e) => {
+      if (e.target.files.length > 0) {
+        const files = Array.from(e.target.files);
+        const all = getAllSlots();
+        let fileIdx = 0;
 
-    const targetElement = document.getElementById(`slot_file_${customId}`);
-    if (targetElement) {
-      targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  });
-
-  btnBatchAutoFill.addEventListener('click', () => batchFileInput.click());
-  batchFileInput.addEventListener('change', async (e) => {
-    if (e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      const all = getAllSlots();
-      let fileIdx = 0;
-
-      for (let i = 0; i < all.length && fileIdx < files.length; i++) {
-        if (!all[i].attached) {
-          const file = files[fileIdx];
-          const dataUrl = await readFileAsDataURL(file);
-          all[i].attached = {
-            pages: [
-              {
-                file: file,
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                dataUrl: dataUrl,
-                rotation: 0,
-              },
-            ],
-            targetName: all[i].targetName || file.name.replace(/\.[^/.]+$/, ''),
-            targetFormat: all[i].defaultFormat,
-          };
-          fileIdx++;
+        for (let i = 0; i < all.length && fileIdx < files.length; i++) {
+          if (!all[i].attached) {
+            const file = files[fileIdx];
+            const dataUrl = await readFileAsDataURL(file);
+            all[i].attached = {
+              pages: [
+                {
+                  file: file,
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                  dataUrl: dataUrl,
+                  rotation: 0,
+                },
+              ],
+              targetName: all[i].targetName || file.name.replace(/\.[^/.]+$/, ''),
+              targetFormat: all[i].defaultFormat,
+            };
+            fileIdx++;
+          }
         }
+
+        batchFileInput.value = '';
+        renderSlots();
+        renderGroupFilterPills();
+        updateSummaryMetrics();
+        showToast(`ใส่ไฟล์ลงช่องตามลำดับสำเร็จ ${fileIdx} ไฟล์`, 'success');
+      }
+    });
+  }
+
+  if (btnClearAllAttached) {
+    btnClearAllAttached.addEventListener('click', () => {
+      const all = getAllSlots();
+      const attachedCount = all.filter((s) => s.attached).length;
+      if (attachedCount === 0) return;
+
+      if (confirm('คุณต้องการล้างไฟล์ที่แนบทั้งหมดในหน้านี้หรือไม่?')) {
+        all.forEach((s) => (s.attached = null));
+        renderSlots();
+        renderGroupFilterPills();
+        updateSummaryMetrics();
+        showToast('ล้างไฟล์ที่แนบทั้งหมดเรียบร้อยแล้ว', 'info');
+      }
+    });
+  }
+
+  if (btnDownloadZip) {
+    btnDownloadZip.addEventListener('click', () => {
+      const unattachedSlots = state.slots.filter((s) => !s.attached);
+      const attachedSlots = getAllSlots().filter((s) => s.attached);
+
+      if (attachedSlots.length === 0) {
+        showToast('ยังไม่ได้แนบเอกสารใดๆ', 'error');
+        return;
       }
 
-      batchFileInput.value = '';
-      renderSlots();
-      renderGroupFilterPills();
-      updateSummaryMetrics();
-      showToast(`ใส่ไฟล์ลงช่องตามลำดับสำเร็จ ${fileIdx} ไฟล์`, 'success');
-    }
-  });
-
-  btnClearAllAttached.addEventListener('click', () => {
-    const all = getAllSlots();
-    const attachedCount = all.filter((s) => s.attached).length;
-    if (attachedCount === 0) return;
-
-    if (confirm('คุณต้องการล้างไฟล์ที่แนบทั้งหมดในหน้านี้หรือไม่?')) {
-      all.forEach((s) => (s.attached = null));
-      renderSlots();
-      renderGroupFilterPills();
-      updateSummaryMetrics();
-      showToast('ล้างไฟล์ที่แนบทั้งหมดเรียบร้อยแล้ว', 'info');
-    }
-  });
-
-  btnDownloadZip.addEventListener('click', () => {
-    const unattachedSlots = state.slots.filter((s) => !s.attached);
-    const attachedSlots = getAllSlots().filter((s) => s.attached);
-
-    if (attachedSlots.length === 0) {
-      showToast('ยังไม่ได้แนบเอกสารใดๆ', 'error');
-      return;
-    }
-
-    if (unattachedSlots.length > 0) {
-      openMissingModal(unattachedSlots, attachedSlots.length);
-    } else {
-      executeZipDownload();
-    }
-  });
+      if (unattachedSlots.length > 0) {
+        openMissingModal(unattachedSlots, attachedSlots.length);
+      } else {
+        executeZipDownload();
+      }
+    });
+  }
 
   if (btnModalBackToAttach) {
     btnModalBackToAttach.addEventListener('click', () => {
