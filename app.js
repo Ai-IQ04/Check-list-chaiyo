@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.3.1';
+const CURRENT_APP_VERSION = '3.4.0';
 
 // Application State
 const state = {
@@ -23,18 +23,22 @@ const state = {
   pendingAiImage: null, // Active image pending AI slot assignment
 };
 
-// IndexedDB Helper for Saving/Resuming Drafts
+// IndexedDB Helper for Saving/Resuming Drafts & Real-time Auto-Save
 const DB_NAME = 'LoanChecklistAppDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'case_drafts';
+const DB_VERSION = 2;
+const STORE_DRAFTS = 'case_drafts';
+const STORE_AUTOSAVE = 'active_autosave';
 
 function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = (e) => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      if (!db.objectStoreNames.contains(STORE_DRAFTS)) {
+        db.createObjectStore(STORE_DRAFTS, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(STORE_AUTOSAVE)) {
+        db.createObjectStore(STORE_AUTOSAVE, { keyPath: 'id' });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -45,8 +49,8 @@ function openDB() {
 async function saveDraftToDB(draftObj) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
+    const tx = db.transaction(STORE_DRAFTS, 'readwrite');
+    const store = tx.objectStore(STORE_DRAFTS);
     store.put(draftObj);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -56,8 +60,8 @@ async function saveDraftToDB(draftObj) {
 async function getAllDraftsFromDB() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
+    const tx = db.transaction(STORE_DRAFTS, 'readonly');
+    const store = tx.objectStore(STORE_DRAFTS);
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -67,12 +71,115 @@ async function getAllDraftsFromDB() {
 async function deleteDraftFromDB(id) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
+    const tx = db.transaction(STORE_DRAFTS, 'readwrite');
+    const store = tx.objectStore(STORE_DRAFTS);
     store.delete(id);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+}
+
+// Real-Time Auto-Save Engine (Triple-Guard Session Recovery)
+let autoSaveTimer = null;
+
+async function saveAutoSaveSession() {
+  try {
+    const attachedSlots = getAllSlots().filter((s) => s.attached);
+    const db = await openDB();
+    const tx = db.transaction(STORE_AUTOSAVE, 'readwrite');
+    const store = tx.objectStore(STORE_AUTOSAVE);
+
+    if (attachedSlots.length === 0 && state.customSlots.length === 0) {
+      store.delete('current_active_session');
+      updateAutoSaveIndicator('idle');
+      return;
+    }
+
+    const sessionData = {
+      id: 'current_active_session',
+      category: state.currentCategory,
+      subType: state.currentSubType,
+      selectedGroup: state.selectedGroupFilter,
+      customCounter: state.customCounter,
+      customSlots: state.customSlots,
+      slots: state.slots,
+      savedAt: new Date().toISOString(),
+    };
+
+    store.put(sessionData);
+    tx.oncomplete = () => {
+      updateAutoSaveIndicator('saved');
+    };
+  } catch (e) {
+    console.warn('AutoSave error:', e);
+  }
+}
+
+function triggerAutoSave() {
+  updateAutoSaveIndicator('saving');
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveAutoSaveSession, 400);
+}
+
+function updateAutoSaveIndicator(status) {
+  const dot = document.getElementById('autoSaveDot');
+  const text = document.getElementById('autoSaveText');
+  if (!dot || !text) return;
+
+  if (status === 'saving') {
+    dot.className = 'w-2 h-2 rounded-full bg-amber-500 shadow-sm inline-block animate-ping';
+    text.innerText = 'กำลังเซฟ...';
+  } else if (status === 'saved') {
+    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-sm inline-block animate-pulse';
+    text.innerText = 'บันทึกอัตโนมัติแล้ว';
+  } else {
+    dot.className = 'w-2 h-2 rounded-full bg-slate-400 shadow-sm inline-block';
+    text.innerText = 'พร้อมบันทึก';
+  }
+}
+
+async function restoreAutoSaveSession() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_AUTOSAVE, 'readonly');
+    const store = tx.objectStore(STORE_AUTOSAVE);
+    const request = store.get('current_active_session');
+
+    return new Promise((resolve) => {
+      request.onsuccess = () => {
+        const session = request.result;
+        if (!session) return resolve(false);
+
+        // Check if session has attached files or custom slots
+        const hasAttached = session.slots && session.slots.some((s) => s.attached);
+        const hasCustom = session.customSlots && session.customSlots.length > 0;
+
+        if (!hasAttached && !hasCustom) return resolve(false);
+
+        state.currentCategory = session.category || 'motorcycle';
+        state.currentSubType = session.subType || 'pledge';
+        state.selectedGroupFilter = session.selectedGroup || 'all';
+        state.customCounter = session.customCounter || 1;
+        state.customSlots = session.customSlots || [];
+        state.slots = session.slots || [];
+
+        renderBottomDock();
+        renderSubProductPills();
+        renderGroupFilterPills();
+        renderSlots();
+        updateSummaryMetrics();
+        updateAutoSaveIndicator('saved');
+
+        const attachedCount = getAllSlots().filter((s) => s.attached).length;
+        showToast(`✅ กู้คืนข้อมูลเคสที่ทำค้างไว้สำเร็จ (${attachedCount} ไฟล์)`, 'success');
+        resolve(true);
+      };
+      request.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    console.warn('Restore error:', e);
+    return false;
+  }
 }
 
 // DOM Elements
@@ -144,7 +251,7 @@ const toastMsg = document.getElementById('toastMsg');
 const toastIcon = document.getElementById('toastIcon');
 
 // 1. Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (!window.LOAN_CHECKLISTS) {
     console.error('LOAN_CHECKLISTS data not found!');
     showToast('ไม่พบข้อมูล Checklist กรุณาโหลดไฟล์ checklists.js', 'error');
@@ -152,7 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderBottomDock();
-  selectCategory('motorcycle');
+  
+  // Try restoring unfinished auto-saved session first
+  const restored = await restoreAutoSaveSession();
+  if (!restored) {
+    selectCategory('motorcycle');
+  }
+
   setupGlobalEventListeners();
   setupPreviewModalListeners();
   setupDraftModalListeners();
@@ -161,6 +274,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Check for updates every 45 seconds
   setInterval(checkAppVersion, 45000);
+});
+
+// Triple-Guard: Warn before accidental tab closing / reload
+window.addEventListener('beforeunload', (e) => {
+  const attachedCount = getAllSlots().filter((s) => s.attached).length;
+  if (attachedCount > 0) {
+    e.preventDefault();
+    e.returnValue = 'คุณมีเอกสารที่ยังไม่ได้ดาวน์โหลด ZIP ต้องการออกจากหน้านี้หรือไม่?';
+    return e.returnValue;
+  }
 });
 
 // Auto Version Checker & Cache Buster
@@ -1896,7 +2019,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
   lucide.createIcons();
 }
 
-// 13. Metrics Calculation
+// 13. Metrics Calculation & Real-Time Auto-Save Trigger
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1914,6 +2037,9 @@ function updateSummaryMetrics() {
 
   btnDownloadZip.disabled = attachedSlots.length === 0;
   lucide.createIcons();
+
+  // Trigger Instant Real-Time AutoSave
+  triggerAutoSave();
 }
 
 // 14. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)

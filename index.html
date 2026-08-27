@@ -240,15 +240,21 @@
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold tracking-tight">
-              v3.3.1 • License: Anusat
+              v3.4.0 • License: Anusat
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • แสดงครบทุกหมวดหมู่ • สแกน AI</p>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • ป้องกันงานหาย 3 ชั้น • Auto-Save</p>
         </div>
       </div>
 
       <!-- Quick Metrics & Top Actions -->
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- Auto-Save Real-time Status Indicator -->
+        <div id="autoSaveStatusBadge" class="flex items-center gap-1.5 px-3 py-2 rounded-xl neu-inset text-emerald-700 font-bold text-xs transition-all shadow-xs" title="ระบบบันทึกรูปภาพและข้อมูลเคสลงในเครื่องอัตโนมัติตลอดเวลา">
+          <span id="autoSaveDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm inline-block animate-pulse"></span>
+          <span id="autoSaveText">บันทึกอัตโนมัติ</span>
+        </div>
+
         <!-- Status Pill -->
         <div id="missingCountBadge" class="flex items-center gap-1.5 px-3 py-2 rounded-xl neu-inset text-amber-700 font-bold text-xs transition-colors">
           <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i>
@@ -844,8 +850,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.3.1"></script>
-  <script src="app.js?v=3.3.1"></script>
+  <script src="checklists.js?v=3.4.0"></script>
+  <script src="app.js?v=3.4.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
