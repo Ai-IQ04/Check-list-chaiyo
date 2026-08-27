@@ -165,7 +165,9 @@ doc_master_map = {
     'C107': {'desc': 'แบบฟอร์มตรวจสอบภาคสนาม และข้อมูลบุคคลอ้างอิง', 'targetName': 'ตรวจสอบภาคสนามและบุคคลอ้างอิง', 'format': 'PDF'},
     'C201': {'desc': 'รูปถ่ายกิจการ ของผู้กู้ (Time Stamp)', 'targetName': 'รูปถ่ายกิจการผู้กู้', 'format': 'JPG'},
     'C202': {'desc': 'รูปถ่ายกิจการ ของผู้ค้ำ (ถ้ามี) (Time Stamp)', 'targetName': 'รูปถ่ายกิจการผู้ค้ำ', 'format': 'JPG'},
-    'C304': {'desc': 'หนังสือส่งมอบเล่มทะเบียน', 'targetName': 'ส่งมอบเล่มทะเบียน', 'format': 'PDF'},
+    
+    # หมวด C3: รีไฟแนนซ์รถ (หนังสือส่งมอบใบคู่มือจดทะเบียนรถ)
+    'C304': {'desc': 'หนังสือส่งมอบใบคู่มือจดทะเบียนรถ', 'targetName': 'หนังสือส่งมอบใบคู่มือจดทะเบียนรถ', 'format': 'PDF'},
     'C305': {'desc': 'สัญญาคู่ฉบับไฟแนนซ์เดิม เช่น สัญญาเช่าซื้อ / สัญญาเงินกู้ / การ์ดค่างวด', 'targetName': 'สัญญาคู่ฉบับไฟแนนซ์เดิม', 'format': 'PDF'},
     'C306': {'desc': 'ใบเสร็จชำระค่างวด', 'targetName': 'ใบเสร็จชำระค่างวด', 'format': 'PDF'},
     'C307': {'desc': 'ใบสอบถามยอดหนี้ไฟแนนซ์เดิม', 'targetName': 'ใบสอบถามยอดหนี้', 'format': 'PDF'},
@@ -242,7 +244,7 @@ def extract_clean_items(p_def):
                 })
                 seen_codes.add(code)
                 
-    # If it is a Vehicle category (motorcycle, truck, car, agri), ensure 'ป้ายภาษี' and 'ใบรับมอบสินค้า' exist
+    # If it is a Vehicle category (motorcycle, truck, car, agri), ensure 'ป้ายภาษี', 'ใบรับมอบสินค้า' and 'หนังสือส่งมอบใบคู่มือจดทะเบียนรถ' exist
     if p_def['id'] in ['motorcycle', 'truck', 'car', 'agri']:
         if 'B107' not in seen_codes:
             items.append({
@@ -264,6 +266,16 @@ def extract_clean_items(p_def):
             })
             seen_codes.add('AA12')
             
+        if 'C304' not in seen_codes:
+            items.append({
+                'code': 'C304',
+                'group': 'C3 เอกสารเพิ่มเติม รีไฟแนนซ์/ต่อสัญญา',
+                'desc': 'หนังสือส่งมอบใบคู่มือจดทะเบียนรถ',
+                'targetName': 'หนังสือส่งมอบใบคู่มือจดทะเบียนรถ',
+                'format': 'PDF'
+            })
+            seen_codes.add('C304')
+            
     return items
 
 dataset = {}
@@ -283,4 +295,9 @@ js_content += 'window.LOAN_CHECKLISTS = ' + json.dumps(dataset, ensure_ascii=Fal
 with open('checklists.js', 'w', encoding='utf-8') as f:
     f.write(js_content)
 
-print('Regenerated checklists.js with standardized category groups.')
+print('Regenerated checklists.js with updated C304: หนังสือส่งมอบใบคู่มือจดทะเบียนรถ.')
+for cat_id in ['motorcycle', 'truck', 'car', 'agri']:
+    cat = dataset[cat_id]
+    for it in cat['items']:
+        if it['code'] == 'C304':
+            print(f"  [{cat['name']}] [{it['code']}] {it['targetName']} ({it['format']}) - {it['desc']}")
