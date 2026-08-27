@@ -7,7 +7,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '2.8.3';
+const CURRENT_APP_VERSION = '2.8.4';
 
 // Application State
 const state = {
@@ -504,13 +504,11 @@ function renderSlots() {
                     ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
                     : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
                 }
-                <!-- High-Contrast Color-Coded Format Badge -->
-                <span class="text-[10px] px-2.5 py-0.5 rounded-lg font-black tracking-wider uppercase shadow-xs ${
-                  slot.defaultFormat === 'PDF'
-                    ? 'bg-red-500/15 text-red-700 border border-red-300/80'
-                    : 'bg-blue-500/15 text-blue-700 border border-blue-300/80'
+                <!-- Pure Neumorphic Soft UI Format Pill with Crisp Colored Text -->
+                <span class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase ${
+                  slot.defaultFormat === 'PDF' ? 'text-red-600' : 'text-blue-600'
                 }">
-                  ${slot.defaultFormat === 'PDF' ? '📕 PDF' : '🖼️ JPG'}
+                  ${slot.defaultFormat}
                 </span>
               </div>
               <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
