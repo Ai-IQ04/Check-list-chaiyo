@@ -1,6 +1,6 @@
 /**
  * Auto Loan Document Optimizer & Renamer
- * Multi-Image Merge to Single PDF, Clean Layout, Lightbox Preview & Rich Motion
+ * Multi-Image Merge to Single PDF, Camera Capture, Time Stamp, Auto-Enhance & IndexedDB Drafts
  */
 
 // Application State
@@ -13,6 +13,58 @@ const state = {
   activePreviewSlotId: null, // Track slot currently being previewed
   activePreviewPageIndex: 0, // Track active page within the previewed slot
 };
+
+// IndexedDB Helper for Saving/Resuming Drafts
+const DB_NAME = 'LoanChecklistAppDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'case_drafts';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveDraftToDB(draftObj) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.put(draftObj);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getAllDraftsFromDB() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deleteDraftFromDB(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
 
 // DOM Elements
 const loanCategoryTabs = document.getElementById('loanCategoryTabs');
@@ -28,6 +80,17 @@ const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
 
+// Drafts Modals DOM Elements
+const btnSaveDraft = document.getElementById('btnSaveDraft');
+const btnOpenDraftsList = document.getElementById('btnOpenDraftsList');
+const saveDraftModal = document.getElementById('saveDraftModal');
+const inputDraftName = document.getElementById('inputDraftName');
+const btnCancelSaveDraft = document.getElementById('btnCancelSaveDraft');
+const btnConfirmSaveDraft = document.getElementById('btnConfirmSaveDraft');
+const draftsListModal = document.getElementById('draftsListModal');
+const draftsItemsContainer = document.getElementById('draftsItemsContainer');
+const btnCloseDraftsList = document.getElementById('btnCloseDraftsList');
+
 // Preview Modal DOM Elements
 const previewModal = document.getElementById('previewModal');
 const previewModalCode = document.getElementById('previewModalCode');
@@ -38,6 +101,8 @@ const previewPageIndicator = document.getElementById('previewPageIndicator');
 const previewNavButtons = document.getElementById('previewNavButtons');
 const btnPreviewPrevPage = document.getElementById('btnPreviewPrevPage');
 const btnPreviewNextPage = document.getElementById('btnPreviewNextPage');
+const btnPreviewEnhance = document.getElementById('btnPreviewEnhance');
+const btnPreviewTimeStamp = document.getElementById('btnPreviewTimeStamp');
 const previewModalImg = document.getElementById('previewModalImg');
 const previewModalPdf = document.getElementById('previewModalPdf');
 const btnPreviewRotate = document.getElementById('btnPreviewRotate');
@@ -68,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   selectCategory('land');
   setupGlobalEventListeners();
   setupPreviewModalListeners();
+  setupDraftModalListeners();
 });
 
 // 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
@@ -168,7 +234,7 @@ function renderGroupFilterPills() {
     groupFilterPills.appendChild(missingPill);
   }
 
-  // 3. Specific Group Pills (No Substring Clipping!)
+  // 3. Specific Group Pills
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
   groups.forEach((groupName) => {
     const countInGroup = allSlots.filter((s) => s.group === groupName).length;
@@ -192,12 +258,11 @@ function renderGroupFilterPills() {
   lucide.createIcons();
 }
 
-// 3. Render Checklist Topic Slots & Custom Slots with Multi-Image Merge Support
+// 3. Render Checklist Slots with Camera, Time Stamp & Multi-Image Merge
 function renderSlots() {
   slotsContainer.innerHTML = '';
   const allSlots = getAllSlots();
 
-  // Filter slots
   let visibleSlots = allSlots;
   if (state.selectedGroupFilter === 'unattached') {
     visibleSlots = allSlots.filter((s) => !s.attached);
@@ -216,7 +281,6 @@ function renderSlots() {
     return;
   }
 
-  // Group visible slots
   const grouped = {};
   visibleSlots.forEach((slot) => {
     if (!grouped[slot.group]) grouped[slot.group] = [];
@@ -231,7 +295,6 @@ function renderSlots() {
 
     const isCustomGroup = groupName === 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)';
 
-    // Group Header
     groupSection.innerHTML = `
       <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
@@ -244,7 +307,6 @@ function renderSlots() {
       </div>
     `;
 
-    // Slots Grid for this group
     const grid = document.createElement('div');
     grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
 
@@ -261,12 +323,16 @@ function renderSlots() {
       card.style.animationDelay = `${animDelay}ms`;
 
       const slotInputId = `slot_input_${slot.id}`;
+      const cameraInputId = `slot_camera_${slot.id}`;
       const appendInputId = `slot_append_${slot.id}`;
+      const appendCameraId = `slot_append_camera_${slot.id}`;
 
       if (!isAttached) {
-        // Empty Slot (Allows multiple files)
+        // Empty Slot
         card.innerHTML = `
+          <!-- File & Camera Inputs -->
           <input type="file" id="${slotInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
           
           <div class="flex items-start justify-between gap-3">
             <div class="space-y-1 flex-1 min-w-0">
@@ -291,24 +357,31 @@ function renderSlots() {
             }
           </div>
 
-          <!-- Click / Drop Target Area -->
-          <div class="neu-inset rounded-2xl p-4 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
-            <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
-              <div class="w-8 h-8 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-12 transition-all">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+          <!-- Click / Drop Target Area + Quick Camera Button -->
+          <div class="flex items-center gap-2">
+            <div class="flex-1 neu-inset rounded-2xl p-3.5 text-center cursor-pointer hover:border-orange-400 transition-all border border-dashed border-[#cbced8] slot-drop-target group" data-id="${slot.id}">
+              <div class="flex items-center justify-center gap-2 text-slate-600 group-hover:text-orange-600 transition-colors">
+                <div class="w-7 h-7 rounded-xl neu-raised flex items-center justify-center text-orange-500 group-hover:scale-110 transition-all">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <span class="text-xs font-bold">แนบรูป/PDF</span>
               </div>
-              <span class="text-xs font-bold group-hover:translate-x-1 transition-transform">แนบ 1 หรือหลายรูป (จะรวมเป็น 1 PDF อัตโนมัติ)</span>
             </div>
+
+            <!-- Direct Camera Trigger Button -->
+            <button type="button" class="px-3.5 py-3.5 rounded-2xl neu-btn text-slate-700 hover:text-orange-600 flex items-center justify-center gap-1.5 cursor-pointer btn-open-camera flex-shrink-0" data-id="${slot.id}" title="เปิดกล้องถ่ายสด (บันทึกลงอัลบั้มเครื่องด้วย)">
+              <i data-lucide="camera" class="w-4 h-4 text-orange-500"></i>
+              <span class="text-xs font-bold hidden sm:inline">ถ่ายรูป</span>
+            </button>
           </div>
         `;
       } else {
-        // Attached Slot (With Multi-Image / Multi-Page Support)
+        // Attached Slot
         const att = slot.attached;
         const pageCount = att.pages.length;
         const totalBytes = att.pages.reduce((acc, p) => acc + p.size, 0);
         const formattedSize = formatFileSize(totalBytes);
 
-        // Render thumbnails strip
         let thumbsHtml = '';
         if (pageCount === 1) {
           const p = att.pages[0];
@@ -328,7 +401,6 @@ function renderSlots() {
             </div>
           `;
         } else {
-          // Multiple pages horizontal gallery
           const pagesThumbs = att.pages
             .map((p, idx) => `
               <div class="w-16 h-16 rounded-xl neu-inset overflow-hidden flex-shrink-0 relative p-0.5 slot-preview-trigger group cursor-pointer border border-white/60" data-id="${slot.id}" data-page="${idx}" title="คลิกเพื่อดูหน้า ${idx + 1}">
@@ -352,7 +424,9 @@ function renderSlots() {
 
         card.innerHTML = `
           <input type="file" id="${slotInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden slot-file-input">
+          <input type="file" id="${cameraInputId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-camera-input">
           <input type="file" id="${appendInputId}" data-id="${slot.id}" multiple accept="image/jpeg,image/png,image/webp" class="hidden slot-append-input">
+          <input type="file" id="${appendCameraId}" data-id="${slot.id}" accept="image/*" capture="environment" class="hidden slot-append-camera-input">
           
           <div class="flex items-start gap-3.5">
             ${thumbsHtml}
@@ -389,11 +463,20 @@ function renderSlots() {
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex items-center gap-1.5">
-              <!-- Add more photos / pages button -->
+            <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
+              <!-- Add photo / Camera button -->
               <button class="px-2 py-1.5 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-append cursor-pointer hover:bg-orange-50/50" data-id="${slot.id}" title="เพิ่มรูปอีกหน้าในเอกสารนี้">
                 <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 <span class="hidden sm:inline">+ เพิ่มรูป</span>
+              </button>
+
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-camera-append cursor-pointer" data-id="${slot.id}" title="เปิดกล้องถ่ายรูปเพิ่มอีกหน้า">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-orange-500"></i>
+              </button>
+
+              <!-- Quick Time Stamp Button -->
+              <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-timestamp cursor-pointer" data-id="${slot.id}" title="ปั๊ม Time Stamp ลงบนรูปภาพ">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
               </button>
 
               <button class="p-2 rounded-xl neu-btn text-slate-600 hover:text-orange-600 btn-slot-preview cursor-pointer hover:scale-105 transition-transform" title="ดูรูปขนาดใหญ่" data-id="${slot.id}" data-page="0">
@@ -432,7 +515,7 @@ function renderSlots() {
   lucide.createIcons();
 }
 
-// 4. Attach Events to Slots with Multi-Image Support
+// 4. Attach Events to Slots
 function attachSlotEvents() {
   // Click thumbnail or eye button to open Lightbox Preview
   document.querySelectorAll('.slot-preview-trigger, .btn-slot-preview').forEach((el) => {
@@ -441,6 +524,65 @@ function attachSlotEvents() {
       const id = el.dataset.id;
       const pageIdx = parseInt(el.dataset.page || '0', 10);
       openPreviewModal(id, pageIdx);
+    });
+  });
+
+  // Open camera button (empty slot)
+  document.querySelectorAll('.btn-open-camera').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const camInp = document.getElementById(`slot_camera_${id}`);
+      if (camInp) camInp.click();
+    });
+  });
+
+  // Camera input change (empty slot)
+  document.querySelectorAll('.slot-camera-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await attachFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Append camera button (attached slot)
+  document.querySelectorAll('.btn-slot-camera-append').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const camInp = document.getElementById(`slot_append_camera_${id}`);
+      if (camInp) camInp.click();
+    });
+  });
+
+  document.querySelectorAll('.slot-append-camera-input').forEach((inp) => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.files.length > 0) {
+        await appendFilesToSlotById(id, Array.from(e.target.files));
+        e.target.value = '';
+      }
+    });
+  });
+
+  // Quick Time Stamp button on slot card
+  document.querySelectorAll('.btn-slot-timestamp').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const all = getAllSlots();
+      const slot = all.find((s) => s.id === id);
+      if (slot && slot.attached) {
+        const page = slot.attached.pages[0];
+        if (page && page.dataUrl) {
+          page.dataUrl = await applyTimeStampToImage(page.dataUrl, page.rotation);
+          renderSlots();
+          showToast(`ปั๊ม Time Stamp ลงบน [${slot.code}] สำเร็จ!`, 'success');
+        }
+      }
     });
   });
 
@@ -493,7 +635,7 @@ function attachSlotEvents() {
     });
   });
 
-  // Slot file inputs change (Initial attachment)
+  // Slot file inputs change
   document.querySelectorAll('.slot-file-input').forEach((inp) => {
     inp.addEventListener('change', (e) => {
       const id = e.target.dataset.id;
@@ -555,7 +697,7 @@ function attachSlotEvents() {
     });
   });
 
-  // Rename input (when attached)
+  // Rename input
   document.querySelectorAll('.input-slot-name').forEach((inp) => {
     inp.addEventListener('input', (e) => {
       const id = e.target.dataset.id;
@@ -655,7 +797,6 @@ async function attachFilesToSlotById(id, files) {
     });
   }
 
-  // If more than 1 image, default to PDF
   const defaultFormat = pages.length > 1 ? 'PDF' : slot.defaultFormat;
 
   slot.attached = {
@@ -667,7 +808,7 @@ async function attachFilesToSlotById(id, files) {
   renderSlots();
   renderGroupFilterPills();
   updateSummaryMetrics();
-  showToast(`แนบ ${pages.length} ไฟล์ลงใน [${slot.code}] ${slot.attached.targetName} สำเร็จ!`, 'success');
+  showToast(`แนบ ${pages.length} ไฟล์ลงใน [${slot.code}] สำเร็จ!`, 'success');
 }
 
 async function appendFilesToSlotById(id, files) {
@@ -687,7 +828,6 @@ async function appendFilesToSlotById(id, files) {
     });
   }
 
-  // Automatically switch to PDF when multiple images are attached
   slot.attached.targetFormat = 'PDF';
 
   renderSlots();
@@ -708,7 +848,104 @@ function readFileAsDataURL(file) {
   });
 }
 
-// 6. Fullscreen Image & Multi-Page Lightbox Preview
+// 6. Time Stamp & Auto-Enhance Image Canvas Filters
+async function applyTimeStampToImage(dataUrl, rotation = 0) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      // Date & Time String
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const stampText = `📅 ${dateStr} ${timeStr} • AUTOX CHAIYO`;
+
+      const fontSize = Math.max(Math.round(canvas.width * 0.024), 22);
+      ctx.font = `bold ${fontSize}px 'Prompt', sans-serif`;
+
+      const textMetrics = ctx.measureText(stampText);
+      const padding = fontSize * 0.5;
+      const boxWidth = textMetrics.width + padding * 2;
+      const boxHeight = fontSize * 1.5;
+
+      const posX = canvas.width - boxWidth - padding;
+      const posY = canvas.height - boxHeight - padding;
+
+      // Dark Semi-transparent Badge
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+      ctx.beginPath();
+      ctx.roundRect(posX, posY, boxWidth, boxHeight, fontSize * 0.35);
+      ctx.fill();
+
+      // White Bold Text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(stampText, posX + padding, posY + boxHeight / 2);
+
+      resolve(canvas.toDataURL('image/jpeg', 0.95));
+    };
+    img.src = dataUrl;
+  });
+}
+
+async function enhanceDocumentImage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+
+      // High-Contrast & White Paper Background Filter
+      const contrast = 1.35; // +35% contrast boost
+      const brightness = 20; // +20 brightness boost
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+
+        // Apply contrast & brightness
+        r = (r - 128) * contrast + 128 + brightness;
+        g = (g - 128) * contrast + 128 + brightness;
+        b = (b - 128) * contrast + 128 + brightness;
+
+        // Paper threshold whitening
+        if (r > 210 && g > 210 && b > 210) {
+          r = 255;
+          g = 255;
+          b = 255;
+        }
+
+        data[i] = Math.min(255, Math.max(0, r));
+        data[i + 1] = Math.min(255, Math.max(0, g));
+        data[i + 2] = Math.min(255, Math.max(0, b));
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.95));
+    };
+    img.src = dataUrl;
+  });
+}
+
+// 7. Fullscreen Image & Multi-Page Lightbox Preview
 function openPreviewModal(slotId, pageIdx = 0) {
   const all = getAllSlots();
   const slot = all.find((s) => s.id === slotId);
@@ -757,10 +994,14 @@ function updatePreviewModalDisplay() {
     previewModalImg.classList.remove('hidden');
     previewModalPdf.classList.add('hidden');
     btnPreviewRotate.classList.remove('hidden');
+    btnPreviewEnhance.classList.remove('hidden');
+    btnPreviewTimeStamp.classList.remove('hidden');
   } else {
     previewModalImg.classList.add('hidden');
     previewModalPdf.classList.remove('hidden');
     btnPreviewRotate.classList.add('hidden');
+    btnPreviewEnhance.classList.add('hidden');
+    btnPreviewTimeStamp.classList.add('hidden');
   }
 }
 
@@ -782,6 +1023,8 @@ function setupPreviewModalListeners() {
     if (e.key === 'Escape') {
       closePreviewModal();
       missingModal.classList.add('hidden');
+      saveDraftModal.classList.add('hidden');
+      draftsListModal.classList.add('hidden');
     } else if (e.key === 'ArrowLeft') {
       if (state.activePreviewSlotId && state.activePreviewPageIndex > 0) {
         state.activePreviewPageIndex--;
@@ -827,6 +1070,39 @@ function setupPreviewModalListeners() {
     }
   });
 
+  // Enhance image in preview modal
+  btnPreviewEnhance.addEventListener('click', async () => {
+    if (!state.activePreviewSlotId) return;
+    const all = getAllSlots();
+    const slot = all.find((s) => s.id === state.activePreviewSlotId);
+    if (slot && slot.attached) {
+      const page = slot.attached.pages[state.activePreviewPageIndex];
+      if (page && page.dataUrl) {
+        showToast('กำลังปรับแสงและความคมชัด...', 'info');
+        page.dataUrl = await enhanceDocumentImage(page.dataUrl);
+        updatePreviewModalDisplay();
+        renderSlots();
+        showToast('ปรับแสงและคอนทราสต์ตัวหนังสือเรียบร้อย!', 'success');
+      }
+    }
+  });
+
+  // Time Stamp in preview modal
+  btnPreviewTimeStamp.addEventListener('click', async () => {
+    if (!state.activePreviewSlotId) return;
+    const all = getAllSlots();
+    const slot = all.find((s) => s.id === state.activePreviewSlotId);
+    if (slot && slot.attached) {
+      const page = slot.attached.pages[state.activePreviewPageIndex];
+      if (page && page.dataUrl) {
+        page.dataUrl = await applyTimeStampToImage(page.dataUrl, page.rotation);
+        updatePreviewModalDisplay();
+        renderSlots();
+        showToast('ปั๊ม Time Stamp ลงบนภาพเรียบร้อยแล้ว!', 'success');
+      }
+    }
+  });
+
   btnPreviewDownload.addEventListener('click', async () => {
     if (!state.activePreviewSlotId) return;
     const all = getAllSlots();
@@ -845,7 +1121,153 @@ function setupPreviewModalListeners() {
   });
 }
 
-// 7. Global Batch & Custom Slots Events
+// 8. Draft Management (IndexedDB Save & Resume)
+function setupDraftModalListeners() {
+  btnSaveDraft.addEventListener('click', () => {
+    const attachedCount = getAllSlots().filter((s) => s.attached).length;
+    if (attachedCount === 0) {
+      showToast('ยังไม่มีไฟล์ที่แนบเพื่อบันทึกร่าง', 'error');
+      return;
+    }
+
+    const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
+    const timeStr = new Date().toLocaleDateString('th-TH');
+    inputDraftName.value = `เคส_${currentCat.name}_${timeStr}`;
+    saveDraftModal.classList.remove('hidden');
+    inputDraftName.focus();
+  });
+
+  btnCancelSaveDraft.addEventListener('click', () => {
+    saveDraftModal.classList.add('hidden');
+  });
+
+  btnConfirmSaveDraft.addEventListener('click', async () => {
+    const draftName = inputDraftName.value.trim() || 'เคสที่บันทึก';
+    const draftId = `draft_${Date.now()}`;
+
+    const draftData = {
+      id: draftId,
+      name: draftName,
+      createdAt: new Date().toISOString(),
+      category: state.currentCategory,
+      slots: state.slots,
+      customSlots: state.customSlots,
+      customCounter: state.customCounter,
+    };
+
+    try {
+      await saveDraftToDB(draftData);
+      saveDraftModal.classList.add('hidden');
+      showToast(`บันทึกร่าง "${draftName}" สำเร็จ!`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('เกิดข้อผิดพลาดในการบันทึกร่าง', 'error');
+    }
+  });
+
+  btnOpenDraftsList.addEventListener('click', async () => {
+    await renderDraftsList();
+    draftsListModal.classList.remove('hidden');
+  });
+
+  btnCloseDraftsList.addEventListener('click', () => {
+    draftsListModal.classList.add('hidden');
+  });
+}
+
+async function renderDraftsList() {
+  draftsItemsContainer.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs">กำลังโหลดรายการ...</div>';
+  try {
+    const drafts = await getAllDraftsFromDB();
+    if (drafts.length === 0) {
+      draftsItemsContainer.innerHTML = `
+        <div class="p-8 text-center text-slate-400 space-y-2 neu-inset rounded-2xl">
+          <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-400"></i>
+          <p class="text-xs font-bold text-slate-600">ยังไม่มีเคสที่บันทึกไว้ในเครื่องนี้</p>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+
+    // Sort newest first
+    drafts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    draftsItemsContainer.innerHTML = '';
+    drafts.forEach((d) => {
+      const catData = window.LOAN_CHECKLISTS[d.category] || { name: d.category, icon: '📁' };
+      const attachedCount = [...d.slots, ...(d.customSlots || [])].filter((s) => s.attached).length;
+      const dateStr = new Date(d.createdAt).toLocaleString('th-TH');
+
+      const item = document.createElement('div');
+      item.className = 'flex items-center justify-between p-3 rounded-2xl neu-raised text-xs gap-3 hover:border-orange-300 transition-all';
+      item.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <span class="text-xl">${catData.icon}</span>
+          <div class="min-w-0">
+            <h4 class="font-extrabold text-slate-800 truncate">${d.name}</h4>
+            <p class="text-[10px] text-slate-500">${catData.name} • แนบแล้ว ${attachedCount} ไฟล์ • ${dateStr}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button class="px-3 py-1.5 rounded-xl neu-btn text-orange-600 font-extrabold text-xs btn-load-draft cursor-pointer hover:bg-orange-50" data-id="${d.id}">
+            โหลดเคสนี้
+          </button>
+          <button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-draft cursor-pointer" data-id="${d.id}" title="ลบเคสนี้">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `;
+      draftsItemsContainer.appendChild(item);
+    });
+
+    // Attach load and delete events
+    document.querySelectorAll('.btn-load-draft').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.dataset.id;
+        const drafts = await getAllDraftsFromDB();
+        const targetDraft = drafts.find((d) => d.id === id);
+        if (targetDraft) {
+          state.currentCategory = targetDraft.category;
+          state.slots = targetDraft.slots;
+          state.customSlots = targetDraft.customSlots || [];
+          state.customCounter = targetDraft.customCounter || 1;
+          state.selectedGroupFilter = 'all';
+
+          const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+          currentLoanBadge.innerHTML = `${catData.icon} ${catData.name}`;
+
+          renderBottomDock();
+          renderGroupFilterPills();
+          renderSlots();
+          updateSummaryMetrics();
+
+          draftsListModal.classList.add('hidden');
+          showToast(`เปิดเคส "${targetDraft.name}" สำเร็จ!`, 'success');
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-draft').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.dataset.id;
+        if (confirm('คุณต้องการลบเคสที่บันทึกไว้นี้หรือไม่?')) {
+          await deleteDraftFromDB(id);
+          await renderDraftsList();
+          showToast('ลบเคสเรียบร้อยแล้ว', 'info');
+        }
+      });
+    });
+
+    lucide.createIcons();
+  } catch (err) {
+    console.error(err);
+    draftsItemsContainer.innerHTML = '<div class="text-center py-4 text-red-500 text-xs">เกิดข้อผิดพลาดในการโหลดรายการ</div>';
+  }
+}
+
+// 9. Global Batch & Custom Slots Events
 function setupGlobalEventListeners() {
   btnAddCustomSlot.addEventListener('click', () => {
     const customId = `custom_${Date.now()}`;
@@ -874,7 +1296,6 @@ function setupGlobalEventListeners() {
     }
   });
 
-  // Batch Auto-fill button
   btnBatchAutoFill.addEventListener('click', () => batchFileInput.click());
   batchFileInput.addEventListener('change', async (e) => {
     if (e.target.files.length > 0) {
@@ -912,7 +1333,6 @@ function setupGlobalEventListeners() {
     }
   });
 
-  // Clear all attached files
   btnClearAllAttached.addEventListener('click', () => {
     const all = getAllSlots();
     const attachedCount = all.filter((s) => s.attached).length;
@@ -927,7 +1347,6 @@ function setupGlobalEventListeners() {
     }
   });
 
-  // ZIP Download with Warning Validation
   btnDownloadZip.addEventListener('click', () => {
     const unattachedSlots = state.slots.filter((s) => !s.attached);
     const attachedSlots = getAllSlots().filter((s) => s.attached);
@@ -944,7 +1363,6 @@ function setupGlobalEventListeners() {
     }
   });
 
-  // Modal Actions
   btnModalBackToAttach.addEventListener('click', () => {
     missingModal.classList.add('hidden');
     state.selectedGroupFilter = 'unattached';
@@ -987,7 +1405,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
   lucide.createIcons();
 }
 
-// 8. Metrics Calculation
+// 10. Metrics Calculation
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1007,7 +1425,7 @@ function updateSummaryMetrics() {
   lucide.createIcons();
 }
 
-// 9. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
+// 11. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 async function processAttachedFile(attachedObj) {
@@ -1030,12 +1448,10 @@ async function processAttachedFile(attachedObj) {
 
   // Case 2: Multi-Image or Single PDF target
   if (targetFormat === 'PDF') {
-    // If it is a single already-PDF file
     if (!isMultiPage && pages[0].file.type === 'application/pdf') {
       return { blob: pages[0].file, finalFilename };
     }
 
-    // Compile multiple images (or single image) into one multi-page PDF (< 5MB)
     const perPageMaxBytes = Math.max(Math.floor((4.5 * 1024 * 1024) / pages.length), 600 * 1024);
     const pdfDoc = await PDFLib.PDFDocument.create();
 
@@ -1082,11 +1498,10 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
     img.onload = async () => {
       let width = img.width;
       let height = img.height;
-      let quality = 0.95; // Start with ultra-high visual quality
+      let quality = 0.95;
       let scale = 1.0;
 
       const isSwapped = rotation === 90 || rotation === 270;
-      // Retain up to 3840px (4K UHD) for razor-sharp text and contract readability
       let maxDim = 3840;
 
       if (Math.max(width, height) > maxDim) {
@@ -1103,7 +1518,6 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
         canvas.width = isSwapped ? height : width;
         canvas.height = isSwapped ? width : height;
 
-        // High Quality Bicubic Smoothing
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
@@ -1120,12 +1534,10 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
 
         if (!resultBlob) break;
 
-        // If file already meets the <= 5MB requirement, stop immediately to preserve max quality!
         if (resultBlob.size <= maxBytes) {
           break;
         }
 
-        // Slight gentle reduction if still exceeding 5MB
         quality -= 0.08;
         if (quality < 0.72) {
           width = Math.round(width * 0.9);
@@ -1140,7 +1552,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
   });
 }
 
-// 10. Batch Download as .ZIP
+// 12. Batch Download as .ZIP
 async function executeZipDownload() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
@@ -1193,7 +1605,7 @@ async function executeZipDownload() {
   }
 }
 
-// 11. Utilities
+// 13. Utilities
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

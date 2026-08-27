@@ -290,37 +290,49 @@
               🏠 สินเชื่อที่ดิน
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">แนบหลายรูปเป็น 1 PDF ได้ • กดพรีวิวรูปใหญ่ • คุมขนาดไม่เกิน 5MB</p>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">กล้องถ่ายสด • ปั๊ม Time Stamp • บันทึกร่างเคส • คุมขนาด &le; 5MB</p>
         </div>
       </div>
 
       <!-- Quick Metrics & Top Actions -->
-      <div class="flex items-center gap-2.5 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap">
         <!-- Status Pill -->
-        <div id="missingCountBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-amber-700 font-bold text-xs transition-colors">
+        <div id="missingCountBadge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl neu-inset text-amber-700 font-bold text-xs transition-colors">
           <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i>
           <span id="missingText">ตรวจสอบเอกสาร</span>
         </div>
 
         <!-- Attached count -->
-        <div class="px-3 py-1.5 rounded-xl neu-inset text-slate-700 font-bold text-xs">
+        <div class="px-2.5 py-1.5 rounded-xl neu-inset text-slate-700 font-bold text-xs">
           <span id="attachedCountBadge">0 ไฟล์</span>
         </div>
 
+        <!-- Save Draft Button -->
+        <button id="btnSaveDraft" class="neu-btn px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1 cursor-pointer transition-colors" title="บันทึกร่างเคสนี้เก็บไว้ในเครื่องเพื่อทำต่อภายหลัง">
+          <i data-lucide="save" class="w-3.5 h-3.5 text-orange-500"></i>
+          <span class="hidden sm:inline">เซฟเคส</span>
+        </button>
+
+        <!-- Load Drafts Drawer Button -->
+        <button id="btnOpenDraftsList" class="neu-btn px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1 cursor-pointer transition-colors" title="เปิดดูรายการเคสที่เคยบันทึกไว้">
+          <i data-lucide="folder-open" class="w-3.5 h-3.5 text-orange-500"></i>
+          <span class="hidden sm:inline">เคสที่เซฟ</span>
+        </button>
+
         <!-- View PDF Manual Button -->
-        <a href="คู่มือการใช้งาน_ระบบจัดการเอกสารสินเชื่อ.pdf" target="_blank" class="neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold text-slate-700 hover:text-orange-600 flex items-center gap-1 cursor-pointer transition-colors" title="เปิดดูคู่มือการใช้งานฉบับย่อ (PDF)">
+        <a href="คู่มือการใช้งาน_ระบบจัดการเอกสารสินเชื่อ.pdf" target="_blank" class="neu-btn px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1 cursor-pointer transition-colors" title="เปิดดูคู่มือการใช้งานฉบับย่อ (PDF)">
           <i data-lucide="book-open" class="w-3.5 h-3.5 text-orange-500"></i>
           <span class="hidden sm:inline">คู่มือ PDF</span>
         </a>
 
         <!-- Add Custom Slot -->
-        <button id="btnAddCustomSlot" class="neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1 hover:bg-orange-50/50 cursor-pointer" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
+        <button id="btnAddCustomSlot" class="neu-btn px-2.5 py-1.5 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1 hover:bg-orange-50/50 cursor-pointer" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
           <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-orange-500"></i>
           <span>+ เพิ่มเอกสารเอง</span>
         </button>
 
         <!-- Main ZIP Download Button -->
-        <button id="btnDownloadZip" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap">
+        <button id="btnDownloadZip" class="neu-btn-orange px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap">
           <i data-lucide="archive" class="w-3.5 h-3.5"></i>
           <span>ดาวน์โหลด ZIP</span>
         </button>
@@ -370,13 +382,11 @@
   <footer class="fixed bottom-0 left-0 right-0 z-40 neu-bottom-dock py-2.5 px-4 sm:px-6">
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
       
-      <!-- Label / Prompt -->
       <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider hidden lg:flex items-center gap-1.5 flex-shrink-0">
         <i data-lucide="folder-check" class="w-4 h-4 text-orange-500"></i>
         <span>เลือกประเภทสินเชื่อ:</span>
       </div>
 
-      <!-- Big Easy-to-Click Product Buttons Grid -->
       <div id="loanCategoryTabs" class="grid grid-cols-5 gap-2 sm:gap-3 flex-1 w-full">
         <!-- Injected by JavaScript from checklists.js with large tap targets -->
       </div>
@@ -409,8 +419,8 @@
           </div>
         </div>
 
-        <!-- Controls (Prev/Next Page, Rotate, Download, Close) -->
-        <div class="flex items-center gap-2">
+        <!-- Controls (Enhance, Time Stamp, Rotate, Download, Close) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
           <!-- Multi-page navigation -->
           <div id="previewNavButtons" class="flex items-center gap-1">
             <button id="btnPreviewPrevPage" class="p-2 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="หน้าก่อนหน้า">
@@ -420,6 +430,16 @@
               <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
           </div>
+
+          <button id="btnPreviewEnhance" class="px-2.5 py-2 rounded-xl neu-btn text-xs font-bold text-slate-700 hover:text-orange-600 cursor-pointer flex items-center gap-1" title="ปรับแสงพื้นหลังขาวและเพิ่มคอนทราสต์ตัวหนังสือ">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span class="hidden sm:inline">ปรับความคมชัด</span>
+          </button>
+
+          <button id="btnPreviewTimeStamp" class="px-2.5 py-2 rounded-xl neu-btn text-xs font-bold text-slate-700 hover:text-orange-600 cursor-pointer flex items-center gap-1" title="ปั๊มวัน-เวลาปัจจุบันลงบนมุมรูปภาพ">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-orange-500"></i>
+            <span class="hidden sm:inline">Time Stamp</span>
+          </button>
 
           <button id="btnPreviewRotate" class="p-2.5 rounded-xl neu-btn text-slate-700 hover:text-orange-600 cursor-pointer" title="หมุนภาพหน้านี้ 90°">
             <i data-lucide="rotate-cw" class="w-4 h-4"></i>
@@ -447,6 +467,69 @@
       <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
         <span>💡 คลิกพื้นที่ว่างภายนอกหรือกดปุ่ม <b>ESC</b> เพื่อปิดหน้าต่างพรีวิว</span>
         <span id="previewModalFormat" class="font-extrabold text-orange-600">JPG</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SAVE DRAFT MODAL -->
+  <div id="saveDraftModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4 transition-all duration-300">
+    <div class="neu-raised max-w-md w-full rounded-3xl p-6 space-y-4 border border-white/80 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center gap-3 pb-3 border-b border-[#dfe2eb]">
+        <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center text-orange-500">
+          <i data-lucide="save" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-800">บันทึกร่างเคสนี้</h3>
+          <p class="text-xs text-slate-500">บันทึกรูปภาพและข้อมูลเก็บไว้ในเครื่องเพื่อทำต่อภายหลัง</p>
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-700 block">ชื่อเคส / ชื่อลูกค้า:</label>
+        <input type="text" id="inputDraftName" class="w-full text-xs font-extrabold text-slate-800 neu-inset rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="เช่น เคสคุณสมชาย - สินเชื่อที่ดิน">
+      </div>
+
+      <div class="pt-3 border-t border-[#dfe2eb] flex items-center justify-end gap-2">
+        <button id="btnCancelSaveDraft" class="neu-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer">
+          ยกเลิก
+        </button>
+        <button id="btnConfirmSaveDraft" class="neu-btn-orange px-5 py-2 rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>บันทึกเคส</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SAVED DRAFTS LIST MODAL -->
+  <div id="draftsListModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden p-4 transition-all duration-300">
+    <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 max-h-[85vh] flex flex-col border border-white/80 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-[#dfe2eb]">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center text-orange-500">
+            <i data-lucide="folder-open" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">รายการเคสที่บันทึกไว้</h3>
+            <p class="text-xs text-slate-500">เลือกเคสที่ต้องการเปิดขึ้นมาทำต่อ</p>
+          </div>
+        </div>
+        <button id="btnCloseDraftsList" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Drafts List Container -->
+      <div id="draftsItemsContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[150px]">
+        <!-- Injected by JavaScript -->
+      </div>
+
+      <div class="pt-2 border-t border-[#dfe2eb] text-right">
+        <span class="text-[11px] text-slate-400">ข้อมูลเคสถูกจัดเก็บบนเบราว์เซอร์เครื่องนี้อย่างปลอดภัย</span>
       </div>
 
     </div>
