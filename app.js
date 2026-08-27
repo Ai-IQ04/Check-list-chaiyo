@@ -133,6 +133,9 @@ const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
 const toastIcon = document.getElementById('toastIcon');
 
+// App Version Constant
+const CURRENT_APP_VERSION = '2.4.0';
+
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.LOAN_CHECKLISTS) {
@@ -147,7 +150,42 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPreviewModalListeners();
   setupDraftModalListeners();
   setupMediaPickerListeners();
+  checkAppVersion();
+
+  // Check for updates every 60 seconds
+  setInterval(checkAppVersion, 60000);
 });
+
+// Auto Version Checker & Cache Buster
+async function checkAppVersion() {
+  try {
+    const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.version && data.version !== CURRENT_APP_VERSION) {
+        showUpdateBanner(data.version);
+      }
+    }
+  } catch (e) {
+    // Silent fail if offline
+  }
+}
+
+function showUpdateBanner(newVersion) {
+  const banner = document.getElementById('updateNotificationBanner');
+  const title = document.getElementById('updateBannerTitle');
+  const btnReload = document.getElementById('btnReloadNewVersion');
+
+  if (banner && title && btnReload) {
+    title.innerText = `🚀 มีการอัปเดตเวอร์ชันใหม่ (v${newVersion})!`;
+    banner.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
+    banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+    btnReload.onclick = () => {
+      window.location.reload(true);
+    };
+  }
+}
 
 // 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
 function renderBottomDock() {

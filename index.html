@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Auto Loan Document Optimizer & Renamer | ระบบจัดการเอกสารสินเชื่อ</title>
   
   <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
@@ -637,9 +640,23 @@
     <span id="toastMsg" class="whitespace-nowrap">ข้อความแจ้งเตือน</span>
   </div>
 
-  <!-- Scripts -->
-  <script src="checklists.js"></script>
-  <script src="app.js"></script>
+  <!-- NEW VERSION UPDATE NOTIFICATION BANNER (AUTO-DETECT) -->
+  <div id="updateNotificationBanner" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-28 opacity-0 transition-all duration-300 neu-raised text-slate-800 text-xs font-bold px-5 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border-2 border-orange-500 bg-orange-50/90 pointer-events-none">
+    <div class="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center animate-bounce flex-shrink-0">
+      <i data-lucide="sparkles" class="w-4 h-4"></i>
+    </div>
+    <div>
+      <h4 class="font-extrabold text-slate-900" id="updateBannerTitle">🚀 มีการอัปเดตเวอร์ชันใหม่!</h4>
+      <p class="text-[10px] text-slate-600">กดรีเฟรชเพื่อเริ่มใช้งานฟังก์ชันล่าสุด</p>
+    </div>
+    <button id="btnReloadNewVersion" class="neu-btn-orange px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-white cursor-pointer ml-2 hover:scale-105 transition-transform flex-shrink-0">
+      รีเฟรชทันที
+    </button>
+  </div>
+
+  <!-- Scripts with Version Cache-Buster -->
+  <script src="checklists.js?v=2.4.0"></script>
+  <script src="app.js?v=2.4.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
