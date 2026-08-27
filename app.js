@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPreviewModalListeners();
 });
 
-// 2. Render Floating Bottom Dock
+// 2. Render Spacious & Easy-to-Click Bottom Navigation Bar
 function renderBottomDock() {
   loanCategoryTabs.innerHTML = '';
   const categories = Object.values(window.LOAN_CHECKLISTS);
@@ -78,16 +78,19 @@ function renderBottomDock() {
   categories.forEach((cat) => {
     const btn = document.createElement('button');
     const isActive = state.currentCategory === cat.id;
-    btn.className = `px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-slate-700 hover:text-orange-600 cursor-pointer ${
-      isActive ? 'neu-dock-active font-extrabold text-orange-600' : 'neu-btn font-bold text-xs hover:-translate-y-1'
+    
+    // Large, tall, easy-to-click button style
+    btn.className = `py-2 sm:py-2.5 px-1 sm:px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer w-full text-center ${
+      isActive
+        ? 'neu-product-active font-extrabold shadow-lg'
+        : 'neu-product-btn font-bold text-slate-700 hover:text-orange-600'
     }`;
     
-    let shortName = cat.name.replace('สินเชื่อ', '').trim();
-    if (shortName.length > 10) shortName = shortName.split('/')[0].trim();
+    let cleanName = cat.name.replace('สินเชื่อ', '').trim();
 
     btn.innerHTML = `
-      <span class="text-lg sm:text-xl filter drop-shadow-sm leading-none transition-transform group-hover:scale-110">${cat.icon}</span>
-      <span class="text-[11px] sm:text-xs text-center whitespace-nowrap leading-none">${shortName}</span>
+      <span class="text-xl sm:text-2xl filter drop-shadow-sm leading-none">${cat.icon}</span>
+      <span class="text-[11px] sm:text-xs tracking-tight line-clamp-1 leading-tight font-extrabold">${cleanName}</span>
     `;
     btn.addEventListener('click', () => selectCategory(cat.id));
     loanCategoryTabs.appendChild(btn);
