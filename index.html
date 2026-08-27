@@ -190,31 +190,10 @@
       box-shadow: 6px 6px 16px var(--neu-shadow-dark), -6px -6px 16px var(--neu-shadow-light), 0 0 16px rgba(255, 106, 0, 0.2) !important;
     }
 
-    /* Custom Slot Card */
-    .neu-slot-custom {
-      border: 1.5px dashed rgba(255, 106, 0, 0.7) !important;
-    }
-
-    /* Signature Apple Spring Transition */
-    @keyframes apple-spring-enter {
-      0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.96);
-        filter: blur(4px);
-      }
-      65% {
-        transform: translateY(-2px) scale(1.005);
-        filter: blur(0);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-      }
-    }
-
-    .apple-spring-card {
-      animation: apple-spring-enter 0.45s cubic-bezier(0.32, 0.72, 0, 1) both;
+      /* Smooth Crisp Card Style without Mobile Screen Flickering */
+    .neu-slot-card {
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+      contain: layout style;
     }
   </style>
 </head>
@@ -224,23 +203,21 @@
   <header class="w-full bg-[#e0e5ec] border-b border-[#cbd5e1]/50 py-3 sticky top-0 z-40 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
       
-      <!-- Brand & Active Product Badge -->
+      <!-- Brand Logo & Title -->
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl neu-raised flex items-center justify-center text-orange-500 font-bold flex-shrink-0">
-          <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-400 text-white flex items-center justify-center shadow-sm">
-            <i data-lucide="layers" class="w-4 h-4"></i>
-          </div>
+        <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center text-orange-600 shadow-inner">
+          <i data-lucide="layers" class="w-6 h-6"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight">
-              Auto Loan Checklist
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-black text-slate-800 tracking-tight">
+              ระบบจัดการเอกสารสินเชื่อ
             </h1>
-            <span id="currentLoanBadge" class="text-xs px-3 py-1 rounded-xl neu-inset text-orange-600 font-extrabold flex items-center gap-1">
+            <span id="currentLoanBadge" class="text-xs px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold hidden sm:inline-block">
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold tracking-tight">
-              v3.5.2 • License: Anusat
+              v3.5.3 • License: Anusat
             </span>
           </div>
           <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • ป้องกันงานหาย 3 ชั้น • Auto-Save</p>
@@ -859,7 +836,7 @@
       <!-- Modal Footer -->
       <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-2 border-t border-[#cbd5e1]/40">
         <span>💡 เลื่อนอ่านคู่มือได้ในหน้านี้ หรือกดปุ่ม <b>โหลด PDF</b> เพื่อบันทึกฉบับพิมพ์</span>
-        <span class="font-bold text-orange-600">License: Anusat • v3.5.2</span>
+        <span class="font-bold text-orange-600">License: Anusat • v3.5.3</span>
       </div>
 
     </div>
@@ -888,8 +865,8 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.5.2"></script>
-  <script src="app.js?v=3.5.2"></script>
+  <script src="checklists.js?v=3.5.3"></script>
+  <script src="app.js?v=3.5.3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();

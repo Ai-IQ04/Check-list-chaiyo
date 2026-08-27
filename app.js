@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.5.2';
+const CURRENT_APP_VERSION = '3.5.3';
 
 // Application State
 const state = {
@@ -127,10 +127,10 @@ function updateAutoSaveIndicator(status) {
   if (!dot || !text) return;
 
   if (status === 'saving') {
-    dot.className = 'w-2 h-2 rounded-full bg-amber-500 shadow-sm inline-block animate-ping';
+    dot.className = 'w-2 h-2 rounded-full bg-amber-500 shadow-sm inline-block';
     text.innerText = 'กำลังเซฟ...';
   } else if (status === 'saved') {
-    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-sm inline-block animate-pulse';
+    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-sm inline-block';
     text.innerText = 'บันทึกอัตโนมัติแล้ว';
   } else {
     dot.className = 'w-2 h-2 rounded-full bg-slate-400 shadow-sm inline-block';
@@ -597,14 +597,10 @@ function renderSlots() {
     slotsInGroup.forEach((slot) => {
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
-      
-      const animDelay = Math.min(globalCardIndex * 28, 380);
-      globalCardIndex++;
 
-      card.className = `neu-raised rounded-3xl p-4 transition-all flex flex-col justify-between gap-3 apple-spring-card ${
+      card.className = `neu-raised rounded-3xl p-4 neu-slot-card flex flex-col justify-between gap-3 ${
         isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
       }`;
-      card.style.animationDelay = `${animDelay}ms`;
 
       const cameraInputId = `slot_camera_${slot.id}`;
       const fileInputId = `slot_file_${slot.id}`;
