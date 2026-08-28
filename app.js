@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.9.0';
+const CURRENT_APP_VERSION = '3.9.1';
 
 // Application State
 const state = {
@@ -2482,16 +2482,15 @@ function openMissingModal(unattachedSlots, attachedCount) {
 
     missingMandatory.forEach((slot) => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between p-3 rounded-2xl neu-inset text-xs border border-rose-200/90 bg-rose-50/50 hover:bg-rose-100/70 hover:border-rose-400 cursor-pointer transition-all select-none group';
+      row.className = 'flex items-center justify-between p-2.5 sm:p-3 rounded-2xl neu-inset text-xs border border-rose-200/90 bg-rose-50/50 hover:bg-rose-100/70 hover:border-rose-400 cursor-pointer transition-all select-none group gap-2';
       row.title = 'คลิกเพื่อเลื่อนไปยังช่องเอกสารนี้ทันที';
       row.innerHTML = `
         <div class="flex items-center gap-2 truncate min-w-0 flex-1">
           <span class="px-2 py-0.5 rounded-lg bg-rose-500 text-white shadow-xs font-black text-[10px] flex-shrink-0">${slot.code}</span>
           <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-rose-700 bg-rose-100/80 border border-rose-300/80 flex-shrink-0">บังคับ</span>
-          <span class="font-extrabold text-rose-950 truncate">${slot.targetName}</span>
+          <span class="font-extrabold text-rose-950 truncate flex-1">${slot.targetName}</span>
         </div>
-        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
-          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
+        <div class="flex items-center gap-1 flex-shrink-0">
           <i data-lucide="arrow-right-circle" class="w-4 h-4 text-rose-400 group-hover:text-rose-600 group-hover:translate-x-0.5 transition-all"></i>
         </div>
       `;
@@ -2532,16 +2531,15 @@ function openMissingModal(unattachedSlots, attachedCount) {
 
     missingOptional.forEach((slot) => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-amber-200/60 bg-amber-50/30 hover:bg-amber-100/50 hover:border-amber-300 cursor-pointer transition-all select-none group';
+      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-amber-200/60 bg-amber-50/30 hover:bg-amber-100/50 hover:border-amber-300 cursor-pointer transition-all select-none group gap-2';
       row.title = 'คลิกเพื่อเลื่อนไปยังช่องเอกสารนี้';
       row.innerHTML = `
         <div class="flex items-center gap-2 truncate min-w-0 flex-1">
           <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-800 font-black text-[10px] flex-shrink-0">${slot.code}</span>
           <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-amber-800 bg-amber-100/80 border border-amber-300/80 flex-shrink-0">ถ้ามี</span>
-          <span class="font-extrabold text-slate-800 truncate">${slot.targetName}</span>
+          <span class="font-extrabold text-slate-800 truncate flex-1">${slot.targetName}</span>
         </div>
-        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
-          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
+        <div class="flex items-center gap-1 flex-shrink-0">
           <i data-lucide="arrow-right-circle" class="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all"></i>
         </div>
       `;
@@ -2569,7 +2567,7 @@ function openMissingModal(unattachedSlots, attachedCount) {
     });
   }
 
-  // 3. Render Attached Documents (Green checkmark styling)
+  // 3. Render Attached Documents (Green checkmark styling - Clean & Mobile Friendly)
   if (attachedSlots.length > 0) {
     const attachedHeader = document.createElement('div');
     attachedHeader.className = 'flex items-center justify-between text-xs font-black text-emerald-700 pt-3 pb-0.5 sticky top-0 bg-[#e0e5ec] z-10';
@@ -2583,21 +2581,19 @@ function openMissingModal(unattachedSlots, attachedCount) {
       const row = document.createElement('div');
       const pageCount = slot.attached.pages ? slot.attached.pages.length : 1;
       const fmt = (slot.attached.targetFormat || slot.defaultFormat || 'PDF').toUpperCase();
-      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-emerald-200/90 bg-emerald-50/50 hover:bg-emerald-100/70 hover:border-emerald-400 cursor-pointer transition-all select-none group';
+      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-emerald-200/90 bg-emerald-50/50 hover:bg-emerald-100/70 hover:border-emerald-400 cursor-pointer transition-all select-none group gap-2';
       row.title = 'คลิกเพื่อดูเอกสารหรือพรีวิว';
       row.innerHTML = `
         <div class="flex items-center gap-2 truncate min-w-0 flex-1">
-          <div class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-            <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+          <div class="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
           </div>
-          <span class="px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-[10px] flex-shrink-0">${slot.code}</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 flex-shrink-0">แนบแล้ว</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-extrabold ${fmt === 'PDF' ? 'text-red-700 bg-red-100/80' : 'text-blue-700 bg-blue-100/80'} flex-shrink-0">${fmt} ${pageCount > 1 ? `(${pageCount}น.)` : ''}</span>
-          <span class="font-extrabold text-emerald-950 truncate">${slot.targetName}</span>
+          <span class="px-1.5 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-[10px] flex-shrink-0">${slot.code}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-extrabold flex-shrink-0 ${fmt === 'PDF' ? 'text-red-700 bg-red-100/80 border border-red-200' : 'text-blue-700 bg-blue-100/80 border border-blue-200'}">${fmt}${pageCount > 1 ? ` (${pageCount}น.)` : ''}</span>
+          <span class="font-extrabold text-emerald-950 truncate flex-1">${slot.targetName}</span>
         </div>
-        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
-          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
-          <i data-lucide="eye" class="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-all"></i>
+        <div class="flex items-center gap-1 flex-shrink-0 text-emerald-600">
+          <i data-lucide="eye" class="w-4 h-4 group-hover:scale-110 transition-all"></i>
         </div>
       `;
 
