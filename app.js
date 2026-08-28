@@ -8,12 +8,13 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.5.3';
+const CURRENT_APP_VERSION = '3.9.0';
 
 // Application State
 const state = {
   currentCategory: 'motorcycle',
   currentSubType: 'pledge', // Sub-type filter ID (e.g. 'pledge', 'refinance', 'topup', 'land_mortgage', etc.)
+  hasGuarantor: false, // false = no guarantor (borrower only), true = with guarantor
   selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
@@ -23,11 +24,12 @@ const state = {
   pendingAiImage: null, // Active image pending AI slot assignment
 };
 
-// IndexedDB Helper for Saving/Resuming Drafts & Real-time Auto-Save
+// IndexedDB Helper for Saving/Resuming Drafts, Custom Checklists & Real-time Auto-Save
 const DB_NAME = 'LoanChecklistAppDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_DRAFTS = 'case_drafts';
 const STORE_AUTOSAVE = 'active_autosave';
+const STORE_CUSTOM_CHECKLISTS = 'custom_master_checklists';
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -40,9 +42,50 @@ function openDB() {
       if (!db.objectStoreNames.contains(STORE_AUTOSAVE)) {
         db.createObjectStore(STORE_AUTOSAVE, { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains(STORE_CUSTOM_CHECKLISTS)) {
+        db.createObjectStore(STORE_CUSTOM_CHECKLISTS, { keyPath: 'id' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
+  });
+}
+
+async function getAllCustomMasterDocsFromDB() {
+  const db = await openDB();
+  return new Promise((resolve) => {
+    try {
+      if (!db.objectStoreNames.contains(STORE_CUSTOM_CHECKLISTS)) return resolve([]);
+      const tx = db.transaction(STORE_CUSTOM_CHECKLISTS, 'readonly');
+      const store = tx.objectStore(STORE_CUSTOM_CHECKLISTS);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    } catch (e) {
+      resolve([]);
+    }
+  });
+}
+
+async function saveCustomMasterDocToDB(doc) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_CUSTOM_CHECKLISTS, 'readwrite');
+    const store = tx.objectStore(STORE_CUSTOM_CHECKLISTS);
+    store.put(doc);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function deleteCustomMasterDocFromDB(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_CUSTOM_CHECKLISTS, 'readwrite');
+    const store = tx.objectStore(STORE_CUSTOM_CHECKLISTS);
+    store.delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
 
@@ -99,6 +142,7 @@ async function saveAutoSaveSession() {
       id: 'current_active_session',
       category: state.currentCategory,
       subType: state.currentSubType,
+      hasGuarantor: state.hasGuarantor,
       selectedGroup: state.selectedGroupFilter,
       customCounter: state.customCounter,
       customSlots: state.customSlots,
@@ -158,10 +202,28 @@ async function restoreAutoSaveSession() {
 
         state.currentCategory = session.category || 'motorcycle';
         state.currentSubType = session.subType || 'pledge';
+        state.hasGuarantor = session.hasGuarantor || false;
         state.selectedGroupFilter = session.selectedGroup || 'all';
         state.customCounter = session.customCounter || 1;
         state.customSlots = session.customSlots || [];
-        state.slots = session.slots || [];
+
+        // Re-sync standard slots with master LOAN_CHECKLISTS to always apply latest master database rules
+        const masterItems = (window.LOAN_CHECKLISTS[state.currentCategory] && window.LOAN_CHECKLISTS[state.currentCategory].items) || [];
+        const masterMap = {};
+        masterItems.forEach((it) => (masterMap[it.code] = it));
+
+        state.slots = (session.slots || []).map((s) => {
+          const master = masterMap[s.code];
+          if (master) {
+            return {
+              ...s,
+              mandatory: !!master.mandatory,
+              desc: master.desc || s.desc,
+              defaultFormat: master.format || s.defaultFormat,
+            };
+          }
+          return s;
+        });
 
         renderBottomDock();
         renderSubProductPills();
@@ -169,6 +231,18 @@ async function restoreAutoSaveSession() {
         renderSlots();
         updateSummaryMetrics();
         updateAutoSaveIndicator('saved');
+
+        const btnNo = document.getElementById('btnGuarantorNo');
+        const btnYes = document.getElementById('btnGuarantorYes');
+        if (btnNo && btnYes) {
+          if (!state.hasGuarantor) {
+            btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+            btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+          } else {
+            btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+            btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+          }
+        }
 
         const attachedCount = getAllSlots().filter((s) => s.attached).length;
         showToast(`✅ กู้คืนข้อมูลเคสที่ทำค้างไว้สำเร็จ (${attachedCount} ไฟล์)`, 'success');
@@ -245,6 +319,23 @@ const missingItemsList = document.getElementById('missingItemsList');
 const btnModalBackToAttach = document.getElementById('btnModalBackToAttach');
 const btnModalConfirmDownload = document.getElementById('btnModalConfirmDownload');
 
+// Manage Master Documents DOM Elements
+const btnOpenManageDocsModal = document.getElementById('btnOpenManageDocsModal');
+const btnOpenManageDocsModalFromDrawer = document.getElementById('btnOpenManageDocsModalFromDrawer');
+const manageDocsModal = document.getElementById('manageDocsModal');
+const btnCloseManageDocsModal = document.getElementById('btnCloseManageDocsModal');
+const btnCloseManageDocsFooter = document.getElementById('btnCloseManageDocsFooter');
+const inputNewDocCode = document.getElementById('inputNewDocCode');
+const inputNewDocName = document.getElementById('inputNewDocName');
+const inputNewDocDesc = document.getElementById('inputNewDocDesc');
+const selectNewDocGroup = document.getElementById('selectNewDocGroup');
+const selectNewDocFormat = document.getElementById('selectNewDocFormat');
+const selectNewDocMandatory = document.getElementById('selectNewDocMandatory');
+const selectNewDocScope = document.getElementById('selectNewDocScope');
+const btnAddDocToMaster = document.getElementById('btnAddDocToMaster');
+const customMasterDocsCount = document.getElementById('customMasterDocsCount');
+const customMasterDocsList = document.getElementById('customMasterDocsList');
+
 // Toast
 const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
@@ -258,6 +349,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // 1. Load & Apply any User-Defined Permanent Master Documents from IndexedDB
+  await loadAndApplyCustomMasterDocs();
+
   renderBottomDock();
   
   // Try restoring unfinished auto-saved session first
@@ -269,6 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupGlobalEventListeners();
   setupPreviewModalListeners();
   setupDraftModalListeners();
+  setupManageDocsModalListeners();
   setupAiScannerListeners();
   checkAppVersion();
 
@@ -419,21 +514,55 @@ function loadSlotsForCurrentSubProduct() {
   const sub = state.currentSubType;
 
   if (state.currentCategory === 'land') {
-    if (sub === 'land_pledge') {
-      items = items.filter((it) => !it.code.startsWith('DD') && it.code !== 'C301');
-    } else if (sub === 'land_refinance_pledge') {
+    if (sub === 'land_pledge' || sub === 'land_refinance_pledge' || sub === 'land_topup') {
+      // โหมดจำนำที่ดิน และ Top-up ที่ดิน: ไม่ต้องแสดงเอกสารจดจำนองที่ดิน (หมวด DD)
       items = items.filter((it) => !it.code.startsWith('DD'));
-    } else if (sub === 'land_mortgage') {
-      items = items.filter((it) => it.code !== 'C301');
-    } else if (sub === 'land_topup') {
-      // Top-up ที่ดิน: Highlight topup items
-      items = items.filter((it) => ['A01', 'A02', 'A03', 'A05', 'B36', 'C105', 'AA01', 'AA02', 'AA03', 'CC01'].includes(it.code));
     }
-  } else {
-    if (sub === 'topup') {
-      // Top-up ยานพาหนะ
-      items = items.filter((it) => ['A01', 'A02', 'A03', 'B10', 'B11', 'B12', 'B13', 'B14', 'C105', 'AA01', 'AA02', 'AA03', 'CC01'].includes(it.code));
-    }
+  }
+
+  // Filter Refinance & Top-up documents (หมวด C3 เอกสารเพิ่มเติม รีไฟแนนซ์/ต่อสัญญา/Top-up)
+  const isRefinanceOrTopup = ['refinance', 'topup', 'land_refinance_pledge', 'land_refinance_mortgage', 'land_topup'].includes(sub);
+  const isRefinance = ['refinance', 'land_refinance_pledge', 'land_refinance_mortgage'].includes(sub);
+
+  if (!isRefinanceOrTopup) {
+    // โหมดจำนำ และ จำนอง: ไม่ต้องแสดงหมวด C3 และ ไม่ต้องแสดงหนังสือมอบอำนาจรีไฟแนนซ์
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const grp = (it.group || '').toUpperCase();
+      const targetName = it.targetName || '';
+      if (c === 'A023' || c === 'AA023' || targetName.includes('หนังสือมอบอำนาจรีไฟแนนซ์')) {
+        return false;
+      }
+      if (grp.startsWith('C3') || c.startsWith('C3')) {
+        return false;
+      }
+      return true;
+    });
+  } else if (!isRefinance) {
+    // โหมด Top-up: แสดงหมวด C3 (ใบเรียกเก็บดอกเบี้ยสะสม Top up) แต่ซ่อนหนังสือมอบอำนาจรีไฟแนนซ์
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const targetName = it.targetName || '';
+      if (c === 'A023' || c === 'AA023' || targetName.includes('หนังสือมอบอำนาจรีไฟแนนซ์')) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // Filter Guarantor items when in "No Guarantor" mode (Only Borrower & Collateral documents)
+  if (!state.hasGuarantor) {
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const grp = (it.group || '').toUpperCase();
+      const desc = it.desc || '';
+      const targetName = it.targetName || '';
+      
+      if (['A02', 'A04', 'C102', 'C106', 'C202', 'BB01', 'BB02'].includes(c)) return false;
+      if (grp.startsWith('BB')) return false;
+      if (desc.includes('ผู้ค้ำ') || targetName.includes('ผู้ค้ำ')) return false;
+      return true;
+    });
   }
 
   // Preserve already attached files if matching code
@@ -449,6 +578,7 @@ function loadSlotsForCurrentSubProduct() {
     desc: item.desc,
     targetName: item.targetName,
     defaultFormat: item.format || 'JPG',
+    mandatory: !!item.mandatory,
     isCustom: false,
     attached: existingAttachedMap[item.code] || null,
   }));
@@ -598,7 +728,8 @@ function renderSlots() {
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
 
-      card.className = `neu-raised rounded-3xl p-4 neu-slot-card flex flex-col justify-between gap-3 ${
+      card.id = `card_${slot.id}`;
+      card.className = `neu-raised rounded-3xl p-4 neu-slot-card flex flex-col justify-between gap-3 transition-all duration-300 ${
         isAttached ? 'neu-slot-attached' : (slot.isCustom ? 'neu-slot-custom' : '')
       }`;
 
@@ -607,6 +738,12 @@ function renderSlots() {
 
       const appendCameraId = `slot_append_camera_${slot.id}`;
       const appendFileId = `slot_append_file_${slot.id}`;
+
+      const statusBadge = slot.mandatory
+        ? `<span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-black text-rose-700 bg-rose-50/80 border border-rose-200/90 flex items-center gap-1 shadow-xs tracking-tight select-none"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>บังคับ</span>`
+        : (slot.isCustom
+            ? `<span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-black text-amber-700 bg-amber-50/80 border border-amber-200/90 flex items-center gap-1 shadow-xs tracking-tight select-none">เพิ่มเติม</span>`
+            : `<span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-black text-amber-800 bg-amber-50/80 border border-amber-200/90 flex items-center gap-1 shadow-xs tracking-tight select-none">ถ้ามี</span>`);
 
       if (!isAttached) {
         // Empty Slot with 2 Direct 1-Click Buttons
@@ -619,19 +756,20 @@ function renderSlots() {
             <div class="space-y-1.5 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs px-2.5 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
+                ${statusBadge}
                 ${
                   slot.isCustom
                     ? `<input type="text" value="${slot.targetName}" data-id="${slot.id}" class="text-xs font-extrabold text-slate-800 neu-inset rounded-lg px-2.5 py-1 input-custom-name focus:outline-none flex-1 min-w-[140px]" placeholder="พิมพ์ชื่อไฟล์ที่ต้องการ">`
-                    : `<span class="text-xs font-extrabold text-slate-800 truncate">${slot.targetName}</span>`
+                    : `<span class="text-xs font-extrabold text-slate-800 break-words leading-relaxed">${slot.targetName}</span>`
                 }
                 <!-- Pure Neumorphic Soft UI Format Pill with Crisp Colored Text -->
                 <span class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase ${
-                  slot.defaultFormat === 'PDF' ? 'text-red-600' : 'text-blue-600'
+                  slot.defaultFormat === 'PDF' ? 'text-red-700 bg-red-50/60 border border-red-200/80' : 'text-blue-700 bg-blue-50/60 border border-blue-200/80'
                 }">
                   ${slot.defaultFormat}
                 </span>
               </div>
-              <p class="text-xs text-slate-500 line-clamp-1" title="${slot.desc}">${slot.desc}</p>
+              <p class="text-xs text-slate-500 leading-relaxed break-words" title="${slot.desc}">${slot.desc}</p>
             </div>
 
             ${
@@ -722,8 +860,17 @@ function renderSlots() {
 
             <!-- Details & Renaming -->
             <div class="flex-1 min-w-0 space-y-1.5">
-              <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-extrabold text-slate-800 truncate" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
+              <div class="flex items-center justify-between gap-1 flex-wrap">
+                <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                  <span class="text-xs font-extrabold text-slate-800 break-words leading-relaxed" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
+                  ${statusBadge}
+                  <!-- Pure Neumorphic Soft UI Format Pill with Crisp Colored Text -->
+                  <span class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase ${
+                    att.targetFormat === 'PDF' ? 'text-red-700 bg-red-50/60 border border-red-200/80' : 'text-blue-700 bg-blue-50/60 border border-blue-200/80'
+                  }">
+                    ${att.targetFormat}
+                  </span>
+                </div>
                 <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset font-bold ${pageCount > 1 ? 'text-orange-600 bg-orange-50/50' : 'text-slate-600'} whitespace-nowrap">
                   ${pageCount > 1 ? `📄 รวม ${pageCount} หน้า • ${formattedSize}` : formattedSize}
                 </span>
@@ -731,7 +878,10 @@ function renderSlots() {
 
               <div>
                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ชื่อไฟล์ที่จะบันทึก (แก้ไขได้):</label>
-                <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name transition-all focus:ring-1 focus:ring-orange-400">
+                <div class="flex items-center gap-1.5">
+                  <input type="text" value="${att.targetName}" data-id="${slot.id}" class="w-full text-xs font-extrabold text-orange-600 neu-inset rounded-xl px-3 py-1.5 focus:outline-none input-slot-name transition-all focus:ring-1 focus:ring-orange-400">
+                  <span class="text-xs font-black text-slate-600 neu-inset px-2.5 py-1.5 rounded-xl uppercase">.${att.targetFormat.toLowerCase()}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1733,6 +1883,7 @@ function setupDraftModalListeners() {
       createdAt: new Date().toISOString(),
       category: state.currentCategory,
       subType: state.currentSubType,
+      hasGuarantor: state.hasGuarantor,
       slots: state.slots,
       customSlots: state.customSlots,
       customCounter: state.customCounter,
@@ -1812,6 +1963,7 @@ async function renderDraftsList() {
         if (targetDraft) {
           state.currentCategory = targetDraft.category;
           state.currentSubType = targetDraft.subType || 'pledge';
+          state.hasGuarantor = targetDraft.hasGuarantor || false;
           state.slots = targetDraft.slots;
           state.customSlots = targetDraft.customSlots || [];
           state.customCounter = targetDraft.customCounter || 1;
@@ -1825,6 +1977,18 @@ async function renderDraftsList() {
           renderGroupFilterPills();
           renderSlots();
           updateSummaryMetrics();
+
+          const btnNo = document.getElementById('btnGuarantorNo');
+          const btnYes = document.getElementById('btnGuarantorYes');
+          if (btnNo && btnYes) {
+            if (!state.hasGuarantor) {
+              btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+              btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+            } else {
+              btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+              btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+            }
+          }
 
           draftsListModal.classList.add('hidden');
           showToast(`เปิดเคส "${targetDraft.name}" สำเร็จ!`, 'success');
@@ -1850,7 +2014,236 @@ async function renderDraftsList() {
   }
 }
 
-// 12. Global Batch, Custom Slots, New Case & Manual Modal Events
+// 11.5 Custom Master Documents Database Management System
+async function loadAndApplyCustomMasterDocs() {
+  try {
+    const customDocs = await getAllCustomMasterDocsFromDB();
+    if (!customDocs || customDocs.length === 0) return;
+
+    const allCategories = ['motorcycle', 'car', 'truck', 'agri', 'land'];
+
+    customDocs.forEach((doc) => {
+      const targetCats = doc.scope === 'all' ? allCategories : [doc.scope];
+      targetCats.forEach((catId) => {
+        const catObj = window.LOAN_CHECKLISTS[catId];
+        if (catObj && catObj.items) {
+          const exists = catObj.items.some((it) => it.code === doc.code);
+          if (!exists) {
+            catObj.items.push({
+              code: doc.code,
+              group: doc.group || 'เอกสารทั่วไป',
+              desc: doc.desc || doc.targetName,
+              targetName: doc.targetName,
+              format: doc.format || 'PDF',
+              mandatory: !!doc.mandatory,
+              isCustomMaster: true,
+              customDocId: doc.id,
+            });
+          }
+        }
+      });
+    });
+  } catch (err) {
+    console.warn('Error loading custom master documents:', err);
+  }
+}
+
+function setupManageDocsModalListeners() {
+  const openModal = async () => {
+    await renderCustomMasterDocsList();
+    if (manageDocsModal) {
+      manageDocsModal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+  };
+
+  if (btnOpenManageDocsModal) {
+    btnOpenManageDocsModal.addEventListener('click', openModal);
+  }
+
+  if (btnOpenManageDocsModalFromDrawer) {
+    btnOpenManageDocsModalFromDrawer.addEventListener('click', () => {
+      if (draftsListModal) draftsListModal.classList.add('hidden');
+      openModal();
+    });
+  }
+
+  const closeModal = () => {
+    if (manageDocsModal) manageDocsModal.classList.add('hidden');
+  };
+
+  if (btnCloseManageDocsModal) btnCloseManageDocsModal.addEventListener('click', closeModal);
+  if (btnCloseManageDocsFooter) btnCloseManageDocsFooter.addEventListener('click', closeModal);
+
+  if (manageDocsModal) {
+    manageDocsModal.addEventListener('click', (e) => {
+      if (e.target === manageDocsModal) closeModal();
+    });
+  }
+
+  // Add Document to Master Database Form Submission
+  if (btnAddDocToMaster) {
+    btnAddDocToMaster.addEventListener('click', async () => {
+      const targetName = (inputNewDocName.value || '').trim();
+      if (!targetName) {
+        showToast('กรุณากรอกชื่อไฟล์เอกสาร', 'error');
+        inputNewDocName.focus();
+        return;
+      }
+
+      let code = (inputNewDocCode.value || '').trim().toUpperCase();
+      if (!code) {
+        // Auto-generate code
+        code = `EXT${Math.floor(100 + Math.random() * 900)}`;
+      }
+
+      const desc = (inputNewDocDesc.value || '').trim() || targetName;
+      const group = selectNewDocGroup.value || 'A ยืนยันตัวตน';
+      const format = selectNewDocFormat.value || 'PDF';
+      const isMandatory = selectNewDocMandatory.value === 'mandatory';
+      const scope = selectNewDocScope.value || 'all';
+
+      const docId = `custom_doc_${Date.now()}`;
+      const newDoc = {
+        id: docId,
+        code: code,
+        targetName: targetName,
+        desc: desc,
+        group: group,
+        format: format,
+        mandatory: isMandatory,
+        scope: scope,
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        await saveCustomMasterDocToDB(newDoc);
+
+        // Inject into current active runtime window.LOAN_CHECKLISTS
+        const allCategories = ['motorcycle', 'car', 'truck', 'agri', 'land'];
+        const targetCats = scope === 'all' ? allCategories : [scope];
+
+        targetCats.forEach((catId) => {
+          const catObj = window.LOAN_CHECKLISTS[catId];
+          if (catObj && catObj.items) {
+            catObj.items.push({
+              code: newDoc.code,
+              group: newDoc.group,
+              desc: newDoc.desc,
+              targetName: newDoc.targetName,
+              format: newDoc.format,
+              mandatory: newDoc.mandatory,
+              isCustomMaster: true,
+              customDocId: newDoc.id,
+            });
+          }
+        });
+
+        // Clear Form Inputs
+        inputNewDocCode.value = '';
+        inputNewDocName.value = '';
+        inputNewDocDesc.value = '';
+
+        // Reload slots and UI
+        loadSlotsForCurrentSubProduct();
+        await renderCustomMasterDocsList();
+        showToast(`✅ บันทึกเอกสาร [${code}] "${targetName}" เข้าฐานข้อมูลถาวรสำเร็จ!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการบันทึกเอกสารเข้าฐานข้อมูล', 'error');
+      }
+    });
+  }
+}
+
+async function renderCustomMasterDocsList() {
+  if (!customMasterDocsList) return;
+
+  customMasterDocsList.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">กำลังโหลดรายการ...</div>';
+  try {
+    const customDocs = await getAllCustomMasterDocsFromDB();
+    if (customMasterDocsCount) customMasterDocsCount.innerText = `${customDocs.length} รายการ`;
+
+    if (customDocs.length === 0) {
+      customMasterDocsList.innerHTML = `
+        <div class="p-5 text-center text-slate-400 space-y-1.5 neu-inset rounded-2xl">
+          <i data-lucide="inbox" class="w-6 h-6 mx-auto text-slate-400"></i>
+          <p class="text-xs font-bold text-slate-600">ยังไม่มีเอกสารที่เพิ่มเข้าฐานข้อมูล</p>
+          <p class="text-[10px] text-slate-400">กรอกฟอร์มด้านบนเพื่อเพิ่มเอกสารใหม่เข้าสู่ระบบถาวร</p>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+
+    customMasterDocsList.innerHTML = '';
+    customDocs.forEach((doc) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-3 rounded-2xl neu-inset text-xs border border-[#dfe2eb] gap-2';
+      row.innerHTML = `
+        <div class="flex items-center gap-2 truncate min-w-0 flex-1">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-600 text-white font-black text-[10px] flex-shrink-0">${doc.code}</span>
+          ${doc.mandatory ? '<span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-rose-700 bg-rose-100/80 border border-rose-300/80 flex-shrink-0">บังคับ</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-amber-800 bg-amber-100/80 border border-amber-300/80 flex-shrink-0">ถ้ามี</span>'}
+          <span class="text-[10px] px-2 py-0.5 rounded-md font-extrabold flex-shrink-0 ${doc.format === 'PDF' ? 'text-red-700 bg-red-100/80' : 'text-blue-700 bg-blue-100/80'}">${doc.format}</span>
+          <div class="truncate">
+            <span class="font-extrabold text-slate-800">${doc.targetName}</span>
+            <span class="text-[10px] text-slate-500 ml-1">(${doc.group})</span>
+          </div>
+        </div>
+        <button class="p-1.5 rounded-xl neu-btn text-slate-400 hover:text-red-600 btn-delete-custom-master cursor-pointer transition-colors flex-shrink-0" data-id="${doc.id}" title="ลบเอกสารนี้ออกจากฐานข้อมูล">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        </button>
+      `;
+
+      row.querySelector('.btn-delete-custom-master').addEventListener('click', async () => {
+        if (confirm(`คุณต้องการลบเอกสาร [${doc.code}] "${doc.targetName}" ออกจากฐานข้อมูลถาวรหรือไม่?`)) {
+          await deleteCustomMasterDocFromDB(doc.id);
+
+          // Remove from window.LOAN_CHECKLISTS
+          for (const [k, v] of Object.entries(window.LOAN_CHECKLISTS)) {
+            v.items = v.items.filter((it) => it.customDocId !== doc.id);
+          }
+
+          loadSlotsForCurrentSubProduct();
+          await renderCustomMasterDocsList();
+          showToast(`ลบเอกสาร [${doc.code}] เรียบร้อยแล้ว`, 'info');
+        }
+      });
+
+      customMasterDocsList.appendChild(row);
+    });
+
+    lucide.createIcons();
+  } catch (err) {
+    console.error(err);
+    customMasterDocsList.innerHTML = '<div class="text-center py-4 text-red-500 text-xs">เกิดข้อผิดพลาดในการโหลดรายการ</div>';
+  }
+}
+
+// 12. Guarantor Mode Switch Engine
+function setGuarantorMode(hasGuarantor, silent = false) {
+  state.hasGuarantor = hasGuarantor;
+
+  const btnNo = document.getElementById('btnGuarantorNo');
+  const btnYes = document.getElementById('btnGuarantorYes');
+
+  if (btnNo && btnYes) {
+    if (!hasGuarantor) {
+      btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+      btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+    } else {
+      btnNo.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+      btnYes.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+    }
+  }
+
+  loadSlotsForCurrentSubProduct();
+  if (!silent) {
+    showToast(hasGuarantor ? '👥 เลือกโหมด: มีผู้ค้ำประกัน (แสดงเอกสารผู้ค้ำครบถ้วน)' : '👤 เลือกโหมด: ไม่มีผู้ค้ำประกัน (แสดงเฉพาะผู้กู้)', 'info');
+  }
+}
+
+// 13. Global Batch, Custom Slots, New Case & Manual Modal Events
 async function resetToNewCase(showNotification = true) {
   const all = getAllSlots();
   all.forEach((s) => (s.attached = null));
@@ -1879,6 +2272,16 @@ async function resetToNewCase(showNotification = true) {
 }
 
 function setupGlobalEventListeners() {
+  const btnGuarantorNo = document.getElementById('btnGuarantorNo');
+  const btnGuarantorYes = document.getElementById('btnGuarantorYes');
+
+  if (btnGuarantorNo) {
+    btnGuarantorNo.addEventListener('click', () => setGuarantorMode(false));
+  }
+  if (btnGuarantorYes) {
+    btnGuarantorYes.addEventListener('click', () => setGuarantorMode(true));
+  }
+
   const btnOpenManualModal = document.getElementById('btnOpenManualModal');
   const btnCloseManualModal = document.getElementById('btnCloseManualModal');
   const manualModal = document.getElementById('manualModal');
@@ -2054,47 +2457,188 @@ function setupGlobalEventListeners() {
 }
 
 function openMissingModal(unattachedSlots, attachedCount) {
-  missingModalSubtitle.innerText = `แนบแล้ว ${attachedCount} ไฟล์ • ยังขาดอีก ${unattachedSlots.length} ไฟล์ Checklist`;
+  const allSlots = getAllSlots();
+  const attachedSlots = allSlots.filter((s) => s.attached);
+  const missingMandatory = unattachedSlots.filter((s) => s.mandatory);
+  const missingOptional = unattachedSlots.filter((s) => !s.mandatory);
+
+  if (missingMandatory.length > 0) {
+    missingModalSubtitle.innerHTML = `แนบแล้ว <span class="text-emerald-700 font-extrabold">${attachedCount}</span> ไฟล์ • <span class="text-rose-700 font-black">ขาดเอกสารบังคับ ${missingMandatory.length} รายการ</span>${missingOptional.length > 0 ? ` (และเอกสารทางเลือก ${missingOptional.length} รายการ)` : ''}`;
+  } else {
+    missingModalSubtitle.innerHTML = `แนบแล้ว <span class="text-emerald-700 font-extrabold">${attachedCount}</span> ไฟล์ • <span class="text-emerald-700 font-bold">เอกสารบังคับครบ 100% แล้ว</span> (มีเอกสารทางเลือกที่ยังไม่ได้แนบ ${missingOptional.length} รายการ)`;
+  }
   
   missingItemsList.innerHTML = '';
-  unattachedSlots.slice(0, 15).forEach((slot) => {
-    const row = document.createElement('div');
-    row.className = 'flex items-center justify-between p-2 rounded-xl neu-inset text-xs';
-    row.innerHTML = `
-      <div class="flex items-center gap-2 truncate">
-        <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 font-extrabold text-[10px]">${slot.code}</span>
-        <span class="font-bold text-slate-800 truncate">${slot.targetName}</span>
-      </div>
-      <span class="text-[10px] text-slate-500 font-semibold whitespace-nowrap ml-2">${slot.group}</span>
-    `;
-    missingItemsList.appendChild(row);
-  });
 
-  if (unattachedSlots.length > 15) {
-    const moreRow = document.createElement('div');
-    moreRow.className = 'text-center text-xs font-bold text-slate-500 py-1';
-    moreRow.innerText = `...และอีก ${unattachedSlots.length - 15} รายการ`;
-    missingItemsList.appendChild(moreRow);
+  // 1. Render ALL Missing Mandatory Documents (100% complete, red styling)
+  if (missingMandatory.length > 0) {
+    const mandatoryHeader = document.createElement('div');
+    mandatoryHeader.className = 'flex items-center justify-between text-xs font-black text-rose-700 pt-1 pb-0.5 sticky top-0 bg-[#e0e5ec] z-10';
+    mandatoryHeader.innerHTML = `
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block"></span> 🔴 เอกสารบังคับที่ยังขาด (${missingMandatory.length} รายการ):</span>
+      <span class="text-[10px] text-slate-500 font-normal">แตะรายการเพื่อเลื่อนไปแนบ</span>
+    `;
+    missingItemsList.appendChild(mandatoryHeader);
+
+    missingMandatory.forEach((slot) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-3 rounded-2xl neu-inset text-xs border border-rose-200/90 bg-rose-50/50 hover:bg-rose-100/70 hover:border-rose-400 cursor-pointer transition-all select-none group';
+      row.title = 'คลิกเพื่อเลื่อนไปยังช่องเอกสารนี้ทันที';
+      row.innerHTML = `
+        <div class="flex items-center gap-2 truncate min-w-0 flex-1">
+          <span class="px-2 py-0.5 rounded-lg bg-rose-500 text-white shadow-xs font-black text-[10px] flex-shrink-0">${slot.code}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-rose-700 bg-rose-100/80 border border-rose-300/80 flex-shrink-0">บังคับ</span>
+          <span class="font-extrabold text-rose-950 truncate">${slot.targetName}</span>
+        </div>
+        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
+          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
+          <i data-lucide="arrow-right-circle" class="w-4 h-4 text-rose-400 group-hover:text-rose-600 group-hover:translate-x-0.5 transition-all"></i>
+        </div>
+      `;
+
+      // Smart Focus Scroll
+      row.addEventListener('click', () => {
+        missingModal.classList.add('hidden');
+        if (state.selectedGroupFilter !== 'all' && state.selectedGroupFilter !== slot.group) {
+          state.selectedGroupFilter = 'all';
+          renderGroupFilterPills();
+          renderSlots();
+        }
+        setTimeout(() => {
+          const targetCard = document.getElementById(`card_${slot.id}`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetCard.classList.add('ring-4', 'ring-orange-500', 'scale-[1.02]');
+            setTimeout(() => {
+              targetCard.classList.remove('ring-4', 'ring-orange-500', 'scale-[1.02]');
+            }, 2200);
+          }
+        }, 100);
+      });
+
+      missingItemsList.appendChild(row);
+    });
+  }
+
+  // 2. Render Missing Optional Documents (Yellow styling)
+  if (missingOptional.length > 0) {
+    const optionalHeader = document.createElement('div');
+    optionalHeader.className = 'flex items-center justify-between text-xs font-extrabold text-amber-800 pt-3 pb-0.5 sticky top-0 bg-[#e0e5ec] z-10';
+    optionalHeader.innerHTML = `
+      <span class="flex items-center gap-1.5">🟡 เอกสารทางเลือกที่ยังไม่ได้แนบ (${missingOptional.length} รายการ):</span>
+      <span class="text-[10px] text-slate-500 font-normal">ถ้ามี</span>
+    `;
+    missingItemsList.appendChild(optionalHeader);
+
+    missingOptional.forEach((slot) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-amber-200/60 bg-amber-50/30 hover:bg-amber-100/50 hover:border-amber-300 cursor-pointer transition-all select-none group';
+      row.title = 'คลิกเพื่อเลื่อนไปยังช่องเอกสารนี้';
+      row.innerHTML = `
+        <div class="flex items-center gap-2 truncate min-w-0 flex-1">
+          <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-800 font-black text-[10px] flex-shrink-0">${slot.code}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black text-amber-800 bg-amber-100/80 border border-amber-300/80 flex-shrink-0">ถ้ามี</span>
+          <span class="font-extrabold text-slate-800 truncate">${slot.targetName}</span>
+        </div>
+        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
+          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
+          <i data-lucide="arrow-right-circle" class="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all"></i>
+        </div>
+      `;
+
+      row.addEventListener('click', () => {
+        missingModal.classList.add('hidden');
+        if (state.selectedGroupFilter !== 'all' && state.selectedGroupFilter !== slot.group) {
+          state.selectedGroupFilter = 'all';
+          renderGroupFilterPills();
+          renderSlots();
+        }
+        setTimeout(() => {
+          const targetCard = document.getElementById(`card_${slot.id}`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetCard.classList.add('ring-4', 'ring-orange-500', 'scale-[1.02]');
+            setTimeout(() => {
+              targetCard.classList.remove('ring-4', 'ring-orange-500', 'scale-[1.02]');
+            }, 2200);
+          }
+        }, 100);
+      });
+
+      missingItemsList.appendChild(row);
+    });
+  }
+
+  // 3. Render Attached Documents (Green checkmark styling)
+  if (attachedSlots.length > 0) {
+    const attachedHeader = document.createElement('div');
+    attachedHeader.className = 'flex items-center justify-between text-xs font-black text-emerald-700 pt-3 pb-0.5 sticky top-0 bg-[#e0e5ec] z-10';
+    attachedHeader.innerHTML = `
+      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> 🟢 เอกสารที่แนบเรียบร้อยแล้ว (${attachedSlots.length} รายการ):</span>
+      <span class="text-[10px] text-emerald-600 font-bold">พร้อมดาวน์โหลด</span>
+    `;
+    missingItemsList.appendChild(attachedHeader);
+
+    attachedSlots.forEach((slot) => {
+      const row = document.createElement('div');
+      const pageCount = slot.attached.pages ? slot.attached.pages.length : 1;
+      const fmt = (slot.attached.targetFormat || slot.defaultFormat || 'PDF').toUpperCase();
+      row.className = 'flex items-center justify-between p-2.5 rounded-2xl neu-inset text-xs border border-emerald-200/90 bg-emerald-50/50 hover:bg-emerald-100/70 hover:border-emerald-400 cursor-pointer transition-all select-none group';
+      row.title = 'คลิกเพื่อดูเอกสารหรือพรีวิว';
+      row.innerHTML = `
+        <div class="flex items-center gap-2 truncate min-w-0 flex-1">
+          <div class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+          </div>
+          <span class="px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-[10px] flex-shrink-0">${slot.code}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 flex-shrink-0">แนบแล้ว</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-extrabold ${fmt === 'PDF' ? 'text-red-700 bg-red-100/80' : 'text-blue-700 bg-blue-100/80'} flex-shrink-0">${fmt} ${pageCount > 1 ? `(${pageCount}น.)` : ''}</span>
+          <span class="font-extrabold text-emerald-950 truncate">${slot.targetName}</span>
+        </div>
+        <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
+          <span class="text-[10px] text-slate-500 font-bold whitespace-nowrap">${slot.group}</span>
+          <i data-lucide="eye" class="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-all"></i>
+        </div>
+      `;
+
+      // Click to open preview modal or jump to card
+      row.addEventListener('click', () => {
+        missingModal.classList.add('hidden');
+        if (state.selectedGroupFilter !== 'all' && state.selectedGroupFilter !== slot.group) {
+          state.selectedGroupFilter = 'all';
+          renderGroupFilterPills();
+          renderSlots();
+        }
+        setTimeout(() => {
+          openPreviewModal(slot.id);
+        }, 100);
+      });
+
+      missingItemsList.appendChild(row);
+    });
   }
 
   missingModal.classList.remove('hidden');
   lucide.createIcons();
 }
 
-// 13. Metrics Calculation & Real-Time Auto-Save Trigger
+// 13. Metrics Calculation & Real-Time Auto-Save Trigger (Readiness Meter)
 function updateSummaryMetrics() {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
-  const unattachedChecklistCount = state.slots.filter((s) => !s.attached).length;
+  const mandatorySlots = state.slots.filter((s) => s.mandatory);
+  const unattachedMandatorySlots = mandatorySlots.filter((s) => !s.attached);
+  const missingMandatoryCount = unattachedMandatorySlots.length;
+  const attachedMandatoryCount = mandatorySlots.length - missingMandatoryCount;
 
   attachedCountBadge.innerText = `${attachedSlots.length} / ${all.length} ไฟล์`;
 
-  if (unattachedChecklistCount === 0 && state.slots.length > 0) {
-    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-emerald-700 font-bold text-xs';
-    missingText.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> ครบ 100%</span>`;
+  if (missingMandatoryCount === 0 && mandatorySlots.length > 0) {
+    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-emerald-800 font-extrabold text-xs border border-emerald-300/80 bg-emerald-50/60 shadow-xs';
+    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> บังคับครบ 100% (${attachedMandatoryCount}/${mandatorySlots.length})</span>`;
   } else {
-    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-amber-700 font-bold text-xs';
-    missingText.innerHTML = `<span class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i> ขาด ${unattachedChecklistCount}</span>`;
+    missingCountBadge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl neu-inset text-rose-800 font-extrabold text-xs border border-rose-300/80 bg-rose-50/60 shadow-xs';
+    missingText.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-600 animate-pulse"></i> ขาดบังคับ ${missingMandatoryCount} ใบ</span>`;
   }
 
   btnDownloadZip.disabled = attachedSlots.length === 0;

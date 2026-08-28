@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>คู่มือปฏิบัติการสินเชื่อสาขาฉบับสมบูรณ์ | Master Enterprise SOP & User Manual</title>
+  <title>คู่มือปฏิบัติการสินเชื่อสาขาฉบับสมบูรณ์ | Master Enterprise SOP & User Manual (v3.9.0)</title>
   
   <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -184,21 +184,39 @@
     }
 
     .pill-pdf {
-      background: #e0e5ec;
-      box-shadow: inset 1.5px 1.5px 3px #a3b1c6, inset -1.5px -1.5px 3px #ffffff;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
       color: #dc2626;
     }
 
     .pill-jpg {
-      background: #e0e5ec;
-      box-shadow: inset 1.5px 1.5px 3px #a3b1c6, inset -1.5px -1.5px 3px #ffffff;
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
       color: #2563eb;
     }
 
     .pill-orange {
-      background: #e0e5ec;
-      box-shadow: inset 1.5px 1.5px 3px #a3b1c6, inset -1.5px -1.5px 3px #ffffff;
+      background: #ffedd5;
+      border: 1px solid #fdba74;
       color: #ea580c;
+    }
+
+    .pill-mand {
+      background: #ffe4e6;
+      border: 1px solid #fda4af;
+      color: #be123c;
+    }
+
+    .pill-opt {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .pill-done {
+      background: #d1fae5;
+      border: 1px solid #86efac;
+      color: #065f46;
     }
 
     /* Product Matrix Table */
@@ -222,34 +240,30 @@
 
     .matrix-table td {
       background: #e0e5ec;
-      box-shadow: inset 1.5px 1.5px 3px #a3b1c6, inset -1.5px -1.5px 3px #ffffff;
+      box-shadow: inset 1px 1px 2px #a3b1c6, inset -1px -1px 2px #ffffff;
       padding: 4px 6px;
-      color: #1e293b;
-      font-weight: 500;
+      color: #475569;
       border-radius: 6px;
     }
 
-    /* Security Highlight Box */
-    .security-box {
-      padding: 8px 10px;
-      border-left: 3.5px solid #059669;
-      background: #e0e5ec;
-      box-shadow: 3px 3px 8px #a3b1c6, -3px -3px 8px #ffffff;
-      border-radius: 10px;
-      margin-top: 5px;
-    }
-
-    /* Footer */
     .footer {
-      margin-top: 6px;
-      padding-top: 4px;
-      border-top: 1px solid rgba(163, 177, 198, 0.4);
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 9px;
       color: #64748b;
-      font-weight: 600;
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(163, 177, 198, 0.4);
+    }
+
+    .security-box {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #a7f3d0;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      box-shadow: 3px 3px 8px #a3b1c6, -3px -3px 8px #ffffff;
     }
   </style>
 </head>
@@ -261,103 +275,144 @@
     <!-- Header Banner -->
     <div class="neu-orange-card header-banner">
       <div class="header-title">
-        <h1>คู่มือปฏิบัติการสินเชื่อสาขาฉบับสมบูรณ์ (Master Enterprise SOP)</h1>
-        <p>Auto Loan Document Optimizer & Renamer • Pure Neumorphism Edition</p>
+        <h1>คู่มือปฏิบัติการระบบจัดเตรียม & ตรวจสอบเอกสารสินเชื่อสาขา</h1>
+        <p>Enterprise Standard Operating Procedure (SOP) • Smart Checklist & Audit Matrix</p>
       </div>
       <div class="header-badge">
-        <div>เวอร์ชัน v3.5.3</div>
-        <div style="font-size: 8.5px; opacity: 0.9;">License: Anusat</div>
+        เวอร์ชัน v3.9.0<br>
+        <span style="font-weight: 500; font-size: 8.5px; opacity: 0.9;">100% Neumorphism</span>
       </div>
     </div>
 
-    <!-- Chapter 1: Introduction & Standard -->
-    <div class="neu-raised section-card" style="margin-bottom: 8px;">
-      <div class="section-title">
-        <span class="icon-badge">📖</span>
-        บทที่ 1: วัตถุประสงค์ & มาตรฐานกระบวนการทำงานสาขา (Operational Excellence)
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 9.5px;">
-        <div class="neu-inset" style="padding: 5px 7px;">
-          <strong class="text-orange-600">⚡ ลดเวลา 30 นาที ➔ 3 นาที:</strong>
-          <p class="text-slate-600">ระบบเปลี่ยนชื่อไฟล์และรวมเล่มเอกสารอัตโนมัติ ไม่ต้องเสียเวลาแก้ชื่อทีละรูป</p>
-        </div>
-        <div class="neu-inset" style="padding: 5px 7px;">
-          <strong class="text-orange-600">📦 ควบคุม ZIP < 5MB 100%:</strong>
-          <p class="text-slate-600">บีบอัดรูปภาพระดับ Ultra-HD โดยควบคุมขนาดไฟล์รวมไม่ให้เกิน 5MB ป้องกันระบบส่วนกลางปฏิเสธ</p>
-        </div>
-        <div class="neu-inset" style="padding: 5px 7px;">
-          <strong class="text-orange-600">🏷️ รหัสมาตรฐานออโต้เอ็กซ์:</strong>
-          <p class="text-slate-600">จัดหมวดหมู่ A01 ถึง DD01 ถูกต้องตรงตามเกณฑ์สินเชื่อ ป้องกันข้อผิดพลาด (Zero Human Error)</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Section Grid: Chapter 2 & Chapter 3 -->
+    <!-- Section Grid: Chapter 1 & 2 -->
     <div class="section-grid">
       
-      <!-- Chapter 2: 5 Loan Products Checklist -->
+      <!-- Chapter 1: Standard Workflow -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">1</span>
+          บทที่ 1: ขั้นตอนการทำงานมาตรฐานสาขา (Core Flow)
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <strong>เลือกประเภทสินเชื่อ:</strong> แตะแท็บสินเชื่อ 5 ประเภท (มอเตอร์ไซค์, รถยนต์, รถบรรทุก, เกษตร, ที่ดิน)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <strong>เลือกประเภทธุรกรรม & ผู้ค้ำ:</strong> เลือก จำนำ, รีไฟแนนซ์, Top-up และกดสลับปุ่ม [มี/ไม่มีผู้ค้ำ]
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <strong>แนบเอกสาร & ตรวจป้ายสถานะ:</strong>
+              แนบไฟล์ตามการ์ด โดยสังเกตป้าย <span class="pill-tag pill-mand">🔴 บังคับ</span> (ต้องมี) และ <span class="pill-tag pill-opt">🟡 ถ้ามี</span>
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">4</span>
+            <div class="step-content">
+              <strong>ดาวน์โหลด ZIP & Audit:</strong> แตะปุ่ม [ดาวน์โหลด ZIP] ระบบจะเปิดหน้าต่าง Audit ตรวจสอบความครบถ้วนก่อนส่ง
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Chapter 2: 5 Product Categories -->
       <div class="neu-raised section-card">
         <div class="section-title">
           <span class="icon-badge">2</span>
-          บทที่ 2: เจาะลึก 5 ผลิตภัณฑ์สินเชื่อ & เอกสารบังคับ
+          บทที่ 2: 5 ผลิตภัณฑ์สินเชื่อ & เอกสารบังคับสำคัญ
         </div>
         <table class="matrix-table">
           <tr>
             <th style="width: 28%;">สินเชื่อ</th>
-            <th>เอกสารสำคัญที่ต้องตรวจสอบ</th>
+            <th>เอกสารสำคัญที่ตรวจสอบ (บังคับ)</th>
           </tr>
           <tr>
             <td><b>🏍️ มอเตอร์ไซค์</b></td>
-            <td>เล่มทะเบียน [B101-B105], ป้ายภาษี [B107], รูปรถรอบคัน [B10-B14], เรือนไมล์ [B15]</td>
+            <td>บัตร ปชช., [A06] รูปยืนยันตัวตน, เล่มทะเบียน [B101-B105], ป้ายภาษี, [B108] เว็บขนส่ง, [C04] หนังสือทวงถามหนี้</td>
           </tr>
           <tr>
             <td><b>🚗 รถยนต์</b></td>
-            <td>เล่มทะเบียน, ป้ายภาษี, รูปรถ 8 มุม, เลขตัวถัง/เครื่อง, ห้องโดยสาร, คอนโซล</td>
+            <td>บัตร ปชช., [A06] ยืนยันตัวตน, เล่มทะเบียน, [B108] เว็บขนส่ง, รูปรถรอบคัน, [C04] ทวงถามหนี้, สัญญากู้เงิน [AA01]</td>
           </tr>
           <tr>
             <td><b>🚛 รถบรรทุก</b></td>
-            <td>เล่มทะเบียน ขส., รูปรถรอบคัน, รูปยาง/กระบะบรรทุก, เพลา, พรบ. ขนส่ง</td>
+            <td>เล่มทะเบียน ขส., [B108] เว็บขนส่ง, รูปยาง/เพลา/กระบะ, [A06], [C04], ใบตรวจสภาพ</td>
           </tr>
           <tr>
-            <td><b>🚜 รถไถ/เกษตร</b></td>
-            <td>ใบตรวจสภาพอุปกรณ์ต่อพ่วง, เช็คชีทสภาพแปลงเกษตร, รูปเพลทตัวถัง</td>
+            <td><b>🚜 รถเกษตร</b></td>
+            <td>[A06] ยืนยันตัวตน, [B108] เว็บขนส่ง, รูปเพลทตัวถัง, อุปกรณ์ต่อพ่วง, [C04] ทวงถามหนี้</td>
           </tr>
           <tr>
-            <td><b>🏠 ที่ดิน/สิ่งปลูกสร้าง</b></td>
-            <td>โฉนดหน้า-หลัง [B201-B202], สัญญาจำนอง [DD01], ท.ด.21, แผนที่แปลงสังเขป</td>
+            <td><b>🏞️ ที่ดิน</b></td>
+            <td>โฉนดหน้า-หลัง [B201-B202], [A06], [C04], สัญญาจำนอง [DD01-DD03] (เฉพาะจำนอง), แผนที่แปลง</td>
           </tr>
         </table>
       </div>
 
-      <!-- Chapter 3: Sub-Products Filtering Rules -->
+      <!-- Chapter 3: Sub-Products Matrix -->
       <div class="neu-raised section-card">
         <div class="section-title">
           <span class="icon-badge">3</span>
-          บทที่ 3: กฎการแยกประเภทธุรกรรม (Sub-Products)
+          บทที่ 3: กฎการแยกประเภทธุรกรรม (Transaction Rules)
         </div>
         <ul class="step-list">
           <li class="step-item">
             <span class="step-num">🏷️</span>
             <div class="step-content">
-              <strong>จำนำเล่มทะเบียน:</strong> กรองเฉพาะสัญญากู้ยืมและเล่มตัวจริง (ซ่อนเอกสารรีไฟแนนซ์อัตโนมัติ)
-            </div>
-          </li>
-          <li class="step-item">
-            <span class="step-num">🔄</span>
-            <div class="step-content">
-              <strong>รีไฟแนนซ์:</strong> บังคับเพิ่มชุดเอกสาร <span class="pill-tag pill-pdf">C304</span> หนังสือส่งมอบเล่ม และสลิปปิดบัญชีหนี้เดิม
-            </div>
-          </li>
-          <li class="step-item">
-            <span class="step-num">➕</span>
-            <div class="step-content">
-              <strong>Top-up (กู้เพิ่ม):</strong> ชุดเอกสารย่อสำหรับลูกค้าประวัติดี (บัตร ปชช., สัญญากู้เพิ่ม, รูปรถปัจจุบัน)
+              <strong>จำนำเล่มทะเบียน / จำนำที่ดิน:</strong> แสดงเอกสารสัญญากู้ยืมและเล่มตัวจริง (<b>ซ่อนหมวด C3, ซ่อนมอบอำนาจรีไฟแนนซ์ และซ่อนหมวด DD อัตโนมัติ</b>)
             </div>
           </li>
           <li class="step-item">
             <span class="step-num">🏛️</span>
             <div class="step-content">
-              <strong>จำนองที่ดิน:</strong> เพิ่มเอกสารจดทะเบียน ณ สนง.ที่ดิน <span class="pill-tag pill-pdf">DD01</span> สัญญาจำนอง และหนังสือยินยอมคู่สมรส
+              <strong>จำนองที่ดิน:</strong> แสดงเอกสารสัญญาจำนอง ณ สนง.ที่ดิน <span class="pill-tag pill-pdf">DD01-DD03</span> (ซ่อนหมวด C3)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">🔄</span>
+            <div class="step-content">
+              <strong>รีไฟแนนซ์:</strong> แสดงหมวด <span class="pill-tag pill-pdf">C3</span> ครบชุด (หนังสือส่งมอบเล่ม C304, สัญญาเดิม C305, สอบถามยอดหนี้ C307) + มอบอำนาจรีไฟแนนซ์
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">➕</span>
+            <div class="step-content">
+              <strong>Top-up (กู้เพิ่ม):</strong> แสดงหมวด <span class="pill-tag pill-pdf">C3</span> (โดยเฉพาะ <span class="pill-tag pill-pdf">C308</span> ใบเรียกเก็บดอกเบี้ยสะสม AutoX)
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Chapter 6: Master Database Management -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">4</span>
+          บทที่ 4: การจัดการฐานข้อมูลเอกสารถาวร (Master DB)
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">🗄️</span>
+            <div class="step-content">
+              <strong>ปุ่ม [ฐานข้อมูลเอกสาร]:</strong> แตะเพื่อเปิดหน้าต่างเพิ่ม/ลบรายการเอกสารนโยบายใหม่ของบริษัท
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">➕</span>
+            <div class="step-content">
+              <strong>เพิ่มเอกสารใหม่:</strong> กำหนดรหัส, ชื่อไฟล์, หมวดหมู่, ชนิดไฟล์ (PDF/JPG), สถานะ (บังคับ/ถ้ามี) และขอบเขตสินเชื่อ
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">💾</span>
+            <div class="step-content">
+              <strong>จัดเก็บถาวรในเครื่อง:</strong> บันทึกเก็บลง IndexedDB ถาวร ไม่สูญหายแม้เริ่มเคสใหม่หรือปิดเบราว์เซอร์
             </div>
           </li>
         </ul>
@@ -369,16 +424,16 @@
     <div class="security-box">
       <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
         <span style="font-size: 13px;">🛡️</span>
-        <strong style="color: #047857; font-size: 11px;">บทที่ 8: มาตรฐานความปลอดภัยระดับไฟล์ & การคุ้มครองข้อมูลส่วนบุคคล (PDPA 100%)</strong>
+        <strong style="color: #047857; font-size: 11px;">ความปลอดภัยข้อมูลระดับ Enterprise & PDPA Compliance (100% Client-Side)</strong>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 9.5px; color: #1e293b;">
         <div class="neu-inset" style="padding: 4px 6px;">
           <b style="color: #047857;">1. Client-Side Only:</b><br>
-          ประมวลผลบน RAM ของเครื่องสาขา <b>100% ไม่ส่งไฟล์ออกนอกเครื่อง</b>
+          ประมวลผลบน RAM ของเครื่องสาขา <b>ไม่ส่งไฟล์ออกนอกเครื่อง ปลอดภัย 100%</b>
         </div>
         <div class="neu-inset" style="padding: 4px 6px;">
-          <b style="color: #047857;">2. Sandboxed DB:</b><br>
-          บันทึกเคสลง IndexedDB ใน Sandbox ของเครื่อง ปลอดภัยสูงสุด
+          <b style="color: #047857;">2. Sandboxed IndexedDB:</b><br>
+          สำรองข้อมูลลง Sandbox ของเครื่อง ป้องกันงานหาย 3 ชั้น
         </div>
         <div class="neu-inset" style="padding: 4px 6px;">
           <b style="color: #047857;">3. Clean Metadata:</b><br>
@@ -389,8 +444,8 @@
 
     <!-- Footer -->
     <div class="footer">
-      <div>คู่มือปฏิบัติการสินเชื่อสาขา • Master Enterprise SOP & User Manual (v3.5.0)</div>
-      <div>License: Anusat • GitHub: https://github.com/Ai-IQ04/Check-list-chaiyo</div>
+      <div>คู่มือปฏิบัติการสินเชื่อสาขา • Master Enterprise SOP & User Manual (v3.9.0)</div>
+      <div>License: Anusat • หน้า 1/2</div>
     </div>
 
   </div>
@@ -401,116 +456,123 @@
     <!-- Header Banner Mini -->
     <div class="neu-orange-card header-banner" style="padding: 10px 16px; margin-bottom: 8px;">
       <div class="header-title">
-        <h1 style="font-size: 15px;">คู่มือปฏิบัติการสินเชื่อสาขา (ต่อ) • ขั้นตอนการทำงาน & แก้ปัญหา</h1>
+        <h1 style="font-size: 15px;">คู่มือปฏิบัติการสินเชื่อสาขา (ต่อ) • ฟังก์ชันอัจฉริยะ & การแก้ปัญหา</h1>
       </div>
       <div class="header-badge" style="padding: 3px 8px; font-size: 9px;">
-        License: Anusat
+        v3.9.0 • Production
       </div>
     </div>
 
-    <!-- Section Grid: Chapter 4 & 5 -->
+    <!-- Section Grid: Chapter 5 & 6 -->
     <div class="section-grid">
       
-      <!-- Chapter 4: AI Scanner -->
+      <!-- Chapter 5: Smart Audit Verification Modal -->
       <div class="neu-raised section-card">
         <div class="section-title">
-          <span class="icon-badge">4</span>
-          บทที่ 4: การสแกนอัจฉริยะด้วย AI (Context-Aware Scanner)
+          <span class="icon-badge">5</span>
+          บทที่ 5: ระบบ Audit ตรวจสอบเอกสารก่อนดาวน์โหลด
         </div>
         <ul class="step-list">
           <li class="step-item">
-            <span class="step-num">1</span>
+            <span class="step-num">🔴</span>
             <div class="step-content">
-              แตะปุ่ม <strong>[✨ สแกน AI]</strong> บริเวณแถบเครื่องมือด้านบน
+              <strong>เอกสารบังคับที่ยังขาด:</strong> แสดงครบทุกใบ 100% ไม่มีตัดทอน พร้อมปุ่มแตะเพื่อเลื่อนหน้าจอไปแนบทันที (Smart Focus Scroll)
             </div>
           </li>
           <li class="step-item">
-            <span class="step-num">2</span>
+            <span class="step-num">🟡</span>
             <div class="step-content">
-              AI จะอ่าน OCR ตรวจจับชนิดเอกสาร (บัตร ปชช., ทะเบียนบ้าน, เล่ม, โฉนด, สลิป)
+              <strong>เอกสารทางเลือก:</strong> รายการเสริมที่ยังไม่ได้แนบ แสดงพร้อมป้ายสถานะ <span class="pill-tag pill-opt">ถ้ามี</span>
             </div>
           </li>
           <li class="step-item">
-            <span class="step-num">3</span>
+            <span class="step-num">🟢</span>
             <div class="step-content">
-              <strong>Scoped Routing:</strong> AI จับคู่ลงช่องในหมวดที่คุณเปิดอยู่เป็นอันดับแรก กด 1-Click แนบทันที
+              <strong>เอกสารที่แนบแล้ว:</strong> แสดงเครื่องหมายติ๊กถูกสีเขียว <span class="pill-tag pill-done">✔ แนบแล้ว</span> พร้อมชนิดไฟล์/จำนวนหน้า แตะเพื่อดูรูปพรีวิวได้ทันที
             </div>
           </li>
         </ul>
       </div>
 
-      <!-- Chapter 5: Live Camera & Time Stamp -->
+      <!-- Chapter 6: Live Camera, Enhance & Multi-Page -->
       <div class="neu-raised section-card">
         <div class="section-title">
-          <span class="icon-badge">5</span>
-          บทที่ 5: ถ่ายรูปสด & GPS Satellite Time Stamp
+          <span class="icon-badge">6</span>
+          บทที่ 6: ถ่ายรูปสด, แต่งภาพ & รวมหลายหน้า
         </div>
         <ul class="step-list">
           <li class="step-item">
             <span class="step-num">📷</span>
             <div class="step-content">
-              <strong>ถ่ายรูปสด 1-Click:</strong> แตะปุ่มกล้องเพื่อเปิดกล้องมือถือถ่ายได้ทันทีโดยไม่ติดขัด
+              <strong>ถ่ายรูปสด 1-Click:</strong> แตะปุ่มกล้องเพื่อเปิดกล้องมือถือ/แท็บเล็ตถ่ายได้ทันที
             </div>
           </li>
           <li class="step-item">
             <span class="step-num">📍</span>
             <div class="step-content">
-              <strong>ปั๊มพิกัดดาวเทียม & ที่อยู่ไทย:</strong> ประทับวันเวลา + พิกัดดาวเทียม + ตำบล/อำเภอ/จังหวัด อัตโนมัติ
+              <strong>Timestamp & GPS:</strong> ปั๊มวันเวลาและพิกัดดาวเทียมลงบนภาพถ่ายเอกสารอัตโนมัติ
             </div>
           </li>
           <li class="step-item">
             <span class="step-num">🔄</span>
             <div class="step-content">
-              <strong>รวมหลายรูปเป็น 1 PDF:</strong> แตะ <span class="pill-tag pill-orange">+ เพิ่มรูป</span> รวมเข้าเป็น 1 PDF ทันที
+              <strong>รวมหลายรูปเป็น 1 PDF:</strong> กดปุ่ม <span class="pill-tag pill-orange">+ เพิ่มรูป</span> รวมภาพหลายหน้าเข้าเป็น 1 ไฟล์ PDF ได้ทันที
             </div>
           </li>
         </ul>
       </div>
 
-    </div>
-
-    <!-- Section Grid: Chapter 6 & 7 -->
-    <div class="section-grid">
-      
-      <!-- Chapter 6: Drafts Management -->
+      <!-- Chapter 7: AI Scanner -->
       <div class="neu-raised section-card">
         <div class="section-title">
-          <span class="icon-badge">6</span>
-          บทที่ 6: การบันทึกเคส & จัดการร่างงาน (Drafts)
+          <span class="icon-badge">7</span>
+          บทที่ 7: การสแกนจำแนกไฟล์อัตโนมัติด้วย AI
+        </div>
+        <ul class="step-list">
+          <li class="step-item">
+            <span class="step-num">✨</span>
+            <div class="step-content">
+              แตะปุ่ม <strong>[✨ สแกน AI]</strong> เพื่ออัปโหลดรูปภาพเอกสาร
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">🔍</span>
+            <div class="step-content">
+              AI อ่าน OCR ตรวจจับคีย์เวิร์ดสำคัญ (บัตร ปชช., ทะเบียนบ้าน, เล่มทะเบียน, โฉนด, สลิปเงินเดือน)
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-num">⚡</span>
+            <div class="step-content">
+              ระบบจับคู่ลงช่องเอกสารที่เปิดอยู่ให้อัตโนมัติ กดปุ่มเดียวแนบเข้าช่องทันที
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Chapter 8: Drafts & Auto-Save Recovery -->
+      <div class="neu-raised section-card">
+        <div class="section-title">
+          <span class="icon-badge">8</span>
+          บทที่ 8: บันทึกเคส & Auto-Save กู้คืนงานอัตโนมัติ
         </div>
         <ul class="step-list">
           <li class="step-item">
             <span class="step-num">💾</span>
             <div class="step-content">
-              <strong>บันทึกเคส:</strong> แตะปุ่ม [เซฟเคส] พิมพ์ชื่อลูกค้าเพื่อเก็บไฟล์ไว้ในเครื่อง
+              <strong>Auto-Save เรียลไทม์:</strong> ทุกครั้งที่แนบไฟล์ ระบบจะเซฟลงเครื่องอัตโนมัติ (ไฟเขียวมุมขวาบน)
             </div>
           </li>
           <li class="step-item">
             <span class="step-num">📂</span>
             <div class="step-content">
-              <strong>เปิดเคสเดิม:</strong> แตะปุ่ม [เคสที่เซฟ] เพื่อดึงงานเดิมขึ้นมาทำต่อได้ทันที
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Chapter 7: Compression & ZIP -->
-      <div class="neu-raised section-card">
-        <div class="section-title">
-          <span class="icon-badge">7</span>
-          บทที่ 7: ตรวจเอกสารขาด & รวมไฟล์ ZIP (< 5MB)
-        </div>
-        <ul class="step-list">
-          <li class="step-item">
-            <span class="step-num">⚠️</span>
-            <div class="step-content">
-              <strong>Missing Warning:</strong> แจ้งเตือนเอกสารที่ยังขาดก่อนดาวน์โหลด
+              <strong>กู้คืนงานอัตโนมัติ:</strong> หากเน็ตหลุด ไฟดับ หรือปิดเบราว์เซอร์ เมื่อเปิดใหม่ระบบจะกู้คืนไฟล์ทั้งหมดให้ทันที
             </div>
           </li>
           <li class="step-item">
-            <span class="step-num">📦</span>
+            <span class="step-num">✨</span>
             <div class="step-content">
-              <strong>Smart ZIP:</strong> บีบอัดภาพระดับ HD และรวมไฟล์ ZIP ทั้งหมด <b>ไม่เกิน 5 MB</b>
+              <strong>เริ่มเคสใหม่:</strong> เมื่อส่งงานเสร็จ กดปุ่ม [เริ่มเคสใหม่] เพื่อล้างข้อมูลเตรียมรับลูกค้ารายถัดไป
             </div>
           </li>
         </ul>
@@ -542,7 +604,7 @@
 
     <!-- Footer -->
     <div class="footer" style="margin-top: 6px;">
-      <div>คู่มือปฏิบัติการสินเชื่อสาขา • Master Enterprise SOP & User Manual (v3.5.3)</div>
+      <div>คู่มือปฏิบัติการสินเชื่อสาขา • Master Enterprise SOP & User Manual (v3.9.0)</div>
       <div>License: Anusat • หน้า 2/2</div>
     </div>
 
