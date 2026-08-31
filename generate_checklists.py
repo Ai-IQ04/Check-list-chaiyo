@@ -88,7 +88,7 @@ doc_master_map = {
     'B04': {'desc': 'รูปหน้ารถ – เฉียงขวา 45 องศา', 'targetName': 'รูปรถ 4', 'format': 'JPG'},
     'B05': {'desc': 'รูปหลังรถ - เฉียงซ้าย 45 องศา', 'targetName': 'รูปรถ 5', 'format': 'JPG'},
     'B06': {'desc': 'รูปหลังรถ - เฉียงขวา 45 องศา', 'targetName': 'รูปรถ 6', 'format': 'JPG'},
-    'B07': {'desc': 'รูปเลขไมล์', 'targetName': 'รูปรถ 7', 'format': 'JPG'},
+    'B07': {'desc': 'รูปภายในรถให้เห็นเกียร์+คอนโซล', 'targetName': 'รูปรถ 7', 'format': 'JPG'},
     'B08': {'desc': 'รูปเลขตัวถัง/คัสซี', 'targetName': 'รูปรถ 8', 'format': 'JPG'},
     'B09': {'desc': 'รูปเลขเครื่องยนต์', 'targetName': 'รูปรถ 9', 'format': 'JPG'},
 
@@ -97,7 +97,7 @@ doc_master_map = {
     'B11': {'desc': 'รูปหน้ารถ', 'targetName': 'รูปรถ 2', 'format': 'JPG'},
     'B12': {'desc': 'รูปด้านข้างซ้าย', 'targetName': 'รูปรถ 3', 'format': 'JPG'},
     'B13': {'desc': 'รูปด้านข้างขวา', 'targetName': 'รูปรถ 4', 'format': 'JPG'},
-    'B14': {'desc': 'รูปเลขไมล์', 'targetName': 'รูปรถ 5', 'format': 'JPG'},
+    'B14': {'desc': 'เลขตัวถังรถ', 'targetName': 'รูปรถ 5', 'format': 'JPG'},
 
     # หมวด B: รถบรรทุก
     'B15': {'desc': 'รูปหน้ารถ เห็นป้ายทะเบียน พร้อม เซลฟี่-ถือบัตรพนักงาน', 'targetName': 'รูปรถ 1', 'format': 'JPG'},

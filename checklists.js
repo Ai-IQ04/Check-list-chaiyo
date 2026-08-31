@@ -106,7 +106,7 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "B14",
         "group": "B ตรวจสอบหลักประกัน",
-        "desc": "รูปเลขไมล์",
+        "desc": "เลขตัวถังรถ",
         "targetName": "รูปรถ 5",
         "format": "JPG",
         "mandatory": true
@@ -503,7 +503,7 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "B07",
         "group": "B ตรวจสอบหลักประกัน",
-        "desc": "รูปเลขไมล์",
+        "desc": "รูปภายในรถให้เห็นเกียร์+คอนโซล",
         "targetName": "รูปรถ 7",
         "format": "JPG",
         "mandatory": true
