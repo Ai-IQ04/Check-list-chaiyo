@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>สคริปต์การนำเสนอระบบจัดการเอกสารสินเชื่อสาขา</title>
+  <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @page {
+      size: A4;
+      margin: 12mm 15mm;
+    }
+    body {
+      font-family: 'Prompt', sans-serif;
+      color: #1e293b;
+      background-color: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .dialog-box {
+      border-left: 4px solid #f97316;
+      background: #fff7ed;
+    }
+    .action-box {
+      border-left: 4px solid #3b82f6;
+      background: #eff6ff;
+    }
+    .tip-box {
+      border-left: 4px solid #10b981;
+      background: #f0fdf4;
+    }
+  </style>
+</head>
+<body class="p-4 space-y-5 text-sm max-w-4xl mx-auto">
+
+  <!-- Header Cover Banner -->
+  <div class="bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 rounded-3xl p-6 text-white shadow-lg space-y-2">
+    <div class="flex items-center justify-between">
+      <span class="text-xs px-3 py-1 bg-white/20 rounded-full font-extrabold tracking-wider uppercase backdrop-blur-sm">
+        📢 Presentation Speaker Guide &amp; Script
+      </span>
+      <span class="text-xs bg-black/20 px-3 py-1 rounded-full font-bold">
+        เวอร์ชัน 3.10.0 • ใช้เวลา 5-7 นาที
+      </span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black tracking-tight">
+      สคริปต์การนำเสนอ: ระบบจัดการเอกสารสินเชื่อสาขา
+    </h1>
+    <p class="text-xs sm:text-sm text-orange-100 font-medium">
+      คู่มือบทพูดและลำดับการสาธิตหน้าจอสำหรับผู้นำเสนอ (Branch Rollout Presentation Script)
+    </p>
+  </div>
+
+  <!-- Section 1: Overview & Hook -->
+  <div class="space-y-3">
+    <h2 class="text-base font-black text-slate-800 flex items-center gap-2 border-b-2 border-orange-500 pb-1">
+      <span class="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center text-xs font-black">1</span>
+      บทเปิดการนำเสนอ (Hook 1 นาที) — ชูคุณค่าที่สาขาจะได้รับ
+    </h2>
+
+    <div class="grid grid-cols-3 gap-3">
+      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1">
+        <span class="text-xl">⚡</span>
+        <strong class="block text-xs font-black text-orange-600">ลดเวลา 30 ➔ 3 นาที</strong>
+        <p class="text-[11px] text-slate-500 leading-tight">จัดชุดเอกสารจบในคลิกเดียว</p>
+      </div>
+      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1">
+        <span class="text-xl">📦</span>
+        <strong class="block text-xs font-black text-indigo-600">คุมขนาด ZIP &lt; 5MB</strong>
+        <p class="text-[11px] text-slate-500 leading-tight">อัปโหลดผ่าน 100% ไม่หลุด</p>
+      </div>
+      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1">
+        <span class="text-xl">🛡️</span>
+        <strong class="block text-xs font-black text-emerald-600">Auto-Save งานไม่หาย</strong>
+        <p class="text-[11px] text-slate-500 leading-tight">ปลอดภัยในเครื่อง 100%</p>
+      </div>
+    </div>
+
+    <div class="dialog-box p-3.5 rounded-2xl space-y-1">
+      <span class="text-xs font-black text-orange-700 uppercase flex items-center gap-1.5">
+        🗣️ บทพูดเปิดหัว (ให้พูดด้วยน้ำเสียงกระตือรือร้นและเป็นกันเอง):
+      </span>
+      <p class="text-xs text-slate-700 italic leading-relaxed">
+        "สวัสดีพี่น้องชาวสาขาทุกท่านครับ วันนี้ผมขอนำเสนอเครื่องมือใหม่ที่จะมาช่วยให้ชีวิตการจัดเอกสารสินเชื่อของพวกเราง่ายขึ้นมาก จากเดิมที่เราต้องมานั่งถ่ายรูป ย้ายไฟล์ เปลี่ยนชื่อไฟล์ทีละใบ หรือกังวลว่าไฟล์จะใหญ่เกิน 5MB จนส่งระบบไม่ได้ วันนี้ระบบนี้จะช่วยรวบทุกขั้นตอนเหลือเพียง <b>3 นาที</b> ตั้งชื่อไฟล์มาตรฐานให้ครบ บีบอัดรูปให้อัตโนมัติ และไม่มีปัญหาข้อมูลหายแน่นอนครับ"
+      </p>
+    </div>
+  </div>
+
+  <!-- Section 2: Step-by-Step Live Demo Script -->
+  <div class="space-y-3.5 pt-2">
+    <h2 class="text-base font-black text-slate-800 flex items-center gap-2 border-b-2 border-orange-500 pb-1">
+      <span class="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center text-xs font-black">2</span>
+      ลำดับการสาธิตหน้าจอจริง (Live Demo Script — 5 สเต็ป)
+    </h2>
+
+    <!-- Step 1 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-500 text-white font-black text-xs">สเต็ป 1</span>
+          เลือกประเภทสินเชื่อและสัญญา (Setup Wizard)
+        </span>
+        <span class="text-[11px] text-slate-400 font-bold">⏱️ 30 วินาที</span>
+      </div>
+      <div class="action-box p-2.5 rounded-xl text-xs text-blue-900 font-medium space-y-0.5">
+        <strong>🎬 การกระทำบนจอ:</strong> เปิดหน้าเว็บ ➔ จะมีหน้าต่างเด้งขึ้นมา ➔ คลิกเลือก <b>"มอเตอร์ไซค์"</b> ➔ เลือก <b>"จำนำเล่ม"</b> ➔ เลือก <b>"ไม่มีผู้ค้ำ"</b> ➔ กดยืนยัน
+      </div>
+      <div class="dialog-box p-2.5 rounded-xl text-xs text-orange-950 italic">
+        <strong>🗣️ บทพูด:</strong> "เมื่อเปิดระบบขึ้นมา ระบบจะมี Wizard ช่วยเลือกเคสทันทีครับ เช่น วันนี้ทำเคสรถมอเตอร์ไซค์ จำนำเล่มทะเบียน ไม่มีผู้ค้ำ ระบบจะคัดกรองเฉพาะเอกสารที่ต้องใช้จริง 44 ช่องมาให้ทันที เอกสารผู้ค้ำที่ไม่จำเป็นจะถูกซ่อนไว้ ไม่ต้องกลัวแนบผิดหมวดครับ"
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-500 text-white font-black text-xs">สเต็ป 2</span>
+          การแนบรูปถ่าย &amp; ฟีเจอร์ "โยนหลายรูปพร้อมกัน" (ไฮไลท์ ⭐)
+        </span>
+        <span class="text-[11px] text-slate-400 font-bold">⏱️ 1 นาที</span>
+      </div>
+      <div class="action-box p-2.5 rounded-xl text-xs text-blue-900 font-medium space-y-0.5">
+        <strong>🎬 การกระทำบนจอ:</strong> 
+        1. ชี้ให้ดูปุ่ม <b>"ถ่ายรูปสด"</b> บนการ์ด<br>
+        2. กดปุ่ม <b>"โยนหลายรูป"</b> ด้านบน ➔ เลือกภาพ 5-8 รูปในคอมพิวเตอร์พร้อมกัน ➔ ภาพจะถูกหยอดลงช่อง Checklist ตามลำดับอัตโนมัติ
+      </div>
+      <div class="dialog-box p-2.5 rounded-xl text-xs text-orange-950 italic">
+        <strong>🗣️ บทพูด:</strong> "ถ้าเราใช้มือถือหรือแท็บเล็ต สามารถกดปุ่มสีส้ม 'ถ่ายรูปสด' เพื่อเปิดกล้องถ่ายได้ทันที หรือถ้าเรามีรูปที่ถ่ายเก็บไว้ในเครื่องแล้ว ให้กดปุ่ม 'โยนหลายรูป' แล้วเลือกรูปทั้งหมดพร้อมกัน ระบบจะนำรูปไปจัดใส่ช่อง Checklist ให้เรียงตามลำดับทันที ไม่ต้องเสียเวลากดทีละช่องครับ"
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-500 text-white font-black text-xs">สเต็ป 3</span>
+          รวม 2 หน้าเป็น 1 PDF อัตโนมัติ &amp; Lightbox พรีวิว
+        </span>
+        <span class="text-[11px] text-slate-400 font-bold">⏱️ 1 นาที</span>
+      </div>
+      <div class="action-box p-2.5 rounded-xl text-xs text-blue-900 font-medium space-y-0.5">
+        <strong>🎬 การกระทำบนจอ:</strong> กดปุ่ม <b>"+ เพิ่มรูป"</b> ในช่องบัตร ปชช. เพื่อแนบรูปด้านหลัง ➔ โชว์ว่ากลายเป็น <b>"รวม 2 หน้า • PDF"</b> ➔ คลิกดูรูปขยาย (Lightbox)
+      </div>
+      <div class="dialog-box p-2.5 rounded-xl text-xs text-orange-950 italic">
+        <strong>🗣️ บทพูด:</strong> "สำหรับเอกสารที่มีหน้า-หลัง เช่น บัตรประชาชน หรือสัญญาที่มี 2 หน้า เราแค่กดปุ่ม '+ เพิ่มรูป' ระบบจะรวมรูปทั้งหมดเข้าด้วยกันเป็นไฟล์ PDF ใบเดียวให้ทันที และเราสามารถคลิกที่รูปเพื่อเปิดดูรูปขยาย หมุนภาพ หรือปั๊ม Time Stamp วันที่เวลาได้ด้วยครับ"
+      </div>
+    </div>
+
+    <!-- Page Break for Clean Printing -->
+    <div class="page-break"></div>
+
+    <!-- Step 4 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-500 text-white font-black text-xs">สเต็ป 4</span>
+          แถบความคืบหน้า (Progress Bar) &amp; ปุ่มลอยข้ามไปช่องว่าง (⏭️)
+        </span>
+        <span class="text-[11px] text-slate-400 font-bold">⏱️ 45 วินาที</span>
+      </div>
+      <div class="action-box p-2.5 rounded-xl text-xs text-blue-900 font-medium space-y-0.5">
+        <strong>🎬 การกระทำบนจอ:</strong> ชี้แถบ <b>Progress Bar สีส้ม</b> ด้านบน ➔ กดปุ่มลอย <b>⏭️</b> สีส้มมุมล่างขวา ➔ จอจะเลื่อนไปโฟกัสช่องเอกสารบังคับที่ยังไม่ได้แนบทันที
+      </div>
+      <div class="dialog-box p-2.5 rounded-xl text-xs text-orange-950 italic">
+        <strong>🗣️ บทพูด:</strong> "ด้านบนจะมีแถบ Progress Bar คอยบอกว่าเอกสารบังคับเราทำไปได้กี่เปอร์เซ็นต์แล้ว และถ้าเอกสารมีเยอะ 40 กว่าช่อง ไม่อยากเสียเวลาเลื่อนหาช่องว่าง แค่กดปุ่มลอยสีส้ม ⏭️ มุมล่างขวา ระบบจะพาเลื่อนจอไปหาช่องที่ยังขาดทันที สะดวกและเร็วมากครับ"
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 space-y-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-lg bg-orange-500 text-white font-black text-xs">สเต็ป 5</span>
+          สรุปก่อนส่ง (Pre-Flight Review) &amp; ตั้งชื่อดาวน์โหลด ZIP
+        </span>
+        <span class="text-[11px] text-slate-400 font-bold">⏱️ 1.5 นาที</span>
+      </div>
+      <div class="action-box p-2.5 rounded-xl text-xs text-blue-900 font-medium space-y-0.5">
+        <strong>🎬 การกระทำบนจอ:</strong> กดปุ่ม <b>"ดาวน์โหลด ZIP"</b> ➔ หน้าต่าง Review เด้งขึ้นมา ➔ โชว์โหมด Gallery รูปภาพรวม ➔ กดปุ่ม <b>"ยืนยันข้อมูล &amp; ตั้งชื่อ ZIP"</b> ➔ แตะชิปชื่อลูกค้า ➔ กดดาวน์โหลด ZIP
+      </div>
+      <div class="dialog-box p-2.5 rounded-xl text-xs text-orange-950 italic">
+        <strong>🗣️ บทพูด:</strong> "เมื่อทำครบแล้ว กดปุ่มดาวน์โหลด ZIP ระบบจะเปิดหน้าต่าง 'สรุปก่อนส่ง' ให้เรากวาดสายตาตรวจเช็ค 4 ด้าน ทั้งรูปรถ เล่มทะเบียน สัญญา และบอกขนาดไฟล์รวม เมื่อตรวจสอบเรียบร้อยแล้ว กดไปตั้งชื่อไฟล์ ZIP ใส่ชื่อลูกค้าหรือทะเบียน แล้วดาวน์โหลดได้เลยครับ ทุกไฟล์จะถูกตั้งชื่อตามรหัสเป๊ะๆ พร้อมส่งงานทันที!"
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Q&A Cheatsheet -->
+  <div class="space-y-3 pt-2">
+    <h2 class="text-base font-black text-slate-800 flex items-center gap-2 border-b-2 border-orange-500 pb-1">
+      <span class="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center text-xs font-black">3</span>
+      แนวทางการตอบคำถามที่พบบ่อย (Q&amp;A Cheatsheet สำหรับผู้บรรยาย)
+    </h2>
+
+    <div class="space-y-2 text-xs">
+      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+        <strong class="text-orange-600 block mb-0.5">❓ Q1: ถ้าอินเทอร์เน็ตที่สาขาหลุด หรือเผลอปิดแท็บเบราว์เซอร์ รูปจะหายไหม?</strong>
+        <p class="text-slate-700"><b>💡 ตอบ:</b> ไม่หายแน่นอนครับ ระบบมีกลไก <b>Auto-Save 3 ชั้น</b> บันทึกรูปลงในเครื่องคอมพิวเตอร์ตลอดเวลา เมื่อเปิดหน้าเว็บขึ้นมาใหม่ ระบบจะกู้คืนรูปเดิมทั้งหมดให้ทันทีครับ</p>
+      </div>
+
+      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+        <strong class="text-orange-600 block mb-0.5">❓ Q2: ถ้าถ่ายรูปรถจากกล้องมือถือไฟล์ใหญ่มาก จะติดปัญหาไฟล์เกิน 5MB ไหม?</strong>
+        <p class="text-slate-700"><b>💡 ตอบ:</b> ไม่ติดแน่นอนครับ เพราะระบบมีอัลกอริทึม Smart Compression ที่บีบอัดรูปภาพและควบคุมขนาดไฟล์รวม ZIP ให้ <b>ไม่เกิน 5MB</b> อัตโนมัติ โดยที่ภาพยังคงคมชัดและอ่านตัวอักษรได้ชัดเจน</p>
+      </div>
+
+      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+        <strong class="text-orange-600 block mb-0.5">❓ Q3: รูปลูกค้าหรือเอกสารสัญญาจะหลุดออกไปเซิร์ฟเวอร์ภายนอกหรือไม่ (PDPA)?</strong>
+        <p class="text-slate-700"><b>💡 ตอบ:</b> ปลอดภัยสูงสุด 100% ครับ ระบบทำงานแบบ <b>Client-Side ภายในเครื่องเท่านั้น</b> ไม่มีการส่งรูปหรือข้อมูลลูกค้าออกไปยังเซิร์ฟเวอร์ภายนอกใดๆ ทั้งสิ้น</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="pt-4 border-t border-slate-200 text-center text-xs text-slate-400 font-medium">
+    เอกสารสคริปต์นำเสนอระบบจัดการเอกสารสินเชื่อสาขา • Auto Loan Document Optimizer v3.10.0 • License: Anusat
+  </div>
+
+</body>
+</html>
