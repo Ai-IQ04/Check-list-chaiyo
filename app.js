@@ -8,13 +8,14 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.9.2';
+const CURRENT_APP_VERSION = '3.10.0';
 
 // Application State
 const state = {
   currentCategory: 'motorcycle',
   currentSubType: 'pledge', // Sub-type filter ID (e.g. 'pledge', 'refinance', 'topup', 'land_mortgage', etc.)
   hasGuarantor: false, // false = no guarantor (borrower only), true = with guarantor
+  isTypeConfirmed: false, // Track if user has confirmed loan type & contract options
   selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
   slots: [], // Standard Checklist slots
   customSlots: [], // User-added custom document slots
@@ -203,6 +204,7 @@ async function restoreAutoSaveSession() {
         state.currentCategory = session.category || 'motorcycle';
         state.currentSubType = session.subType || 'pledge';
         state.hasGuarantor = session.hasGuarantor || false;
+        state.isTypeConfirmed = true;
         state.selectedGroupFilter = session.selectedGroup || 'all';
         state.customCounter = session.customCounter || 1;
         state.customSlots = session.customSlots || [];
@@ -341,6 +343,21 @@ const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
 const toastIcon = document.getElementById('toastIcon');
 
+// Review Summary Modal DOM Elements
+const reviewSummaryModal = document.getElementById('reviewSummaryModal');
+const reviewProductBadge = document.getElementById('reviewProductBadge');
+const reviewKpiAttached = document.getElementById('reviewKpiAttached');
+const reviewKpiMandatory = document.getElementById('reviewKpiMandatory');
+const reviewKpiPages = document.getElementById('reviewKpiPages');
+const reviewKpiSize = document.getElementById('reviewKpiSize');
+const btnReviewTabGrid = document.getElementById('btnReviewTabGrid');
+const btnReviewTabTable = document.getElementById('btnReviewTabTable');
+const reviewContentContainer = document.getElementById('reviewContentContainer');
+const btnReviewBackToEdit = document.getElementById('btnReviewBackToEdit');
+const btnReviewProceedZip = document.getElementById('btnReviewProceedZip');
+const btnCloseReviewSummaryModal = document.getElementById('btnCloseReviewSummaryModal');
+let reviewActiveTab = 'grid'; // 'grid' | 'table'
+
 // 1. Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
   if (!window.LOAN_CHECKLISTS) {
@@ -353,11 +370,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadAndApplyCustomMasterDocs();
 
   renderBottomDock();
+  setupLoanSetupModalListeners();
   
   // Try restoring unfinished auto-saved session first
   const restored = await restoreAutoSaveSession();
   if (!restored) {
     selectCategory('motorcycle');
+    state.isTypeConfirmed = false;
+    // Pop up Setup Modal on start so user selects loan product and subtype first
+    setTimeout(() => {
+      openLoanSetupModal('motorcycle');
+    }, 200);
   }
 
   setupGlobalEventListeners();
@@ -365,6 +388,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupDraftModalListeners();
   setupManageDocsModalListeners();
   setupAiScannerListeners();
+  setupZipNamingModalListeners();
+  setupReviewSummaryModalListeners();
+  setupHamburgerMenu();
+  setupKeyboardShortcuts();
   checkAppVersion();
 
   // Check for updates every 45 seconds
@@ -451,7 +478,7 @@ function renderBottomDock() {
     `;
     btn.onclick = (e) => {
       e.preventDefault();
-      selectCategory(cat.id);
+      openLoanSetupModal(cat.id);
     };
     loanCategoryTabs.appendChild(btn);
   });
@@ -459,7 +486,7 @@ function renderBottomDock() {
   lucide.createIcons();
 }
 
-function selectCategory(catId) {
+function selectCategory(catId, subTypeId = null) {
   state.currentCategory = catId;
   state.selectedGroupFilter = 'all';
 
@@ -467,8 +494,10 @@ function selectCategory(catId) {
   const iconName = PRODUCT_VECTOR_ICONS[catId] || 'layers';
   currentLoanBadge.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 inline mr-1"></i> ${catData.name}`;
 
-  // Default Sub-Type
-  if (catData.subTypes && catData.subTypes.length > 0) {
+  // Default or specified Sub-Type
+  if (subTypeId) {
+    state.currentSubType = subTypeId;
+  } else if (catData.subTypes && catData.subTypes.length > 0) {
     state.currentSubType = catData.subTypes[0].id;
   } else {
     state.currentSubType = 'pledge';
@@ -506,14 +535,15 @@ function renderSubProductPills() {
   });
 }
 
-function loadSlotsForCurrentSubProduct() {
-  const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+// Helper: Filter items based on Category, SubType, and Guarantor
+function getFilteredItemsForProduct(catId, subTypeId, hasGuarantor) {
+  const catData = window.LOAN_CHECKLISTS[catId];
+  if (!catData) return [];
   let items = catData.items || [];
 
-  // Filter items specifically by sub-type if selected, while preserving core checklist
-  const sub = state.currentSubType;
+  const sub = subTypeId;
 
-  if (state.currentCategory === 'land') {
+  if (catId === 'land') {
     if (sub === 'land_pledge' || sub === 'land_refinance_pledge' || sub === 'land_topup') {
       // โหมดจำนำที่ดิน และ Top-up ที่ดิน: ไม่ต้องแสดงเอกสารจดจำนองที่ดิน (หมวด DD)
       items = items.filter((it) => !it.code.startsWith('DD'));
@@ -551,7 +581,7 @@ function loadSlotsForCurrentSubProduct() {
   }
 
   // Filter Guarantor items when in "No Guarantor" mode (Only Borrower & Collateral documents)
-  if (!state.hasGuarantor) {
+  if (!hasGuarantor) {
     items = items.filter((it) => {
       const c = (it.code || '').toUpperCase();
       const grp = (it.group || '').toUpperCase();
@@ -564,6 +594,12 @@ function loadSlotsForCurrentSubProduct() {
       return true;
     });
   }
+
+  return items;
+}
+
+function loadSlotsForCurrentSubProduct() {
+  const items = getFilteredItemsForProduct(state.currentCategory, state.currentSubType, state.hasGuarantor);
 
   // Preserve already attached files if matching code
   const existingAttachedMap = {};
@@ -725,6 +761,7 @@ function renderSlots() {
     grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
 
     slotsInGroup.forEach((slot) => {
+      globalCardIndex++;
       const isAttached = !!slot.attached;
       const card = document.createElement('div');
 
@@ -755,6 +792,7 @@ function renderSlots() {
           <div class="flex items-start justify-between gap-3">
             <div class="space-y-1.5 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] w-5 h-5 rounded-lg neu-inset flex items-center justify-center font-black text-slate-500">#${globalCardIndex}</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-lg neu-inset font-extrabold ${slot.isCustom ? 'text-amber-600' : 'text-orange-600'}">${slot.code}</span>
                 ${statusBadge}
                 ${
@@ -862,6 +900,7 @@ function renderSlots() {
             <div class="flex-1 min-w-0 space-y-1.5">
               <div class="flex items-center justify-between gap-1 flex-wrap">
                 <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                  <span class="text-[10px] w-5 h-5 rounded-lg neu-inset flex items-center justify-center font-black text-slate-500">#${globalCardIndex}</span>
                   <span class="text-xs font-extrabold text-slate-800 break-words leading-relaxed" title="${slot.desc}">[${slot.code}] ${slot.targetName}</span>
                   ${statusBadge}
                   <!-- Pure Neumorphic Soft UI Format Pill with Crisp Colored Text -->
@@ -1176,6 +1215,10 @@ function attachSlotEvents() {
 function setupAiScannerListeners() {
   aiCameraInput.addEventListener('change', async (e) => {
     if (e.target.files.length === 0) return;
+    if (!ensureTypeConfirmed()) {
+      e.target.value = '';
+      return;
+    }
     const file = e.target.files[0];
     e.target.value = '';
 
@@ -1429,6 +1472,7 @@ async function assignPendingImageToSlot(slotId) {
 
 // 8. Multi-Image Attach & Append Engine
 async function attachFilesToSlotById(id, files) {
+  if (!ensureTypeConfirmed()) return;
   const all = getAllSlots();
   const slot = all.find((s) => s.id === id);
   if (!slot || files.length === 0) return;
@@ -1461,6 +1505,7 @@ async function attachFilesToSlotById(id, files) {
 }
 
 async function appendFilesToSlotById(id, files) {
+  if (!ensureTypeConfirmed()) return;
   const all = getAllSlots();
   const slot = all.find((s) => s.id === id);
   if (!slot || !slot.attached || files.length === 0) return;
@@ -2243,6 +2288,230 @@ function setGuarantorMode(hasGuarantor, silent = false) {
   }
 }
 
+// 12.1 Loan Setup Wizard Modal Engine (Select Category & Contract SubType Before Attaching Files)
+let setupModalTempCategory = 'motorcycle';
+let setupModalTempSubType = 'pledge';
+let setupModalTempGuarantor = false;
+
+function ensureTypeConfirmed() {
+  if (!state.isTypeConfirmed) {
+    openLoanSetupModal(state.currentCategory);
+    showToast('⚠️ กรุณาเลือกประเภทสินเชื่อและสัญญาก่อนเริ่มแนบเอกสาร', 'info');
+    return false;
+  }
+  return true;
+}
+
+function openLoanSetupModal(initialCat = null) {
+  const modal = document.getElementById('loanSetupModal');
+  if (!modal) return;
+
+  setupModalTempCategory = initialCat || state.currentCategory || 'motorcycle';
+  const catData = window.LOAN_CHECKLISTS[setupModalTempCategory];
+  if (catData && catData.subTypes && catData.subTypes.length > 0) {
+    const existingSub = catData.subTypes.find((s) => s.id === state.currentSubType);
+    setupModalTempSubType = existingSub ? existingSub.id : catData.subTypes[0].id;
+  } else {
+    setupModalTempSubType = 'pledge';
+  }
+  setupModalTempGuarantor = state.hasGuarantor || false;
+
+  renderSetupModalCategoryGrid();
+  renderSetupModalSubProducts();
+  renderSetupModalGuarantor();
+  updateSetupModalSummary();
+
+  modal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function closeLoanSetupModal() {
+  const modal = document.getElementById('loanSetupModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function renderSetupModalCategoryGrid() {
+  const grid = document.getElementById('setupModalCatGrid');
+  if (!grid || !window.LOAN_CHECKLISTS) return;
+
+  grid.innerHTML = '';
+  const categories = Object.values(window.LOAN_CHECKLISTS);
+
+  categories.forEach((cat) => {
+    const isSelected = setupModalTempCategory === cat.id;
+    const iconName = PRODUCT_VECTOR_ICONS[cat.id] || 'layers';
+    const totalItems = (cat.items || []).length;
+    let cleanName = cat.name.replace('สินเชื่อ', '').trim();
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 text-center transition-all cursor-pointer select-none ${
+      isSelected
+        ? 'neu-pill-active border-2 border-orange-500 shadow-inner'
+        : 'neu-btn hover:text-orange-600'
+    }`;
+
+    btn.innerHTML = `
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center ${
+        isSelected ? 'neu-inset text-orange-600' : 'neu-raised text-slate-700'
+      } pointer-events-none transition-transform">
+        <i data-lucide="${iconName}" class="w-5 h-5"></i>
+      </div>
+      <div class="pointer-events-none">
+        <div class="text-xs font-black leading-tight ${isSelected ? 'text-orange-600' : 'text-slate-800'}">${cleanName}</div>
+        <div class="text-[10px] text-slate-500 font-medium">${totalItems} รายการ</div>
+      </div>
+    `;
+
+    btn.onclick = () => {
+      setupModalTempCategory = cat.id;
+      const newCatData = window.LOAN_CHECKLISTS[cat.id];
+      if (newCatData && newCatData.subTypes && newCatData.subTypes.length > 0) {
+        setupModalTempSubType = newCatData.subTypes[0].id;
+      }
+      renderSetupModalCategoryGrid();
+      renderSetupModalSubProducts();
+      updateSetupModalSummary();
+      lucide.createIcons();
+    };
+
+    grid.appendChild(btn);
+  });
+}
+
+function renderSetupModalSubProducts() {
+  const container = document.getElementById('setupModalSubProductPills');
+  if (!container || !window.LOAN_CHECKLISTS) return;
+
+  container.innerHTML = '';
+  const catData = window.LOAN_CHECKLISTS[setupModalTempCategory];
+  if (!catData || !catData.subTypes) return;
+
+  catData.subTypes.forEach((st) => {
+    const isSelected = setupModalTempSubType === st.id;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none ${
+      isSelected
+        ? 'neu-pill-active border border-orange-500 shadow-inner'
+        : 'neu-btn text-slate-700 hover:text-orange-600'
+    }`;
+    btn.innerText = st.name;
+
+    btn.onclick = () => {
+      setupModalTempSubType = st.id;
+      renderSetupModalSubProducts();
+      updateSetupModalSummary();
+    };
+
+    container.appendChild(btn);
+  });
+}
+
+function renderSetupModalGuarantor() {
+  const btnNo = document.getElementById('setupModalGuarantorNo');
+  const btnYes = document.getElementById('setupModalGuarantorYes');
+  if (!btnNo || !btnYes) return;
+
+  if (!setupModalTempGuarantor) {
+    btnNo.className = 'p-3 rounded-2xl flex items-center gap-2.5 text-left cursor-pointer transition-all neu-pill-active border border-orange-500 shadow-inner';
+    btnYes.className = 'neu-btn p-3 rounded-2xl flex items-center gap-2.5 text-left cursor-pointer transition-all text-slate-600';
+  } else {
+    btnNo.className = 'neu-btn p-3 rounded-2xl flex items-center gap-2.5 text-left cursor-pointer transition-all text-slate-600';
+    btnYes.className = 'p-3 rounded-2xl flex items-center gap-2.5 text-left cursor-pointer transition-all neu-pill-active border border-orange-500 shadow-inner';
+  }
+}
+
+function updateSetupModalSummary() {
+  const titleEl = document.getElementById('setupModalSummaryTitle');
+  const detailEl = document.getElementById('setupModalSummaryDetail');
+  if (!titleEl || !detailEl || !window.LOAN_CHECKLISTS) return;
+
+  const catData = window.LOAN_CHECKLISTS[setupModalTempCategory];
+  if (!catData) return;
+
+  let subName = '';
+  if (catData.subTypes) {
+    const matchedSub = catData.subTypes.find((s) => s.id === setupModalTempSubType);
+    subName = matchedSub ? matchedSub.name : '';
+  }
+
+  const items = getFilteredItemsForProduct(setupModalTempCategory, setupModalTempSubType, setupModalTempGuarantor);
+  const mandatoryCount = items.filter((it) => it.mandatory).length;
+
+  titleEl.innerText = `${catData.name} • ${subName}`;
+  detailEl.innerText = `${setupModalTempGuarantor ? '👥 มีผู้ค้ำประกัน' : '👤 ไม่มีผู้ค้ำประกัน'} • รวมทั้งหมด ${items.length} รายการ (บังคับ ${mandatoryCount} รายการ)`;
+}
+
+function setupLoanSetupModalListeners() {
+  const btnClose = document.getElementById('btnCloseLoanSetupModal');
+  const btnCancel = document.getElementById('btnCancelLoanSetupModal');
+  const btnConfirm = document.getElementById('btnConfirmLoanSetupModal');
+  const btnOpen = document.getElementById('btnOpenLoanSetupModal');
+  const modal = document.getElementById('loanSetupModal');
+
+  const btnGuarantorNo = document.getElementById('setupModalGuarantorNo');
+  const btnGuarantorYes = document.getElementById('setupModalGuarantorYes');
+
+  if (btnOpen) {
+    btnOpen.addEventListener('click', () => openLoanSetupModal(state.currentCategory));
+  }
+  if (currentLoanBadge) {
+    currentLoanBadge.classList.add('cursor-pointer', 'hover:opacity-80');
+    currentLoanBadge.addEventListener('click', () => openLoanSetupModal(state.currentCategory));
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', closeLoanSetupModal);
+  }
+  if (btnCancel) {
+    btnCancel.addEventListener('click', closeLoanSetupModal);
+  }
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeLoanSetupModal();
+    });
+  }
+
+  if (btnGuarantorNo) {
+    btnGuarantorNo.addEventListener('click', () => {
+      setupModalTempGuarantor = false;
+      renderSetupModalGuarantor();
+      updateSetupModalSummary();
+    });
+  }
+  if (btnGuarantorYes) {
+    btnGuarantorYes.addEventListener('click', () => {
+      setupModalTempGuarantor = true;
+      renderSetupModalGuarantor();
+      updateSetupModalSummary();
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', () => {
+      const catData = window.LOAN_CHECKLISTS[setupModalTempCategory];
+      state.currentCategory = setupModalTempCategory;
+      state.currentSubType = setupModalTempSubType;
+      state.hasGuarantor = setupModalTempGuarantor;
+      state.isTypeConfirmed = true;
+
+      setGuarantorMode(state.hasGuarantor, true);
+      selectCategory(state.currentCategory, state.currentSubType);
+
+      closeLoanSetupModal();
+
+      let subName = '';
+      if (catData && catData.subTypes) {
+        const matched = catData.subTypes.find((s) => s.id === state.currentSubType);
+        if (matched) subName = ` (${matched.name})`;
+      }
+
+      showToast(`🚀 เริ่มต้นจัดเตรียม: ${catData ? catData.name : ''}${subName}`, 'success');
+    });
+  }
+}
+
 // 13. Global Batch, Custom Slots, New Case & Manual Modal Events
 async function resetToNewCase(showNotification = true) {
   const all = getAllSlots();
@@ -2294,13 +2563,12 @@ function setupGlobalEventListeners() {
   if (btnStartNewCase) {
     btnStartNewCase.addEventListener('click', () => {
       const attachedCount = getAllSlots().filter((s) => s.attached).length;
-      if (attachedCount === 0 && state.customSlots.length === 0) {
-        showToast('หน้าต่างว่างอยู่แล้ว พร้อมเริ่มเคสใหม่ได้ทันที', 'info');
+      if (attachedCount > 0 && !confirm(`คุณต้องการล้างรูปภาพและข้อมูลเคสปัจจุบัน (${attachedCount} ไฟล์) เพื่อเริ่มเคสใหม่หรือไม่?`)) {
         return;
       }
-      if (confirm(`คุณต้องการล้างรูปภาพและข้อมูลเคสปัจจุบัน (${attachedCount} ไฟล์) เพื่อเริ่มเคสใหม่หรือไม่?`)) {
-        resetToNewCase(true);
-      }
+      resetToNewCase(false);
+      state.isTypeConfirmed = false;
+      openLoanSetupModal(state.currentCategory);
     });
   }
 
@@ -2313,7 +2581,9 @@ function setupGlobalEventListeners() {
   if (btnConfirmStartNewCaseAfterZip && caseSuccessModal) {
     btnConfirmStartNewCaseAfterZip.addEventListener('click', () => {
       caseSuccessModal.classList.add('hidden');
-      resetToNewCase(true);
+      resetToNewCase(false);
+      state.isTypeConfirmed = false;
+      openLoanSetupModal(state.currentCategory);
     });
   }
 
@@ -2358,9 +2628,16 @@ function setupGlobalEventListeners() {
   }
 
   if (btnBatchAutoFill && batchFileInput) {
-    btnBatchAutoFill.addEventListener('click', () => batchFileInput.click());
+    btnBatchAutoFill.addEventListener('click', () => {
+      if (!ensureTypeConfirmed()) return;
+      batchFileInput.click();
+    });
     batchFileInput.addEventListener('change', async (e) => {
       if (e.target.files.length > 0) {
+        if (!ensureTypeConfirmed()) {
+          batchFileInput.value = '';
+          return;
+        }
         const files = Array.from(e.target.files);
         const all = getAllSlots();
         let fileIdx = 0;
@@ -2414,7 +2691,6 @@ function setupGlobalEventListeners() {
 
   if (btnDownloadZip) {
     btnDownloadZip.addEventListener('click', () => {
-      const unattachedSlots = state.slots.filter((s) => !s.attached);
       const attachedSlots = getAllSlots().filter((s) => s.attached);
 
       if (attachedSlots.length === 0) {
@@ -2422,11 +2698,7 @@ function setupGlobalEventListeners() {
         return;
       }
 
-      if (unattachedSlots.length > 0) {
-        openMissingModal(unattachedSlots, attachedSlots.length);
-      } else {
-        executeZipDownload();
-      }
+      openReviewSummaryModal();
     });
   }
 
@@ -2443,7 +2715,7 @@ function setupGlobalEventListeners() {
   if (btnModalConfirmDownload) {
     btnModalConfirmDownload.addEventListener('click', () => {
       if (missingModal) missingModal.classList.add('hidden');
-      executeZipDownload();
+      openZipNamingModal();
     });
   }
 
@@ -2451,6 +2723,311 @@ function setupGlobalEventListeners() {
     missingModal.addEventListener('click', (e) => {
       if (e.target === missingModal) {
         missingModal.classList.add('hidden');
+      }
+    });
+  }
+
+  // FAB: Jump to Next Empty Slot Button Listener
+  const fabJump = document.getElementById('fabJumpNextEmpty');
+  if (fabJump) {
+    fabJump.addEventListener('click', jumpToNextEmptySlot);
+  }
+}
+
+// 12.5 Pre-Flight Review Summary Modal Engine (Visual Gallery + Audit List)
+function openReviewSummaryModal() {
+  const allSlots = getAllSlots();
+  const attachedSlots = allSlots.filter((s) => s.attached);
+  const mandatorySlots = state.slots.filter((s) => s.mandatory);
+  const missingMandatorySlots = mandatorySlots.filter((s) => !s.attached);
+  const missingMandatoryCount = missingMandatorySlots.length;
+
+  // Calculate totals
+  let totalPages = 0;
+  let totalBytes = 0;
+  attachedSlots.forEach((slot) => {
+    if (slot.attached && slot.attached.pages) {
+      totalPages += slot.attached.pages.length;
+      totalBytes += slot.attached.pages.reduce((sum, p) => sum + (p.size || 0), 0);
+    }
+  });
+
+  // Update Product Badge
+  const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+  const catName = catData ? catData.name : 'สินเชื่อ';
+  const subData = catData && catData.subTypes ? catData.subTypes.find((st) => st.id === state.currentSubType) : null;
+  const subName = subData ? subData.name : '';
+  const guarText = state.hasGuarantor ? 'มีผู้ค้ำ' : 'ไม่มีผู้ค้ำ';
+  if (reviewProductBadge) {
+    reviewProductBadge.innerText = `${catName} • ${subName} • ${guarText}`;
+  }
+
+  // Update KPIs
+  if (reviewKpiAttached) {
+    reviewKpiAttached.innerText = `${attachedSlots.length} / ${allSlots.length} ช่อง`;
+  }
+  if (reviewKpiMandatory) {
+    if (missingMandatoryCount === 0) {
+      reviewKpiMandatory.innerText = `ครบ 100% ✅`;
+      reviewKpiMandatory.className = 'text-sm sm:text-base font-black text-emerald-600';
+    } else {
+      reviewKpiMandatory.innerText = `ขาด ${missingMandatoryCount} รายการ ⚠️`;
+      reviewKpiMandatory.className = 'text-sm sm:text-base font-black text-rose-600';
+    }
+  }
+  if (reviewKpiPages) {
+    reviewKpiPages.innerText = `${totalPages} หน้า`;
+  }
+  if (reviewKpiSize) {
+    reviewKpiSize.innerText = formatFileSize(totalBytes);
+  }
+
+  renderReviewContent();
+  reviewSummaryModal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function renderReviewContent() {
+  if (!reviewContentContainer) return;
+  reviewContentContainer.innerHTML = '';
+
+  const allSlots = getAllSlots();
+
+  if (reviewActiveTab === 'grid') {
+    // Mode 1: Visual Thumbnail Grid (Categorized Gallery)
+    const grouped = {};
+    allSlots.forEach((slot) => {
+      if (!grouped[slot.group]) grouped[slot.group] = [];
+      grouped[slot.group].push(slot);
+    });
+
+    for (const [groupName, slotsInGroup] of Object.entries(grouped)) {
+      const groupCard = document.createElement('div');
+      groupCard.className = 'neu-raised rounded-2xl p-3.5 space-y-2.5';
+
+      const attachedInGroup = slotsInGroup.filter((s) => s.attached).length;
+      groupCard.innerHTML = `
+        <div class="flex items-center justify-between border-b border-[#cbd5e1]/40 pb-1.5">
+          <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="folder" class="w-3.5 h-3.5 text-orange-500"></i>
+            ${groupName}
+          </span>
+          <span class="text-[10px] font-bold text-slate-500">${attachedInGroup} / ${slotsInGroup.length} แนบแล้ว</span>
+        </div>
+      `;
+
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5';
+
+      slotsInGroup.forEach((slot) => {
+        const itemCard = document.createElement('div');
+
+        if (slot.attached) {
+          const pageCount = slot.attached.pages ? slot.attached.pages.length : 1;
+          const firstPage = slot.attached.pages && slot.attached.pages[0];
+          const fmt = (slot.attached.targetFormat || slot.defaultFormat || 'PDF').toUpperCase();
+
+          itemCard.className = 'neu-inset rounded-2xl p-2 flex flex-col justify-between gap-1.5 cursor-pointer hover:border-orange-400 border border-transparent transition-all group relative overflow-hidden';
+          itemCard.title = 'คลิกเพื่อดูรูปขยาย หรือไปแก้ไข';
+
+          itemCard.innerHTML = `
+            <div class="w-full h-24 rounded-xl neu-raised overflow-hidden relative flex items-center justify-center bg-slate-200/50">
+              ${
+                firstPage && firstPage.dataUrl
+                  ? `<img src="${firstPage.dataUrl}" style="transform: rotate(${firstPage.rotation || 0}deg);" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="${slot.targetName}">`
+                  : `<div class="flex flex-col items-center text-slate-400"><i data-lucide="file-text" class="w-6 h-6 text-red-500"></i><span class="text-[9px] font-bold">PDF</span></div>`
+              }
+              <div class="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white font-black text-[9px]">
+                ${slot.code}
+              </div>
+              <div class="absolute top-1 right-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${fmt === 'PDF' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'}">
+                ${fmt}${pageCount > 1 ? ` (${pageCount}น.)` : ''}
+              </div>
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="min-w-0">
+              <span class="text-[11px] font-extrabold text-slate-800 line-clamp-1 leading-tight">${slot.targetName}</span>
+              <span class="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5 mt-0.5">
+                <i data-lucide="check-circle" class="w-2.5 h-2.5"></i> แนบแล้ว
+              </span>
+            </div>
+          `;
+
+          itemCard.addEventListener('click', () => {
+            reviewSummaryModal.classList.add('hidden');
+            setTimeout(() => {
+              openPreviewModal(slot.id);
+            }, 100);
+          });
+        } else {
+          // Unattached Slot
+          const isMandatory = slot.mandatory;
+          itemCard.className = `rounded-2xl p-2.5 flex flex-col justify-between gap-2 cursor-pointer transition-all border border-dashed ${
+            isMandatory
+              ? 'bg-rose-50/60 border-rose-300 hover:bg-rose-100/80'
+              : 'bg-slate-100/40 border-slate-300/70 hover:bg-slate-200/60'
+          }`;
+          itemCard.title = 'คลิกเพื่อเลื่อนไปแนบเอกสารช่องนี้';
+
+          itemCard.innerHTML = `
+            <div class="space-y-1">
+              <div class="flex items-center justify-between gap-1">
+                <span class="px-1.5 py-0.5 rounded-md ${isMandatory ? 'bg-rose-500 text-white font-black' : 'bg-slate-300 text-slate-700 font-bold'} text-[9px]">${slot.code}</span>
+                <span class="text-[9px] font-black ${isMandatory ? 'text-rose-600' : 'text-slate-400'}">${isMandatory ? '🔴 บังคับ' : '⚪ ถ้ามี'}</span>
+              </div>
+              <span class="text-[11px] font-bold ${isMandatory ? 'text-rose-950' : 'text-slate-600'} line-clamp-2 leading-tight">${slot.targetName}</span>
+            </div>
+            <button class="w-full py-1 rounded-xl neu-btn text-[10px] font-extrabold ${isMandatory ? 'text-rose-700' : 'text-slate-600'} flex items-center justify-center gap-1">
+              <i data-lucide="upload" class="w-2.5 h-2.5"></i> แนบทันที
+            </button>
+          `;
+
+          itemCard.addEventListener('click', () => {
+            reviewSummaryModal.classList.add('hidden');
+            if (state.selectedGroupFilter !== 'all' && state.selectedGroupFilter !== slot.group) {
+              state.selectedGroupFilter = 'all';
+              renderGroupFilterPills();
+              renderSlots();
+            }
+            setTimeout(() => {
+              const targetCard = document.getElementById(`card_${slot.id}`);
+              if (targetCard) {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetCard.classList.add('ring-4', 'ring-orange-500', 'scale-[1.02]');
+                setTimeout(() => {
+                  targetCard.classList.remove('ring-4', 'ring-orange-500', 'scale-[1.02]');
+                }, 2200);
+              }
+            }, 100);
+          });
+        }
+
+        grid.appendChild(itemCard);
+      });
+
+      groupCard.appendChild(grid);
+      reviewContentContainer.appendChild(groupCard);
+    }
+  } else {
+    // Mode 2: Detailed Audit Table View
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'neu-inset rounded-2xl overflow-hidden';
+
+    let tableHtml = `
+      <table class="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr class="bg-[#e0e5ec] text-slate-700 font-black border-b border-[#cbd5e1]/70 text-[11px]">
+            <th class="p-2.5 text-center w-12">ลำดับ</th>
+            <th class="p-2.5 w-16">รหัส</th>
+            <th class="p-2.5">ชื่อเอกสาร</th>
+            <th class="p-2.5 hidden sm:table-cell">หมวดหมู่</th>
+            <th class="p-2.5 text-center w-16">ไฟล์</th>
+            <th class="p-2.5 text-center w-16 hidden sm:table-cell">หน้า</th>
+            <th class="p-2.5 text-center w-24">สถานะ</th>
+            <th class="p-2.5 text-right w-16">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#cbd5e1]/40">
+    `;
+
+    allSlots.forEach((slot, idx) => {
+      const isAttached = !!slot.attached;
+      const isMandatory = slot.mandatory;
+      const pageCount = isAttached && slot.attached.pages ? slot.attached.pages.length : '-';
+      const fmt = isAttached ? (slot.attached.targetFormat || slot.defaultFormat || 'PDF').toUpperCase() : slot.defaultFormat;
+
+      let statusBadgeHtml = '';
+      if (isAttached) {
+        statusBadgeHtml = `<span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300 flex items-center justify-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> แนบแล้ว</span>`;
+      } else if (isMandatory) {
+        statusBadgeHtml = `<span class="px-2 py-0.5 rounded-lg bg-rose-100 text-rose-800 font-black text-[10px] border border-rose-300 flex items-center justify-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3 text-rose-600"></i> ขาดบังคับ</span>`;
+      } else {
+        statusBadgeHtml = `<span class="px-2 py-0.5 rounded-lg bg-slate-200 text-slate-600 font-bold text-[10px]">ยังไม่แนบ</span>`;
+      }
+
+      tableHtml += `
+        <tr class="hover:bg-slate-200/40 transition-colors ${!isAttached && isMandatory ? 'bg-rose-50/30' : ''}">
+          <td class="p-2.5 text-center text-slate-500 font-bold text-[10px]">#${idx + 1}</td>
+          <td class="p-2.5 font-black ${isMandatory ? 'text-rose-600' : 'text-slate-700'}">${slot.code}</td>
+          <td class="p-2.5">
+            <span class="font-extrabold text-slate-800 block">${slot.targetName}</span>
+            <span class="text-[10px] text-slate-500 line-clamp-1">${slot.desc}</span>
+          </td>
+          <td class="p-2.5 text-[11px] text-slate-600 hidden sm:table-cell">${slot.group}</td>
+          <td class="p-2.5 text-center">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-black ${fmt === 'PDF' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${fmt}</span>
+          </td>
+          <td class="p-2.5 text-center font-bold text-slate-600 hidden sm:table-cell">${pageCount}</td>
+          <td class="p-2.5 text-center">${statusBadgeHtml}</td>
+          <td class="p-2.5 text-right">
+            ${
+              isAttached
+                ? `<button class="p-1.5 rounded-xl neu-btn text-orange-600 hover:scale-110 cursor-pointer" onclick="reviewSummaryModal.classList.add('hidden'); setTimeout(()=>openPreviewModal('${slot.id}'),100)" title="ดูรูป">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>`
+                : `<button class="px-2 py-1 rounded-xl neu-btn text-xs font-bold text-orange-600 cursor-pointer" onclick="reviewSummaryModal.classList.add('hidden'); setTimeout(()=>{ const c=document.getElementById('card_${slot.id}'); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('ring-4','ring-orange-500'); setTimeout(()=>c.classList.remove('ring-4','ring-orange-500'),2000); } },100)" title="ไปแนบ">
+                    แนบ
+                  </button>`
+            }
+          </td>
+        </tr>
+      `;
+    });
+
+    tableHtml += `
+        </tbody>
+      </table>
+    `;
+
+    tableWrapper.innerHTML = tableHtml;
+    reviewContentContainer.appendChild(tableWrapper);
+  }
+
+  lucide.createIcons();
+}
+
+function setupReviewSummaryModalListeners() {
+  if (btnCloseReviewSummaryModal && reviewSummaryModal) {
+    btnCloseReviewSummaryModal.addEventListener('click', () => {
+      reviewSummaryModal.classList.add('hidden');
+    });
+  }
+
+  if (btnReviewBackToEdit && reviewSummaryModal) {
+    btnReviewBackToEdit.addEventListener('click', () => {
+      reviewSummaryModal.classList.add('hidden');
+    });
+  }
+
+  if (btnReviewProceedZip && reviewSummaryModal) {
+    btnReviewProceedZip.addEventListener('click', () => {
+      reviewSummaryModal.classList.add('hidden');
+      openZipNamingModal();
+    });
+  }
+
+  if (btnReviewTabGrid && btnReviewTabTable) {
+    btnReviewTabGrid.addEventListener('click', () => {
+      reviewActiveTab = 'grid';
+      btnReviewTabGrid.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+      btnReviewTabTable.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+      renderReviewContent();
+    });
+
+    btnReviewTabTable.addEventListener('click', () => {
+      reviewActiveTab = 'table';
+      btnReviewTabTable.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active';
+      btnReviewTabGrid.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+      renderReviewContent();
+    });
+  }
+
+  if (reviewSummaryModal) {
+    reviewSummaryModal.addEventListener('click', (e) => {
+      if (e.target === reviewSummaryModal) {
+        reviewSummaryModal.classList.add('hidden');
       }
     });
   }
@@ -2640,8 +3217,137 @@ function updateSummaryMetrics() {
   btnDownloadZip.disabled = attachedSlots.length === 0;
   lucide.createIcons();
 
+  // Update Progress Bar
+  updateProgressBar(mandatorySlots, attachedMandatoryCount, all);
+
+  // Update FAB visibility
+  updateFabJumpButton();
+
   // Trigger Instant Real-Time AutoSave
   triggerAutoSave();
+}
+
+// Progress Bar Update Logic
+function updateProgressBar(mandatorySlots, attachedMandatoryCount, allSlots) {
+  const progressBarFill = document.getElementById('progressBarFill');
+  const progressPercentText = document.getElementById('progressPercentText');
+  const progressDetailText = document.getElementById('progressDetailText');
+  const progressTotalText = document.getElementById('progressTotalText');
+
+  if (!progressBarFill) return;
+
+  const totalMandatory = mandatorySlots.length;
+  const percent = totalMandatory > 0 ? Math.round((attachedMandatoryCount / totalMandatory) * 100) : 0;
+
+  progressBarFill.style.width = `${percent}%`;
+  progressPercentText.innerText = `${percent}%`;
+  progressDetailText.innerText = `\u0e41\u0e19\u0e1a\u0e41\u0e25\u0e49\u0e27 ${attachedMandatoryCount} / ${totalMandatory} \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e1a\u0e31\u0e07\u0e04\u0e31\u0e1a`;
+  progressTotalText.innerText = `\u0e23\u0e27\u0e21\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ${allSlots.length} \u0e0a\u0e48\u0e2d\u0e07`;
+
+  // Color change based on completion
+  if (percent >= 100) {
+    progressBarFill.className = 'h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 progress-bar-fill shadow-[0_0_8px_rgba(16,185,129,0.4)]';
+    progressPercentText.className = 'text-xs font-black text-emerald-600';
+  } else {
+    progressBarFill.className = 'h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 progress-bar-fill shadow-[0_0_8px_rgba(255,106,0,0.4)]';
+    progressPercentText.className = 'text-xs font-black text-orange-600';
+  }
+}
+
+// FAB Jump to Next Empty Mandatory Slot
+function updateFabJumpButton() {
+  const fab = document.getElementById('fabJumpNextEmpty');
+  if (!fab) return;
+
+  const nextEmpty = state.slots.find((s) => s.mandatory && !s.attached);
+  if (nextEmpty) {
+    fab.classList.remove('hidden');
+    fab.classList.add('flex');
+  } else {
+    fab.classList.add('hidden');
+    fab.classList.remove('flex');
+  }
+}
+
+function jumpToNextEmptySlot() {
+  const nextEmpty = state.slots.find((s) => s.mandatory && !s.attached);
+  if (nextEmpty) {
+    const card = document.getElementById(`card_${nextEmpty.id}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Brief highlight animation
+      card.style.transition = 'box-shadow 0.3s ease';
+      card.style.boxShadow = '0 0 0 3px rgba(255,106,0,0.6), 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff';
+      setTimeout(() => {
+        card.style.boxShadow = '';
+      }, 1500);
+    }
+  } else {
+    showToast('\u2705 \u0e41\u0e19\u0e1a\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\u0e1a\u0e31\u0e07\u0e04\u0e31\u0e1a\u0e04\u0e23\u0e1a\u0e17\u0e38\u0e01\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e41\u0e25\u0e49\u0e27!', 'success');
+  }
+}
+
+// Hamburger Menu Logic
+function setupHamburgerMenu() {
+  const btnOpen = document.getElementById('btnOpenHamburgerMenu');
+  const btnClose = document.getElementById('btnCloseHamburgerMenu');
+  const overlay = document.getElementById('hamburgerMenuOverlay');
+  const panel = document.getElementById('hamburgerMenuPanel');
+
+  if (!btnOpen || !overlay || !panel) return;
+
+  function openMenu() {
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      panel.classList.remove('translate-x-full');
+      panel.classList.add('translate-x-0');
+    });
+    lucide.createIcons();
+  }
+
+  function closeMenu() {
+    overlay.style.opacity = '0';
+    panel.classList.remove('translate-x-0');
+    panel.classList.add('translate-x-full');
+    setTimeout(() => {
+      overlay.classList.add('hidden');
+    }, 300);
+  }
+
+  btnOpen.addEventListener('click', openMenu);
+  if (btnClose) btnClose.addEventListener('click', closeMenu);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeMenu();
+  });
+
+  // Close menu when any menu item button is clicked
+  const menuButtons = panel.querySelectorAll('button, a');
+  menuButtons.forEach((btn) => {
+    if (btn.id !== 'btnCloseHamburgerMenu') {
+      btn.addEventListener('click', () => {
+        setTimeout(closeMenu, 100);
+      });
+    }
+  });
+}
+
+// Keyboard Shortcuts
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Don't trigger shortcuts when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+    // Escape = close any open modal
+    if (e.key === 'Escape') {
+      const modals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+      modals.forEach((m) => {
+        if (m.id !== 'loanSetupModal' || state.isTypeConfirmed) {
+          m.classList.add('hidden');
+        }
+      });
+    }
+  });
 }
 
 // 14. Multi-Image & Multi-Page Document Processing Engine (< 5MB Guaranteed)
@@ -2772,7 +3478,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
 }
 
 // 15. Batch Download as .ZIP
-async function executeZipDownload() {
+async function executeZipDownload(customZipName = null) {
   const all = getAllSlots();
   const attachedSlots = all.filter((s) => s.attached);
   if (attachedSlots.length === 0) {
@@ -2808,7 +3514,13 @@ async function executeZipDownload() {
 
     const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
     const timeStr = new Date().toISOString().slice(0, 10);
-    const zipName = `เอกสาร_${currentCat.name}_${state.currentSubType}_${timeStr}.zip`;
+    let zipName = (customZipName || '').trim();
+    if (!zipName) {
+      zipName = `เอกสาร_${currentCat.name}_${state.currentSubType}_${timeStr}`;
+    }
+    if (!zipName.toLowerCase().endsWith('.zip')) {
+      zipName += '.zip';
+    }
 
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(zipBlob, zipName);
@@ -2830,6 +3542,137 @@ async function executeZipDownload() {
     btnDownloadZip.disabled = false;
     btnDownloadZip.innerHTML = `<i data-lucide="archive" class="w-3.5 h-3.5"></i><span>ดาวน์โหลด ZIP</span>`;
     lucide.createIcons();
+  }
+}
+
+// 15.1 ZIP File Naming Pre-Download Modal Engine
+function generateDefaultZipName() {
+  const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
+  const catName = currentCat ? currentCat.name.replace('สินเชื่อ', '').trim() : 'เอกสารสินเชื่อ';
+  
+  let subName = '';
+  if (currentCat && currentCat.subTypes) {
+    const st = currentCat.subTypes.find((s) => s.id === state.currentSubType);
+    if (st) subName = st.name.replace(/[^a-zA-Z0-9ก-๙]/g, '').trim();
+  }
+  if (!subName) subName = state.currentSubType;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+
+  return `เอกสาร_${catName}_${subName}_${dateStr}`;
+}
+
+function openZipNamingModal() {
+  const modal = document.getElementById('zipNamingModal');
+  const input = document.getElementById('inputZipFilename');
+  const countEl = document.getElementById('zipNamingAttachedCount');
+  if (!modal || !input) return;
+
+  const attachedSlots = getAllSlots().filter((s) => s.attached);
+  if (attachedSlots.length === 0) {
+    showToast('ยังไม่ได้แนบเอกสารใดๆ', 'error');
+    return;
+  }
+
+  if (countEl) countEl.innerText = `รวม ${attachedSlots.length} ไฟล์`;
+  input.value = generateDefaultZipName();
+
+  modal.classList.remove('hidden');
+  lucide.createIcons();
+
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 100);
+}
+
+function closeZipNamingModal() {
+  const modal = document.getElementById('zipNamingModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setupZipNamingModalListeners() {
+  const modal = document.getElementById('zipNamingModal');
+  const input = document.getElementById('inputZipFilename');
+  const btnClose = document.getElementById('btnCloseZipNamingModal');
+  const btnCancel = document.getElementById('btnCancelZipNamingModal');
+  const btnConfirm = document.getElementById('btnConfirmExecuteZipDownload');
+
+  const btnTagCat = document.getElementById('btnZipTagCategory');
+  const btnTagSub = document.getElementById('btnZipTagSubType');
+  const btnTagDate = document.getElementById('btnZipTagDate');
+
+  if (btnClose) btnClose.addEventListener('click', closeZipNamingModal);
+  if (btnCancel) btnCancel.addEventListener('click', closeZipNamingModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeZipNamingModal();
+    });
+  }
+
+  if (btnTagCat) {
+    btnTagCat.addEventListener('click', () => {
+      const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
+      const catName = currentCat ? currentCat.name.replace('สินเชื่อ', '').trim() : 'สินเชื่อ';
+      if (!input.value.includes(catName)) {
+        input.value = input.value ? `${input.value}_${catName}` : catName;
+      }
+      input.focus();
+    });
+  }
+
+  if (btnTagSub) {
+    btnTagSub.addEventListener('click', () => {
+      const currentCat = window.LOAN_CHECKLISTS[state.currentCategory];
+      let subName = '';
+      if (currentCat && currentCat.subTypes) {
+        const st = currentCat.subTypes.find((s) => s.id === state.currentSubType);
+        if (st) subName = st.name.replace(/[^a-zA-Z0-9ก-๙]/g, '').trim();
+      }
+      if (subName && !input.value.includes(subName)) {
+        input.value = input.value ? `${input.value}_${subName}` : subName;
+      }
+      input.focus();
+    });
+  }
+
+  if (btnTagDate) {
+    btnTagDate.addEventListener('click', () => {
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      if (!input.value.includes(dateStr)) {
+        input.value = input.value ? `${input.value}_${dateStr}` : dateStr;
+      }
+      input.focus();
+    });
+  }
+
+  const handleConfirmDownload = () => {
+    let chosenName = (input.value || '').trim();
+    if (!chosenName) {
+      chosenName = generateDefaultZipName();
+    }
+    // Clean filename: remove illegal characters
+    chosenName = chosenName.replace(/[\\/:*?"<>|]/g, '_');
+    closeZipNamingModal();
+    executeZipDownload(chosenName);
+  };
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', handleConfirmDownload);
+  }
+
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirmDownload();
+      }
+    });
   }
 }
 
