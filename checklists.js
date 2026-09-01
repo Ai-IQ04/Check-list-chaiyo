@@ -112,6 +112,46 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
+        "code": "B15",
+        "group": "B ตรวจสอบหลักประกัน",
+        "desc": "รูปถ่ายหลักประกันเพิ่มเติม (รูปที่ 6)",
+        "targetName": "รูปรถ 6",
+        "format": "JPG",
+        "mandatory": false
+      },
+      {
+        "code": "B16",
+        "group": "B ตรวจสอบหลักประกัน",
+        "desc": "รูปถ่ายหลักประกันเพิ่มเติม (รูปที่ 7)",
+        "targetName": "รูปรถ 7",
+        "format": "JPG",
+        "mandatory": false
+      },
+      {
+        "code": "B17",
+        "group": "B ตรวจสอบหลักประกัน",
+        "desc": "รูปถ่ายหลักประกันเพิ่มเติม (รูปที่ 8)",
+        "targetName": "รูปรถ 8",
+        "format": "JPG",
+        "mandatory": false
+      },
+      {
+        "code": "B18",
+        "group": "B ตรวจสอบหลักประกัน",
+        "desc": "รูปถ่ายหลักประกันเพิ่มเติม (รูปที่ 9)",
+        "targetName": "รูปรถ 9",
+        "format": "JPG",
+        "mandatory": false
+      },
+      {
+        "code": "C07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือ/อีเมลขออนุโลมประกันภัย (ถ้ามี)",
+        "targetName": "อนุโลมประกัน",
+        "format": "PDF",
+        "mandatory": false
+      },
+      {
         "code": "B101",
         "group": "B ตรวจสอบหลักประกัน",
         "desc": "รูปถ่ายเล่มทะเบียน หน้าปก",
