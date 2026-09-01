@@ -49,12 +49,42 @@
       --indigo-accent: #4f46e5;
     }
 
+    /* Mobile, iPad & PC Touch Optimization */
+    html {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       background-color: var(--neu-bg);
       color: #313b4c;
       font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+    }
+
+    /* Smooth horizontal touch scrolling for tables & pill bars */
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Mobile Neumorphic Touch Card Adjustments */
+    @media (max-width: 640px) {
+      .neu-raised {
+        box-shadow: 5px 5px 12px var(--neu-shadow-dark), -5px -5px 12px var(--neu-shadow-light);
+      }
+      .neu-inset {
+        box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+      }
     }
 
     /* 100% Pure Neumorphic Raised Plate */
@@ -171,7 +201,7 @@
 
   <!-- Gemini API Key Modal -->
   <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="neu-raised p-6 rounded-3xl max-w-md w-full space-y-4 bg-[#e0e5ec] shadow-2xl">
+    <div class="neu-raised p-5 sm:p-6 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 bg-[#e0e5ec] shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-300 pb-3">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-xl neu-inset text-indigo-600 flex items-center justify-center">
@@ -232,7 +262,7 @@
 
   <!-- Fallback / Error Modal -->
   <div id="apiErrorFallbackModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="neu-raised p-6 rounded-3xl max-w-md w-full space-y-4 bg-[#e0e5ec] shadow-2xl">
+    <div class="neu-raised p-5 sm:p-6 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 bg-[#e0e5ec] shadow-2xl">
       <div class="flex items-center gap-3 text-rose-600">
         <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center flex-shrink-0">
           <i data-lucide="alert-triangle" class="w-6 h-6"></i>
@@ -262,14 +292,14 @@
   </div>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
 
     <!-- STEP 1: Select Loan Type & SubType (MANDATORY BEFORE UPLOAD) -->
-    <section class="neu-raised rounded-3xl p-5 sm:p-6 space-y-4">
+    <section class="neu-raised rounded-3xl p-4 sm:p-6 space-y-4">
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-300/60">
         <div class="flex items-center gap-2">
           <span class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-indigo-600 font-black text-sm">1</span>
-          <h2 class="text-base font-extrabold text-slate-800">เลือกประเภทสินเชื่อและธุรกรรม (บังคับเลือกก่อนวางรูปภาพ)</h2>
+          <h2 class="text-sm sm:text-base font-extrabold text-slate-800">เลือกประเภทสินเชื่อและธุรกรรม (บังคับเลือกก่อนวางรูปภาพ)</h2>
         </div>
         <span id="step1StatusBadge" class="text-xs px-3 py-1 rounded-xl bg-amber-100 text-amber-800 font-bold border border-amber-300 flex items-center gap-1">
           <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
@@ -280,26 +310,26 @@
       <!-- Loan Category Selector (5 Main Categories) -->
       <div class="space-y-2">
         <label class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">1.1 ประเภทสินเชื่อหลัก:</label>
-        <div id="loanCategoryButtons" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          <button data-cat="motorcycle" class="mgr-cat-btn neu-btn neu-pill-active p-3 rounded-2xl flex flex-col items-center gap-1 text-center transition-all">
-            <span class="text-2xl">🏍️</span>
-            <span class="text-xs font-bold">รถมอเตอร์ไซค์</span>
+        <div id="loanCategoryButtons" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5">
+          <button data-cat="motorcycle" class="mgr-cat-btn neu-btn neu-pill-active p-2.5 sm:p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all">
+            <span class="text-xl sm:text-2xl">🏍️</span>
+            <span class="text-[11px] sm:text-xs font-bold leading-tight">รถมอเตอร์ไซค์</span>
           </button>
-          <button data-cat="car" class="mgr-cat-btn neu-btn p-3 rounded-2xl flex flex-col items-center gap-1 text-center transition-all text-slate-700">
-            <span class="text-2xl">🚗</span>
-            <span class="text-xs font-bold">รถเก๋ง/กระบะ/รถตู้</span>
+          <button data-cat="car" class="mgr-cat-btn neu-btn p-2.5 sm:p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all text-slate-700">
+            <span class="text-xl sm:text-2xl">🚗</span>
+            <span class="text-[11px] sm:text-xs font-bold leading-tight">รถเก๋ง/กระบะ/รถตู้</span>
           </button>
-          <button data-cat="truck" class="mgr-cat-btn neu-btn p-3 rounded-2xl flex flex-col items-center gap-1 text-center transition-all text-slate-700">
-            <span class="text-2xl">🚛</span>
-            <span class="text-xs font-bold">รถบรรทุก</span>
+          <button data-cat="truck" class="mgr-cat-btn neu-btn p-2.5 sm:p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all text-slate-700">
+            <span class="text-xl sm:text-2xl">🚛</span>
+            <span class="text-[11px] sm:text-xs font-bold leading-tight">รถบรรทุก</span>
           </button>
-          <button data-cat="agri" class="mgr-cat-btn neu-btn p-3 rounded-2xl flex flex-col items-center gap-1 text-center transition-all text-slate-700">
-            <span class="text-2xl">🚜</span>
-            <span class="text-xs font-bold">รถเพื่อการเกษตร</span>
+          <button data-cat="agri" class="mgr-cat-btn neu-btn p-2.5 sm:p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all text-slate-700">
+            <span class="text-xl sm:text-2xl">🚜</span>
+            <span class="text-[11px] sm:text-xs font-bold leading-tight">รถการเกษตร</span>
           </button>
-          <button data-cat="land" class="mgr-cat-btn neu-btn p-3 rounded-2xl flex flex-col items-center gap-1 text-center transition-all text-slate-700">
-            <span class="text-2xl">🏠</span>
-            <span class="text-xs font-bold">สินเชื่อที่ดิน</span>
+          <button data-cat="land" class="mgr-cat-btn neu-btn p-2.5 sm:p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all text-slate-700 col-span-2 sm:col-span-1">
+            <span class="text-xl sm:text-2xl">🏠</span>
+            <span class="text-[11px] sm:text-xs font-bold leading-tight">สินเชื่อที่ดิน</span>
           </button>
         </div>
       </div>
@@ -309,16 +339,16 @@
         <div class="space-y-2">
           <label class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">1.2 ประเภทธุรกรรม (Sub-Type):</label>
           <div id="subTypeButtons" class="flex flex-wrap gap-2">
-            <button data-subtype="pledge" class="mgr-subtype-btn neu-btn neu-pill-active px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+            <button data-subtype="pledge" class="mgr-subtype-btn neu-btn neu-pill-active px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
               <span>🏷️</span> จำนำเล่มทะเบียน
             </button>
-            <button data-subtype="mortgage" class="mgr-subtype-btn neu-btn px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
+            <button data-subtype="mortgage" class="mgr-subtype-btn neu-btn px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
               <span>🏠</span> จำนอง
             </button>
-            <button data-subtype="refinance" class="mgr-subtype-btn neu-btn px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
+            <button data-subtype="refinance" class="mgr-subtype-btn neu-btn px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
               <span>🔄</span> รีไฟแนนซ์
             </button>
-            <button data-subtype="topup" class="mgr-subtype-btn neu-btn px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
+            <button data-subtype="topup" class="mgr-subtype-btn neu-btn px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-700">
               <span>➕</span> Top-up (กู้เพิ่ม)
             </button>
           </div>
@@ -327,12 +357,12 @@
         <!-- Guarantor Option Toggle -->
         <div class="space-y-2">
           <label class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">1.3 การค้ำประกัน:</label>
-          <div class="flex items-center gap-2">
-            <button id="btnGuarantorNo" class="mgr-guarantor-btn neu-btn neu-pill-active px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnGuarantorNo" class="mgr-guarantor-btn neu-btn neu-pill-active px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5">
               <i data-lucide="user" class="w-4 h-4"></i>
               <span>ผู้กู้คนเดียว (ไม่มีผู้ค้ำ)</span>
             </button>
-            <button id="btnGuarantorYes" class="mgr-guarantor-btn neu-btn px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 text-slate-700">
+            <button id="btnGuarantorYes" class="mgr-guarantor-btn neu-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 text-slate-700">
               <i data-lucide="users" class="w-4 h-4"></i>
               <span>มีผู้ค้ำประกัน</span>
             </button>
@@ -344,7 +374,7 @@
 
 
     <!-- STEP 2: Upload Screenshot Area (Locked until Step 1 complete) -->
-    <section class="neu-raised rounded-3xl p-5 sm:p-6 space-y-4 relative overflow-hidden" id="step2Container">
+    <section class="neu-raised rounded-3xl p-4 sm:p-6 space-y-4 relative overflow-hidden" id="step2Container">
       
       <!-- Lock Overlay if Step 1 not complete -->
       <div id="dropzoneLockOverlay" class="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center p-4 text-center">
@@ -360,21 +390,21 @@
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-300/60">
         <div class="flex items-center gap-2">
           <span class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-indigo-600 font-black text-sm">2</span>
-          <h2 class="text-base font-extrabold text-slate-800">แนบรูปภาพถ่ายหน้าจอคอมพิวเตอร์จากสาขา (Screenshots)</h2>
+          <h2 class="text-sm sm:text-base font-extrabold text-slate-800">แนบรูปภาพถ่ายหน้าจอคอมพิวเตอร์จากสาขา (Screenshots)</h2>
         </div>
         <span class="text-xs text-slate-500">รองรับทีละหลายรูปกรณีตารางยาวหลายหน้า</span>
       </div>
 
-      <!-- Dropzone -->
-      <div id="dropzone" class="neu-inset p-8 rounded-3xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 transition-all text-center cursor-pointer relative group">
-        <input type="file" id="screenshotInput" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+      <!-- Dropzone (Supports File Picker & Camera on Mobile/iPad) -->
+      <div id="dropzone" class="neu-inset p-5 sm:p-8 rounded-3xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 transition-all text-center cursor-pointer relative group">
+        <input type="file" id="screenshotInput" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" title="แตะเลือกรูปถ่ายภาพหน้าจอ หรือ ถ่ายภาพจากกล้อง">
         <div class="space-y-3 pointer-events-none">
-          <div class="w-14 h-14 rounded-2xl neu-raised text-indigo-600 mx-auto flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i data-lucide="camera" class="w-7 h-7"></i>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl neu-raised text-indigo-600 mx-auto flex items-center justify-center group-hover:scale-110 transition-transform">
+            <i data-lucide="camera" class="w-6 h-6 sm:w-7 sm:h-7"></i>
           </div>
           <div>
-            <p class="text-sm font-extrabold text-slate-800">คลิกหรือลากวางรูปภาพถ่ายหน้าจอรายการเอกสารที่นี่</p>
-            <p class="text-xs text-slate-500 mt-1">ระบบจะอ่านข้อความสีน้ำเงิน (ชื่อไฟล์) จากรูปถ่ายหน้าจอโดยอัตโนมัติ</p>
+            <p class="text-xs sm:text-sm font-extrabold text-slate-800">แตะเพื่อเลือกรูปภาพ หรือ ลากวางรูปถ่ายหน้าจอรายการเอกสาร</p>
+            <p class="text-[11px] text-indigo-600 font-bold mt-1">📱 บนมือถือ / iPad: แตะถ่ายภาพหน้าจอ หรือ เลือกภาพจากคลังภาพได้ทันที</p>
           </div>
         </div>
       </div>
@@ -391,13 +421,13 @@
           </button>
         </div>
 
-        <div id="imgGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+        <div id="imgGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           <!-- Thumbnails rendered dynamically -->
         </div>
 
         <!-- Audit Trigger Button -->
         <div class="pt-2 flex justify-center">
-          <button id="btnStartAudit" class="neu-btn-indigo px-8 py-3.5 rounded-2xl text-sm font-black flex items-center gap-2 cursor-pointer shadow-lg hover:scale-105 transition-all">
+          <button id="btnStartAudit" class="neu-btn-indigo px-6 sm:px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-black flex items-center gap-2 cursor-pointer shadow-lg hover:scale-105 transition-all w-full sm:w-auto justify-center">
             <i data-lucide="scan-text" class="w-5 h-5"></i>
             <span>เริ่มวิเคราะห์และตรวจจับตัวหนังสือสีน้ำเงิน (OCR Scan)</span>
           </button>
@@ -417,115 +447,115 @@
 
 
     <!-- STEP 3: Audit Results Dashboard (Hidden until audit complete) -->
-    <section id="auditResultsSection" class="hidden space-y-6">
+    <section id="auditResultsSection" class="hidden space-y-4 sm:space-y-6">
 
       <!-- Overall Status Banner -->
-      <div id="overallStatusBanner" class="neu-raised rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 border-l-8 border-indigo-600">
+      <div id="overallStatusBanner" class="neu-raised rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-8 border-indigo-600">
         <div class="space-y-1">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <span id="overallBadge" class="px-3 py-1 rounded-xl text-xs font-black bg-indigo-100 text-indigo-800">
               กำลังประมวลผล
             </span>
             <span id="activeChecklistTag" class="text-xs text-slate-600 font-bold"></span>
           </div>
-          <h2 id="overallTitle" class="text-lg font-black text-slate-800">ผลการตรวจสอบเอกสาร</h2>
+          <h2 id="overallTitle" class="text-base sm:text-lg font-black text-slate-800">ผลการตรวจสอบเอกสาร</h2>
           <p id="overallSubtitle" class="text-xs text-slate-600">สรุปความถูกต้องและความครบถ้วนของเอกสาร</p>
         </div>
 
-        <button id="btnCopyReport" class="neu-btn-indigo px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 cursor-pointer">
+        <button id="btnCopyReport" class="neu-btn-indigo px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto">
           <i data-lucide="copy" class="w-4 h-4"></i>
           <span>คัดลอกสรุปผลการตรวจ (ส่ง LINE / Chat)</span>
         </button>
       </div>
 
-      <!-- Metric Scorecards -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+      <!-- Metric Scorecards (Responsive 2 cols -> 3 cols -> 5 cols) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
         
         <!-- Total Required -->
-        <div class="neu-raised p-4 rounded-2xl flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl neu-inset text-slate-700 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="list-checks" class="w-5 h-5"></i>
+        <div class="neu-raised p-3.5 sm:p-4 rounded-2xl flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl neu-inset text-slate-700 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="list-checks" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
           <div>
             <p class="text-[10px] font-bold text-slate-500">เอกสารบังคับ</p>
-            <p id="metricTotal" class="text-lg font-black text-slate-800">0</p>
+            <p id="metricTotal" class="text-base sm:text-lg font-black text-slate-800">0</p>
           </div>
         </div>
 
         <!-- Pass Complete -->
-        <div class="neu-raised p-4 rounded-2xl flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl neu-inset text-emerald-600 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        <div class="neu-raised p-3.5 sm:p-4 rounded-2xl flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl neu-inset text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
           <div>
             <p class="text-[10px] font-bold text-emerald-700">ถูกต้องครบถ้วน</p>
-            <p id="metricPass" class="text-lg font-black text-emerald-600">0</p>
+            <p id="metricPass" class="text-base sm:text-lg font-black text-emerald-600">0</p>
           </div>
         </div>
 
         <!-- Filename Issues / Warning -->
-        <div class="neu-raised p-4 rounded-2xl flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl neu-inset text-amber-600 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        <div class="neu-raised p-3.5 sm:p-4 rounded-2xl flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl neu-inset text-amber-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
           <div>
             <p class="text-[10px] font-bold text-amber-700">ชื่อ/ชนิดไม่ตรง</p>
-            <p id="metricWarning" class="text-lg font-black text-amber-600">0</p>
+            <p id="metricWarning" class="text-base sm:text-lg font-black text-amber-600">0</p>
           </div>
         </div>
 
         <!-- Missing Mandatory -->
-        <div class="neu-raised p-4 rounded-2xl flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl neu-inset text-rose-600 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="x-circle" class="w-5 h-5"></i>
+        <div class="neu-raised p-3.5 sm:p-4 rounded-2xl flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl neu-inset text-rose-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="x-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
           <div>
             <p class="text-[10px] font-bold text-rose-700">ขาดเอกสารบังคับ</p>
-            <p id="metricMissing" class="text-lg font-black text-rose-600">0</p>
+            <p id="metricMissing" class="text-base sm:text-lg font-black text-rose-600">0</p>
           </div>
         </div>
 
         <!-- Branch Custom Attachments (Must inspect before approval) -->
-        <div class="neu-raised p-4 rounded-2xl flex items-center gap-3 border-2 border-indigo-200">
-          <div class="w-10 h-10 rounded-xl neu-inset text-indigo-600 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="file-plus-2" class="w-5 h-5"></i>
+        <div class="neu-raised p-3.5 sm:p-4 rounded-2xl flex items-center gap-3 border-2 border-indigo-200 col-span-2 sm:col-span-1">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl neu-inset text-indigo-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="file-plus-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
           <div>
             <p class="text-[10px] font-bold text-indigo-700">แนบเพิ่ม (ต้องตรวจ)</p>
-            <p id="metricCustom" class="text-lg font-black text-indigo-600">0</p>
+            <p id="metricCustom" class="text-base sm:text-lg font-black text-indigo-600">0</p>
           </div>
         </div>
 
       </div>
 
       <!-- Filterable Audit Table -->
-      <div class="neu-raised rounded-3xl p-5 space-y-4">
+      <div class="neu-raised rounded-3xl p-4 sm:p-5 space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
-          <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+          <h3 class="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
             <i data-lucide="table" class="w-4 h-4 text-indigo-600"></i>
             ตารางเปรียบเทียบผลการตรวจเอกสาร (แสดงเฉพาะเอกสารบังคับ + แนบเพิ่มเติม)
           </h3>
 
-          <!-- Table Filter Pills -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button data-filter="all" class="table-filter-btn neu-btn neu-pill-active px-3 py-1.5 rounded-xl text-xs font-bold">ทั้งหมด</button>
-            <button data-filter="missing" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700">🔴 ขาดเอกสารบังคับ</button>
-            <button data-filter="warning" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-amber-700">🟡 ชื่อไฟล์/ชนิดไม่ตรง</button>
-            <button data-filter="custom" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-700">🔵 แนบเพิ่ม (ต้องตรวจ)</button>
-            <button data-filter="pass" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-700">🟢 ผ่านแล้ว</button>
+          <!-- Table Filter Pills (Horizontal Scrollable on Mobile) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 max-w-full">
+            <button data-filter="all" class="table-filter-btn neu-btn neu-pill-active px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap">ทั้งหมด</button>
+            <button data-filter="missing" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 whitespace-nowrap">🔴 ขาดเอกสารบังคับ</button>
+            <button data-filter="warning" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-amber-700 whitespace-nowrap">🟡 ชื่อไฟล์/ชนิดไม่ตรง</button>
+            <button data-filter="custom" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-700 whitespace-nowrap">🔵 แนบเพิ่ม (ต้องตรวจ)</button>
+            <button data-filter="pass" class="table-filter-btn neu-btn px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-700 whitespace-nowrap">🟢 ผ่านแล้ว</button>
           </div>
         </div>
 
-        <!-- Table Container -->
+        <!-- Table Container (Horizontal Scrollable for Mobile/iPad) -->
         <div class="overflow-x-auto rounded-2xl neu-inset p-1">
-          <table class="w-full text-left text-xs">
+          <table class="w-full text-left text-xs min-w-[640px]">
             <thead class="bg-slate-200/70 text-slate-700 font-extrabold uppercase border-b border-slate-300">
               <tr>
                 <th class="p-3 w-16 text-center">รหัส</th>
                 <th class="p-3">รายการเอกสารตาม Checklist</th>
                 <th class="p-3 w-44">ชื่อไฟล์ที่กำหนด (Target)</th>
                 <th class="p-3 w-52">ชื่อไฟล์สีน้ำเงินที่ตรวจพบ</th>
-                <th class="p-3 w-28 text-center">สถานะ</th>
+                <th class="p-3 w-32 text-center">สถานะ / การอนุมัติ</th>
               </tr>
             </thead>
             <tbody id="auditTableBody" class="divide-y divide-slate-300/50 font-medium">

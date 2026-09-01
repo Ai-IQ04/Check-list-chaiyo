@@ -54,12 +54,42 @@
       --orange-accent: #ff6a00;
     }
 
+    /* Mobile, iPad & PC Touch Optimization */
+    html {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       background-color: var(--neu-bg);
       color: #313b4c;
       font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+    }
+
+    /* Smooth horizontal touch scrolling for tables & pill bars */
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Mobile Neumorphic Touch Card Adjustments */
+    @media (max-width: 640px) {
+      .neu-raised {
+        box-shadow: 5px 5px 12px var(--neu-shadow-dark), -5px -5px 12px var(--neu-shadow-light);
+      }
+      .neu-inset {
+        box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+      }
     }
 
     /* 100% Pure Neumorphic Raised Plate */
