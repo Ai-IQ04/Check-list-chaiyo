@@ -462,13 +462,14 @@ function createBlueTextMaskCanvas(imageSrc) {
  */
 async function runGoogleCloudVisionAPI(dataUrl, apiKey) {
   const base64Data = dataUrl.split(',')[1] || dataUrl;
-  const cleanKey = apiKey.trim();
-  const isOAuth = cleanKey.startsWith('AQ') || cleanKey.startsWith('ya29') || !cleanKey.startsWith('AIza');
+  // Google OAuth2 Bearer tokens start with 'ya29.'
+  // Modern Google AI Studio API Keys can start with 'AIza' or 'AQ.'
+  const isOAuth = cleanKey.startsWith('ya29');
 
   // If using OAuth2 Bearer token, DO NOT append ?key= in URL to avoid GCP 401 API_KEY_SERVICE_BLOCKED
   const url = isOAuth
     ? `https://vision.googleapis.com/v1/images:annotate`
-    : `https://vision.googleapis.com/v1/images:annotate?key=${cleanKey}`;
+    : `https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(cleanKey)}`;
 
   const headers = {
     'Content-Type': 'application/json',
@@ -598,7 +599,7 @@ function safeParseJsonArray(text) {
 async function runGeminiVisionOCR(dataUrl, apiKey, preferredModel) {
   const base64Data = dataUrl.split(',')[1] || dataUrl;
   const cleanKey = apiKey.trim();
-  const isOAuth = cleanKey.startsWith('AQ') || cleanKey.startsWith('ya29') || !cleanKey.startsWith('AIza');
+  const isOAuth = cleanKey.startsWith('ya29');
   
   const targetModel = preferredModel && preferredModel !== 'google-cloud-vision' ? preferredModel : 'gemini-2.5-flash';
   const models = [...new Set([targetModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'])];
@@ -608,7 +609,7 @@ async function runGeminiVisionOCR(dataUrl, apiKey, preferredModel) {
     // If using OAuth2 Bearer token, DO NOT append ?key= in URL
     const url = isOAuth
       ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
-      : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+      : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
 
     const headers = {
       'Content-Type': 'application/json',
