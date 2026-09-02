@@ -818,8 +818,14 @@ function evaluateChecklistMatching() {
     });
 
     if (bestMatch && highestScore >= 0.45) {
-      usedExtractIndices.add(bestMatchIdx);
-      const isFormatCorrect = !bestMatch.ext || bestMatch.ext === item.format;
+      const isSameFormat = (e1, e2) => {
+        if (!e1 || !e2) return true;
+        const a = e1.toUpperCase();
+        const b = e2.toUpperCase();
+        if (a === b) return true;
+        return (a === 'JPG' || a === 'JPEG') && (b === 'JPG' || b === 'JPEG');
+      };
+      const isFormatCorrect = isSameFormat(bestMatch.ext, item.format);
       results.push({
         ...item,
         status: isFormatCorrect ? 'PASS' : 'WARNING',
