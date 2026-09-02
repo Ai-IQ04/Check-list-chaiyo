@@ -14,6 +14,8 @@ const CURRENT_APP_VERSION = '3.10.0';
 const state = {
   currentCategory: 'motorcycle',
   currentSubType: 'pledge', // Sub-type filter ID (e.g. 'pledge', 'refinance', 'topup', 'land_mortgage', etc.)
+  customerName: '', // Customer Full Name
+  customerPlate: '', // Vehicle plate or collateral info
   hasGuarantor: false, // false = no guarantor (borrower only), true = with guarantor
   isTypeConfirmed: false, // Track if user has confirmed loan type & contract options
   selectedGroupFilter: 'all', // 'all', 'unattached', or specific group name
@@ -143,6 +145,8 @@ async function saveAutoSaveSession() {
       id: 'current_active_session',
       category: state.currentCategory,
       subType: state.currentSubType,
+      customerName: state.customerName || '',
+      customerPlate: state.customerPlate || '',
       hasGuarantor: state.hasGuarantor,
       selectedGroup: state.selectedGroupFilter,
       customCounter: state.customCounter,
@@ -203,11 +207,19 @@ async function restoreAutoSaveSession() {
 
         state.currentCategory = session.category || 'motorcycle';
         state.currentSubType = session.subType || 'pledge';
+        state.customerName = session.customerName || '';
+        state.customerPlate = session.customerPlate || '';
         state.hasGuarantor = session.hasGuarantor || false;
         state.isTypeConfirmed = true;
         state.selectedGroupFilter = session.selectedGroup || 'all';
         state.customCounter = session.customCounter || 1;
         state.customSlots = session.customSlots || [];
+
+        const inpCustName = document.getElementById('inputCustomerName');
+        const inpCustPlate = document.getElementById('inputCustomerPlate');
+        if (inpCustName) inpCustName.value = state.customerName;
+        if (inpCustPlate) inpCustPlate.value = state.customerPlate;
+        updateSettingsSummary();
 
         // Re-sync standard slots with master LOAN_CHECKLISTS to always apply latest master database rules
         const masterItems = (window.LOAN_CHECKLISTS[state.currentCategory] && window.LOAN_CHECKLISTS[state.currentCategory].items) || [];
@@ -514,10 +526,20 @@ function updateSettingsSummary() {
   const el = document.getElementById('settingsSummaryText');
   if (!el) return;
   const catData = window.LOAN_CHECKLISTS[state.currentCategory];
-  const subType = catData && catData.subTypes ? catData.subTypes.find(s => s.id === state.currentSubType) : null;
+  const subType = catData && catData.subTypes ? catData.subTypes.find((s) => s.id === state.currentSubType) : null;
   const subName = subType ? subType.name : 'ยังไม่เลือก';
   const guarantorText = state.hasGuarantor ? 'มีผู้ค้ำ' : 'ไม่มีผู้ค้ำ';
-  el.innerText = `${subName} • ${guarantorText}`;
+
+  let parts = [];
+  if (state.customerName && state.customerName.trim()) {
+    parts.push(`👤 ${state.customerName.trim()}`);
+  }
+  if (state.customerPlate && state.customerPlate.trim()) {
+    parts.push(`🚗 ${state.customerPlate.trim()}`);
+  }
+  parts.push(`${subName} • ${guarantorText}`);
+
+  el.innerText = parts.join(' • ');
 }
 
 // 3. Pure Neumorphic Sub-Product Switcher Panel
@@ -2300,6 +2322,11 @@ function openLoanSetupModal(initialCat = null) {
   }
   setupModalTempGuarantor = state.hasGuarantor || false;
 
+  const modalCustName = document.getElementById('setupModalCustomerName');
+  const modalCustPlate = document.getElementById('setupModalCustomerPlate');
+  if (modalCustName) modalCustName.value = state.customerName || '';
+  if (modalCustPlate) modalCustPlate.value = state.customerPlate || '';
+
   renderSetupModalCategoryGrid();
   renderSetupModalSubProducts();
   renderSetupModalGuarantor();
@@ -2480,6 +2507,17 @@ function setupLoanSetupModalListeners() {
       state.hasGuarantor = setupModalTempGuarantor;
       state.isTypeConfirmed = true;
 
+      const modalCustName = document.getElementById('setupModalCustomerName');
+      const modalCustPlate = document.getElementById('setupModalCustomerPlate');
+      if (modalCustName) state.customerName = modalCustName.value.trim();
+      if (modalCustPlate) state.customerPlate = modalCustPlate.value.trim();
+
+      const mainCustName = document.getElementById('inputCustomerName');
+      const mainCustPlate = document.getElementById('inputCustomerPlate');
+      if (mainCustName) mainCustName.value = state.customerName;
+      if (mainCustPlate) mainCustPlate.value = state.customerPlate;
+      updateSettingsSummary();
+
       setGuarantorMode(state.hasGuarantor, true);
       selectCategory(state.currentCategory, state.currentSubType);
 
@@ -2503,6 +2541,14 @@ async function resetToNewCase(showNotification = true) {
   state.customSlots = [];
   state.customCounter = 1;
   state.selectedGroupFilter = 'all';
+  state.customerName = '';
+  state.customerPlate = '';
+
+  const inpCustName = document.getElementById('inputCustomerName');
+  const inpCustPlate = document.getElementById('inputCustomerPlate');
+  if (inpCustName) inpCustName.value = '';
+  if (inpCustPlate) inpCustPlate.value = '';
+  updateSettingsSummary();
 
   // Clear active autosave from IndexedDB
   try {
@@ -2552,6 +2598,35 @@ function setupGlobalEventListeners() {
     };
     setHeaderH();
     window.addEventListener('resize', setHeaderH);
+  }
+
+  // Customer Name & Vehicle Plate Realtime Sync
+  const inpCustName = document.getElementById('inputCustomerName');
+  const inpCustPlate = document.getElementById('inputCustomerPlate');
+  if (inpCustName) {
+    inpCustName.addEventListener('input', (e) => {
+      state.customerName = e.target.value;
+      updateSettingsSummary();
+      triggerAutoSave();
+    });
+  }
+  if (inpCustPlate) {
+    inpCustPlate.addEventListener('input', (e) => {
+      state.customerPlate = e.target.value;
+      updateSettingsSummary();
+      triggerAutoSave();
+    });
+  }
+
+  // Missing Count Badge Click Handler -> Open Missing Items Modal
+  const missingBadge = document.getElementById('missingCountBadge');
+  if (missingBadge) {
+    missingBadge.addEventListener('click', () => {
+      const allSlots = getAllSlots();
+      const unattachedSlots = allSlots.filter((s) => !s.attached);
+      const attachedCount = allSlots.filter((s) => s.attached).length;
+      openMissingModal(unattachedSlots, attachedCount);
+    });
   }
 
   const btnGuarantorNo = document.getElementById('btnGuarantorNo');
@@ -2737,6 +2812,13 @@ function setupGlobalEventListeners() {
     btnModalConfirmDownload.addEventListener('click', () => {
       if (missingModal) missingModal.classList.add('hidden');
       openZipNamingModal();
+    });
+  }
+
+  const btnCloseMissingTop = document.getElementById('btnCloseMissingModalTop');
+  if (btnCloseMissingTop) {
+    btnCloseMissingTop.addEventListener('click', () => {
+      if (missingModal) missingModal.classList.add('hidden');
     });
   }
 
@@ -3584,7 +3666,16 @@ function generateDefaultZipName() {
   const day = String(now.getDate()).padStart(2, '0');
   const dateStr = `${year}-${month}-${day}`;
 
-  return `เอกสาร_${catName}_${subName}_${dateStr}`;
+  const custPart = state.customerName ? state.customerName.trim().replace(/[\s\/\\?%*:|"<>]+/g, '_') : '';
+  const platePart = state.customerPlate ? state.customerPlate.trim().replace(/[\s\/\\?%*:|"<>]+/g, '_') : '';
+
+  let parts = [];
+  if (custPart) parts.push(custPart);
+  parts.push(`เอกสาร_${catName}_${subName}`);
+  if (platePart) parts.push(platePart);
+  parts.push(dateStr);
+
+  return parts.join('_');
 }
 
 function openZipNamingModal() {
