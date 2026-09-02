@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updateApiKeyStatusUI();
 });
 
-// Built-in Default System API Key (Zero Setup for Users/Branches)
-const DEFAULT_SYSTEM_API_KEY = 'AIzaSyCm7s4zxXfWGhH8_zftJE2HQIhfpJSM06c';
+// Built-in Default System API Key (Fallback to empty string - users enter via UI modal)
+const DEFAULT_SYSTEM_API_KEY = '';
 
 function getGeminiApiKey() {
   const savedKey = localStorage.getItem('MGR_GEMINI_API_KEY');
