@@ -629,7 +629,7 @@ function getAllSlots() {
   return [...state.slots, ...state.customSlots];
 }
 
-// 4. Modern Vector Duotone Document Group Filter Board
+// 4. Modern Vector Duotone Document Group Filter Board (Single Row Carousel)
 function renderGroupFilterPills() {
   groupFilterPills.innerHTML = '';
   const allSlots = getAllSlots();
@@ -637,10 +637,10 @@ function renderGroupFilterPills() {
 
   // 1. "All" Pill
   const allPill = document.createElement('button');
-  allPill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
+  allPill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
     state.selectedGroupFilter === 'all'
       ? 'neu-pill-active'
-      : 'text-slate-700'
+      : 'text-slate-700 hover:text-orange-600'
   }`;
   allPill.innerHTML = `<i data-lucide="layout-grid" class="w-3.5 h-3.5 text-orange-500"></i><span>ทั้งหมด (${allSlots.length})</span>`;
   allPill.addEventListener('click', () => {
@@ -653,10 +653,10 @@ function renderGroupFilterPills() {
   // 2. "Unattached" Filter Pill (Missing Items)
   if (unattachedCount > 0) {
     const missingPill = document.createElement('button');
-    missingPill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
+    missingPill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
       state.selectedGroupFilter === 'unattached'
         ? 'neu-pill-active text-amber-600'
-        : 'text-amber-700'
+        : 'text-amber-700 hover:text-amber-800'
     }`;
     missingPill.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
     missingPill.addEventListener('click', () => {
@@ -666,6 +666,11 @@ function renderGroupFilterPills() {
     });
     groupFilterPills.appendChild(missingPill);
   }
+
+  // Visual vertical separator between status filters & category filters
+  const divider = document.createElement('div');
+  divider.className = 'w-[1.5px] h-4 bg-[#cbd5e1]/70 flex-shrink-0 mx-0.5 rounded-full';
+  groupFilterPills.appendChild(divider);
 
   // 3. Specific Group Pills (Clean Modern Vector Chips)
   const groups = Array.from(new Set(allSlots.map((s) => s.group)));
@@ -691,10 +696,11 @@ function renderGroupFilterPills() {
     }
 
     const pill = document.createElement('button');
-    pill.className = `neu-btn px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 ${
-      state.selectedGroupFilter === groupName
+    const isSelected = state.selectedGroupFilter === groupName;
+    pill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
+      isSelected
         ? 'neu-pill-active'
-        : 'text-slate-700'
+        : 'text-slate-700 hover:text-orange-600'
     }`;
     pill.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${groupName} (${attachedInGroup}/${countInGroup})</span>`;
     pill.addEventListener('click', () => {
@@ -703,6 +709,12 @@ function renderGroupFilterPills() {
       renderSlots();
     });
     groupFilterPills.appendChild(pill);
+
+    if (isSelected) {
+      setTimeout(() => {
+        pill.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }, 50);
+    }
   });
 
   lucide.createIcons();

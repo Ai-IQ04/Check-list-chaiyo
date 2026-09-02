@@ -468,18 +468,21 @@
     </div>
 
     <!-- Row 2: Document Group Filter Panel & Action Buttons (Pure Neumorphic Board) -->
-    <div class="neu-raised rounded-3xl p-3.5 sm:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3.5">
+    <div class="neu-raised rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3.5">
       
-      <!-- Fully Visible Wrap Filter Board -->
-      <div class="flex items-start gap-2.5 flex-1 min-w-0 flex-col sm:flex-row sm:items-center">
-        <div class="flex items-center gap-1.5 pl-1 text-slate-600 flex-shrink-0 mb-1 sm:mb-0">
+      <!-- Horizontal Scrollable Filter Board (Single Row Carousel) -->
+      <div class="flex items-center gap-2 flex-1 min-w-0">
+        <div class="flex items-center gap-1.5 pl-1 text-slate-600 flex-shrink-0">
           <div class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-orange-600 shadow-sm">
             <i data-lucide="filter" class="w-3.5 h-3.5"></i>
           </div>
-          <span class="text-xs font-bold whitespace-nowrap">หมวดเอกสาร:</span>
+          <span class="text-xs font-bold whitespace-nowrap hidden sm:inline">หมวด:</span>
         </div>
-        <div id="groupFilterPills" class="flex flex-wrap items-center gap-2 flex-1 w-full">
-          <!-- Injected dynamically by JavaScript as Pure Neumorphic Chips -->
+        
+        <div class="relative flex-1 min-w-0 overflow-hidden">
+          <div id="groupFilterPills" class="flex items-center gap-2 overflow-x-auto py-1 px-1 no-scrollbar scroll-smooth whitespace-nowrap">
+            <!-- Injected dynamically by JavaScript as Pure Neumorphic Chips -->
+          </div>
         </div>
       </div>
 
