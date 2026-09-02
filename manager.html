@@ -370,6 +370,36 @@
         </div>
       </div>
 
+      <!-- 1.4 Live Expected Documents Checklist Preview for Selected Type -->
+      <div id="step1PreviewSection" class="mt-4 pt-3.5 border-t border-slate-300/60 space-y-2.5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="w-6 h-6 rounded-lg neu-inset flex items-center justify-center text-indigo-600">
+              <i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i>
+            </span>
+            <span class="text-xs font-black text-slate-800">
+              เอกสารที่ต้องใช้สำหรับ:
+              <span id="previewSelectedProductTitle" class="text-indigo-600 font-black underline ml-1">กำลังโหลด...</span>
+            </span>
+            <span id="previewDocsCountBadge" class="text-[11px] px-2.5 py-0.5 rounded-full font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              0 รายการ
+            </span>
+          </div>
+
+          <button id="btnToggleChecklistPreview" type="button" class="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1.5 cursor-pointer neu-btn px-3 py-1.5 rounded-xl transition-all">
+            <span id="toggleChecklistPreviewText">ซ่อนรายการ</span>
+            <i id="toggleChecklistPreviewIcon" data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- Filtered Checklist Items Container -->
+        <div id="step1ChecklistPreviewContainer" class="p-2 sm:p-3 rounded-2xl neu-inset max-h-[380px] overflow-y-auto space-y-2 transition-all">
+          <div id="step1ChecklistPreviewGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
     </section>
 
 

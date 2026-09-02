@@ -221,6 +221,28 @@ function setupStep1Listeners() {
       updateStep1UI();
     });
   }
+
+  // Toggle Checklist Preview Collapse
+  const btnTogglePreview = document.getElementById('btnToggleChecklistPreview');
+  const previewContainer = document.getElementById('step1ChecklistPreviewContainer');
+  const toggleText = document.getElementById('toggleChecklistPreviewText');
+  const toggleIcon = document.getElementById('toggleChecklistPreviewIcon');
+
+  if (btnTogglePreview && previewContainer) {
+    btnTogglePreview.addEventListener('click', () => {
+      const isHidden = previewContainer.classList.contains('hidden');
+      if (isHidden) {
+        previewContainer.classList.remove('hidden');
+        if (toggleText) toggleText.innerText = 'ซ่อนรายการ';
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-up');
+      } else {
+        previewContainer.classList.add('hidden');
+        if (toggleText) toggleText.innerText = 'แสดงรายการ';
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-down');
+      }
+      initLucideIcons();
+    });
+  }
 }
 
 function checkAndConfirmStep1() {
@@ -242,12 +264,12 @@ function updateStep1UI() {
   document.querySelectorAll('.mgr-subtype-btn').forEach((btn) => {
     const sub = btn.getAttribute('data-subtype');
 
-    // Disable mortgage for non-land/car
-    if (sub === 'mortgage' && mgrState.selectedCategory !== 'land' && mgrState.selectedCategory !== 'car') {
-      btn.classList.add('opacity-40', 'cursor-not-allowed');
+    // Disable mortgage for non-land (vehicles only do pledge/refinance/topup)
+    if (sub === 'mortgage' && mgrState.selectedCategory !== 'land') {
+      btn.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
       btn.classList.remove('hover:text-indigo-600');
     } else {
-      btn.classList.remove('opacity-40', 'cursor-not-allowed');
+      btn.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
     }
 
     if (sub === mgrState.selectedSubType) {
@@ -290,7 +312,159 @@ function updateStep1UI() {
     }
   }
 
+  // Update Live Expected Checklist Preview
+  renderStep1ChecklistPreview();
+
   initLucideIcons();
+}
+
+/**
+ * Filter checklist items strictly based on Category, SubType, and Guarantor.
+ * Excludes refinance (C3/A023), land mortgage (DD), and guarantor docs when irrelevant.
+ */
+function getFilteredItemsForProduct(catId, subTypeId, hasGuarantor) {
+  const catData = window.LOAN_CHECKLISTS ? window.LOAN_CHECKLISTS[catId] : null;
+  if (!catData || !catData.items) return [];
+  let items = [...catData.items];
+
+  const sub = (subTypeId || 'pledge').toLowerCase();
+
+  // 1. If Land loan
+  if (catId === 'land') {
+    const isLandMortgage = sub === 'mortgage' || sub === 'land_mortgage' || sub === 'land_refinance_mortgage';
+    if (!isLandMortgage) {
+      // โหมดจำนำที่ดิน และ Top-up ที่ดิน: ไม่ต้องแสดงเอกสารจดจำนองที่ดิน (หมวด DD)
+      items = items.filter((it) => !(it.code || '').toUpperCase().startsWith('DD'));
+    }
+  }
+
+  // 2. Filter Refinance & Top-up documents (หมวด C3 เอกสารเพิ่มเติม รีไฟแนนซ์/ต่อสัญญา/Top-up)
+  const isRefinanceOrTopup = ['refinance', 'topup', 'land_refinance_pledge', 'land_refinance_mortgage', 'land_topup'].includes(sub);
+  const isRefinance = ['refinance', 'land_refinance_pledge', 'land_refinance_mortgage'].includes(sub);
+
+  if (!isRefinanceOrTopup) {
+    // โหมดจำนำ และ จำนอง: ไม่ต้องแสดงหมวด C3 และ ไม่ต้องแสดงหนังสือมอบอำนาจรีไฟแนนซ์ (A023/AA023)
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const grp = (it.group || '').toUpperCase();
+      const targetName = it.targetName || '';
+      if (c === 'A023' || c === 'AA023' || targetName.includes('หนังสือมอบอำนาจรีไฟแนนซ์')) {
+        return false;
+      }
+      if (grp.startsWith('C3') || c.startsWith('C3')) {
+        return false;
+      }
+      return true;
+    });
+  } else if (!isRefinance) {
+    // โหมด Top-up: ซ่อนหนังสือมอบอำนาจรีไฟแนนซ์ และสัญญาไฟแนนซ์เดิม เปิดเฉพาะใบเรียกเก็บดอกเบี้ยสะสม Top-up
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const targetName = it.targetName || '';
+      if (c === 'A023' || c === 'AA023' || targetName.includes('หนังสือมอบอำนาจรีไฟแนนซ์')) {
+        return false;
+      }
+      if (c === 'C305' || c === 'C307' || targetName.includes('ใบสอบถามยอดหนี้') || targetName.includes('สัญญาคู่ฉบับไฟแนนซ์เดิม')) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // 3. Filter Guarantor items when in "No Guarantor" mode
+  if (!hasGuarantor) {
+    items = items.filter((it) => {
+      const c = (it.code || '').toUpperCase();
+      const grp = (it.group || '').toUpperCase();
+      const desc = it.desc || '';
+      const targetName = it.targetName || '';
+      
+      if (['A02', 'A04', 'C102', 'C106', 'C202', 'BB01', 'BB02'].includes(c)) return false;
+      if (grp.startsWith('BB')) return false;
+      if (desc.includes('ผู้ค้ำ') || targetName.includes('ผู้ค้ำ')) return false;
+      return true;
+    });
+  }
+
+  return items;
+}
+
+/**
+ * Render Live Expected Document Checklist Preview for selected product in Step 1
+ */
+function renderStep1ChecklistPreview() {
+  const titleElem = document.getElementById('previewSelectedProductTitle');
+  const countBadge = document.getElementById('previewDocsCountBadge');
+  const gridElem = document.getElementById('step1ChecklistPreviewGrid');
+
+  if (!gridElem) return;
+
+  const catNames = { 
+    motorcycle: 'รถมอเตอร์ไซค์', 
+    car: 'รถเก๋ง/กระบะ/ตู้', 
+    truck: 'รถบรรทุก', 
+    agri: 'รถการเกษตร', 
+    land: 'สินเชื่อที่ดิน' 
+  };
+  const subNames = { 
+    pledge: 'จำนำเล่มทะเบียน', 
+    mortgage: 'จำนอง', 
+    refinance: 'รีไฟแนนซ์', 
+    topup: 'Top-up (กู้เพิ่ม)' 
+  };
+
+  const catName = catNames[mgrState.selectedCategory] || 'สินเชื่อ';
+  const subName = subNames[mgrState.selectedSubType] || 'จำนำเล่มทะเบียน';
+  const guarantorName = mgrState.hasGuarantor ? 'มีผู้ค้ำประกัน' : 'ไม่มีผู้ค้ำ';
+
+  if (titleElem) {
+    titleElem.innerText = `${catName} • ${subName} (${guarantorName})`;
+  }
+
+  const items = getFilteredItemsForProduct(mgrState.selectedCategory, mgrState.selectedSubType, mgrState.hasGuarantor);
+
+  let pdfCount = 0;
+  let jpgCount = 0;
+  items.forEach(it => {
+    if ((it.format || '').toUpperCase() === 'PDF') pdfCount++;
+    else jpgCount++;
+  });
+
+  if (countBadge) {
+    countBadge.innerText = `${items.length} รายการ (PDF ${pdfCount}, JPG ${jpgCount})`;
+  }
+
+  if (items.length === 0) {
+    gridElem.innerHTML = '<div class="col-span-full py-4 text-center text-xs text-slate-500 font-bold">ไม่พบรายการเอกสารสำหรับเงื่อนไขนี้</div>';
+    return;
+  }
+
+  gridElem.innerHTML = items.map((it, idx) => {
+    const isPDF = (it.format || '').toUpperCase() === 'PDF';
+    const fmtBadge = isPDF
+      ? '<span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200">PDF</span>'
+      : '<span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 border border-blue-200">JPG</span>';
+
+    const reqBadge = it.mandatory
+      ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-200">บังคับ</span>'
+      : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200">ถ้ามี</span>';
+
+    return `
+      <div class="neu-raised p-2.5 rounded-xl flex flex-col justify-between gap-1.5 border border-slate-300/40 hover:border-indigo-300 transition-all bg-[#e0e5ec]">
+        <div class="flex items-start justify-between gap-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-[10px] font-mono font-black text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded neu-inset">${it.code || `DOC-${idx + 1}`}</span>
+            <span class="text-xs font-black text-slate-800 truncate" title="${it.targetName}">${it.targetName}</span>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            ${fmtBadge}
+            ${reqBadge}
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-600 line-clamp-1 leading-snug" title="${it.desc}">${it.desc}</p>
+      </div>
+    `;
+  }).join('');
 }
 
 /* =========================================================
@@ -778,30 +952,20 @@ function setupAuditListeners() {
 }
 
 /* =========================================================
- * STEP 4: Matching Logic against LOAN_CHECKLISTS
+ * STEP 4: Matching Logic against Filtered LOAN_CHECKLISTS
  * ========================================================= */
 function evaluateChecklistMatching() {
-  const masterData = window.LOAN_CHECKLISTS[mgrState.selectedCategory];
-  if (!masterData || !masterData.items) {
+  const items = getFilteredItemsForProduct(mgrState.selectedCategory, mgrState.selectedSubType, mgrState.hasGuarantor);
+  if (!items || items.length === 0) {
     mgrState.auditResults = [];
     return;
   }
 
-  const items = masterData.items;
   const hasGuarantor = mgrState.hasGuarantor;
-  const selectedSubType = mgrState.selectedSubType;
   const usedExtractIndices = new Set();
   const results = [];
 
   items.forEach((item) => {
-    if (item.subTypes && Array.isArray(item.subTypes) && !item.subTypes.includes(selectedSubType)) {
-      return; 
-    }
-
-    const isGuarantorDoc = item.targetName.includes('ผู้ค้ำ') || item.desc.includes('ผู้ค้ำ');
-    if (isGuarantorDoc && !hasGuarantor && !item.mandatory) {
-      return; 
-    }
 
     let bestMatch = null;
     let bestMatchIdx = -1;
