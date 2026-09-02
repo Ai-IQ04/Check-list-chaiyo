@@ -219,6 +219,7 @@ async function restoreAutoSaveSession() {
           if (master) {
             return {
               ...s,
+              group: master.group || s.group,
               mandatory: !!master.mandatory,
               desc: master.desc || s.desc,
               defaultFormat: master.format || s.defaultFormat,
@@ -268,7 +269,6 @@ const groupFilterPills = document.getElementById('groupFilterPills');
 const slotsContainer = document.getElementById('slotsContainer');
 const attachedCountBadge = document.getElementById('attachedCountBadge');
 const btnDownloadZip = document.getElementById('btnDownloadZip');
-const btnAddCustomSlot = document.getElementById('btnAddCustomSlot');
 const btnBatchAutoFill = document.getElementById('btnBatchAutoFill');
 const batchFileInput = document.getElementById('batchFileInput');
 const btnClearAllAttached = document.getElementById('btnClearAllAttached');
@@ -745,15 +745,25 @@ function renderSlots() {
 
     const isCustomGroup = groupName === 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)';
 
+    const attachedCount = slotsInGroup.filter((s) => s.attached).length;
+    const totalCount = slotsInGroup.length;
+    const safeGroupName = groupName.replace(/"/g, '&quot;');
+
     groupSection.innerHTML = `
-      <div class="flex items-center justify-between pb-1 border-b border-[#dfe2eb]">
+      <div class="flex items-center justify-between pb-1.5 border-b border-[#cbd5e1]/70 gap-2 flex-wrap sm:flex-nowrap">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_8px_#ff6a00]"></span>
-          ${groupName}
+          <span>${groupName}</span>
         </h3>
-        <span class="text-xs font-bold text-slate-500">
-          ${slotsInGroup.filter((s) => s.attached).length} / ${slotsInGroup.length} แนบแล้ว
-        </span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-500 neu-inset px-2.5 py-1 rounded-xl">
+            ${attachedCount} / ${totalCount} แนบแล้ว
+          </span>
+          <button type="button" class="neu-btn px-2.5 py-1 rounded-xl text-xs font-extrabold text-orange-600 hover:text-orange-700 flex items-center gap-1.5 cursor-pointer btn-add-group-slot transition-all active:scale-95 shadow-xs select-none" data-group="${safeGroupName}" title="เพิ่มเอกสารในหมวด ${safeGroupName}">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-orange-500"></i>
+            <span>+ เอกสารเพิ่ม</span>
+          </button>
+        </div>
       </div>
     `;
 
@@ -801,11 +811,19 @@ function renderSlots() {
                     : `<span class="text-xs font-extrabold text-slate-800 break-words leading-relaxed">${slot.targetName}</span>`
                 }
                 <!-- Pure Neumorphic Soft UI Format Pill with Crisp Colored Text -->
-                <span class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase ${
-                  slot.defaultFormat === 'PDF' ? 'text-red-700 bg-red-50/60 border border-red-200/80' : 'text-blue-700 bg-blue-50/60 border border-blue-200/80'
-                }">
-                  ${slot.defaultFormat}
-                </span>
+                ${
+                  slot.isCustom
+                    ? `<button type="button" data-id="${slot.id}" class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase btn-toggle-custom-format cursor-pointer transition-all hover:scale-105 select-none ${
+                        slot.defaultFormat === 'PDF' ? 'text-red-700 bg-red-50/60 border border-red-200/80' : 'text-blue-700 bg-blue-50/60 border border-blue-200/80'
+                      }" title="คลิกเพื่อสลับชนิดไฟล์ระหว่าง PDF / JPG">
+                        ${slot.defaultFormat} ⇄
+                      </button>`
+                    : `<span class="text-[11px] px-2.5 py-0.5 rounded-lg neu-inset font-black tracking-wider uppercase ${
+                        slot.defaultFormat === 'PDF' ? 'text-red-700 bg-red-50/60 border border-red-200/80' : 'text-blue-700 bg-blue-50/60 border border-blue-200/80'
+                      }">
+                        ${slot.defaultFormat}
+                      </span>`
+                }
               </div>
               <p class="text-xs text-slate-500 leading-relaxed break-words" title="${slot.desc}">${slot.desc}</p>
             </div>
@@ -1114,6 +1132,29 @@ function attachSlotEvents() {
       const customSlot = state.customSlots.find((s) => s.id === id);
       if (customSlot) {
         customSlot.targetName = e.target.value;
+      }
+    });
+  });
+
+  // Add Custom Slot directly into this specific group
+  document.querySelectorAll('.btn-add-group-slot').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const targetGroup = btn.dataset.group;
+      addCustomSlotToGroup(targetGroup);
+    });
+  });
+
+  // Toggle Custom Slot Format (PDF / JPG)
+  document.querySelectorAll('.btn-toggle-custom-format').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const customSlot = state.customSlots.find((s) => s.id === id);
+      if (customSlot) {
+        customSlot.defaultFormat = customSlot.defaultFormat === 'PDF' ? 'JPG' : 'PDF';
+        renderSlots();
+        showToast(`สลับชนิดไฟล์เป็น .${customSlot.defaultFormat} เรียบร้อย`, 'info');
       }
     });
   });
@@ -2598,34 +2639,42 @@ function setupGlobalEventListeners() {
     });
   }
 
-  if (btnAddCustomSlot) {
-    btnAddCustomSlot.addEventListener('click', () => {
-      const customId = `custom_${Date.now()}`;
-      const customNumber = state.customCounter++;
-      const defaultName = `เอกสารเพิ่มเติม ${customNumber}`;
+  // Function to add a custom document slot directly into any target category
+  function addCustomSlotToGroup(targetGroup) {
+    const customId = `custom_${Date.now()}`;
+    const customNumber = state.customCounter++;
+    const defaultName = `เอกสารเพิ่มเติม ${customNumber}`;
+    const group = targetGroup || (state.selectedGroupFilter !== 'all' ? state.selectedGroupFilter : 'เอกสารทั่วไป');
 
-      state.customSlots.push({
-        id: customId,
-        code: `EXTRA-${customNumber}`,
-        group: 'เอกสารเพิ่มเติม (ตั้งชื่อเอง)',
-        desc: 'เอกสารเพิ่มเติมที่ผู้ใช้ระบุชื่อไฟล์เอง',
-        targetName: defaultName,
-        defaultFormat: 'PDF',
-        isCustom: true,
-        attached: null,
-      });
-
-      renderSlots();
-      renderGroupFilterPills();
-      updateSummaryMetrics();
-      showToast(`เพิ่มช่อง "${defaultName}" เรียบร้อยแล้ว`, 'success');
-
-      const targetElement = document.getElementById(`slot_file_${customId}`);
-      if (targetElement) {
-        targetElement.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    state.customSlots.push({
+      id: customId,
+      code: `EXTRA-${customNumber}`,
+      group: group,
+      desc: `เอกสารเพิ่มเติมในหมวด ${group}`,
+      targetName: defaultName,
+      defaultFormat: 'PDF',
+      isCustom: true,
+      attached: null,
     });
+
+    renderSlots();
+    renderGroupFilterPills();
+    updateSummaryMetrics();
+    showToast(`เพิ่มช่อง "${defaultName}" ในหมวด ${group} เรียบร้อยแล้ว`, 'success');
+
+    setTimeout(() => {
+      const card = document.getElementById(`card_${customId}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const nameInp = card.querySelector('.input-custom-name');
+        if (nameInp) {
+          nameInp.focus();
+          nameInp.select();
+        }
+      }
+    }, 120);
   }
+  window.addCustomSlotToGroup = addCustomSlotToGroup;
 
   if (btnBatchAutoFill && batchFileInput) {
     btnBatchAutoFill.addEventListener('click', () => {

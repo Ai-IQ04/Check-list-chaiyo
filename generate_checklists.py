@@ -43,7 +43,9 @@ pdf_defs = [
 # Standard Normalized Category Group Names
 def get_normalized_group(code):
     c = code.upper()
-    if c.startswith('AA') and c != 'AA023':
+    if c in ['AA07', 'AA08', 'AA12', 'B109']:
+        return 'C พิจารณาอนุมัติสินเชื่อ'
+    elif c.startswith('AA') and c != 'AA023':
         return 'AA สัญญาสำหรับผู้กู้'
     elif c.startswith('BB'):
         return 'BB สัญญาสำหรับผู้ค้ำประกัน'
@@ -90,7 +92,7 @@ doc_master_map = {
     'B06': {'desc': 'รูปหลังรถ - เฉียงขวา 45 องศา', 'targetName': 'รูปรถ 6', 'format': 'JPG'},
     'B07': {'desc': 'รูปภายในรถให้เห็นเกียร์+คอนโซล', 'targetName': 'รูปรถ 7', 'format': 'JPG'},
     'B08': {'desc': 'รูปเลขตัวถัง/คัสซี', 'targetName': 'รูปรถ 8', 'format': 'JPG'},
-    'B09': {'desc': 'รูปเลขเครื่องยนต์', 'targetName': 'รูปรถ 9', 'format': 'JPG'},
+    'B09': {'desc': 'รูปเกียร์ 4x4 / 4WD (ถ้ามี)_สำหรับรถกระบะที่ขับเคลื่อน 4ล้อ', 'targetName': 'รูปรถ 9', 'format': 'JPG'},
 
     # หมวด B: รถจักรยานยนต์
     'B10': {'desc': 'รูปหลังรถเห็นป้ายทะเบียน พร้อม เซลฟี่ + ถือบัตรพนักงาน', 'targetName': 'รูปรถ 1', 'format': 'JPG'},
@@ -156,7 +158,7 @@ doc_master_map = {
     'C01': {'desc': 'สำเนาสมุดคู่ฝากธนาคารเพื่อใช้ในการโอนเงิน (บัญชีลูกค้าเท่านั้น)', 'targetName': 'สำเนาบัญชีธนาคาร', 'format': 'PDF'},
     'C02': {'desc': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'targetName': 'เอกสารยินยอมนิติกรรมคู่สมรส', 'format': 'PDF'},
     'C03': {'desc': 'สำเนาทะเบียนคู่สมรส (กรณีมี)', 'targetName': 'สำเนาทะเบียนคู่สมรส', 'format': 'PDF'},
-    'C04': {'desc': 'หนังสือให้ติดตามทวงถามหนี้', 'targetName': 'หนังสือให้ติดตามทวงถามหนี้', 'format': 'PDF'},
+    'C04': {'desc': 'หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)', 'targetName': 'หนังสือให้ติดตามทวงถามหนี้', 'format': 'PDF'},
     'C05': {'desc': 'แบบฟอร์มตรวจที่พักอาศัย (ถ้ามี)', 'targetName': 'แบบฟอร์มตรวจที่พักอาศัย', 'format': 'PDF'},
     'C06': {'desc': 'อีเมลผล ABC (ถ้ามี)', 'targetName': 'ผล ABC', 'format': 'PDF'},
     'C101': {'desc': 'แบบฟอร์มประเมินรายได้ ผู้กู้', 'targetName': 'ประเมินรายได้ผู้กู้', 'format': 'PDF'},
@@ -189,8 +191,8 @@ doc_master_map = {
     'AA01': {'desc': 'สัญญากู้เงิน (ฉบับที่ลูกค้าต้องเซ็นลงนาม)', 'targetName': 'สัญญากู้เงิน', 'format': 'PDF'},
     'AA09': {'desc': 'ตารางผ่อนชำระ (ลูกค้าเซ็นทุกหน้า)', 'targetName': 'ตารางผ่อนชำระ', 'format': 'PDF'},
     'AA02': {'desc': 'ใบรับเงินกู้', 'targetName': 'ใบรับเงินกู้', 'format': 'PDF'},
-    'AA07': {'desc': 'หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)', 'targetName': 'หนังสือมอบอำนาจ', 'format': 'PDF'},
-    'AA08': {'desc': 'แบบคำขอโอนและรับโอน', 'targetName': 'แบบคำขอโอนรับโอน', 'format': 'PDF'},
+    'AA07': {'desc': 'หนังสือมอบอำนาจ (ใบมอบอำนาจ)', 'targetName': 'หนังสือมอบอำนาจ', 'format': 'PDF'},
+    'AA08': {'desc': 'แบบคำขอโอนและรับโอน (ใบคำขอโอน)', 'targetName': 'แบบคำขอโอนรับโอน', 'format': 'PDF'},
     'AA10': {'desc': 'ตั๋วสัญญาใช้เงิน', 'targetName': 'ตั๋วใช้เงิน', 'format': 'PDF'},
     'AA11': {'desc': 'Checklist เอกสารมอบให้ลูกค้าทำสินเชื่อ', 'targetName': 'เอกสารมอบให้ลูกค้า', 'format': 'PDF'},
     'AA12': {'desc': 'ใบรับมอบสินค้า (สำหรับรถ)', 'targetName': 'ใบรับมอบสินค้า', 'format': 'PDF'},
@@ -260,7 +262,7 @@ def extract_clean_items(p_def):
         if 'AA12' not in seen_codes and 'B109' not in seen_codes:
             items.append({
                 'code': 'AA12',
-                'group': 'AA สัญญาสำหรับผู้กู้',
+                'group': 'C พิจารณาอนุมัติสินเชื่อ',
                 'desc': 'ใบรับมอบสินค้า (สำหรับรถ)',
                 'targetName': 'ใบรับมอบสินค้า',
                 'format': 'PDF'

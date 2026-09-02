@@ -1,6 +1,6 @@
 /**
  * Loan Documents Checklists & Rules Master Database (v3.1.0)
- * C04 หนังสือให้ติดตามทวงถามหนี้ is Strictly MANDATORY
+ * C04 หนังสือติดตามทวงถามหนี้ / AA07 ใบมอบอำนาจ / AA08 ใบคำขอโอน / AA12 ใบรับมอบสินค้า อยู่ในหมวด C พิจารณาอนุมัติสินเชื่อ
  */
 window.LOAN_CHECKLISTS = {
   "motorcycle": {
@@ -112,14 +112,6 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
-        "code": "C07",
-        "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือ/อีเมลขออนุโลมประกันภัย (ถ้ามี)",
-        "targetName": "อนุโลมประกัน",
-        "format": "PDF",
-        "mandatory": false
-      },
-      {
         "code": "B101",
         "group": "B ตรวจสอบหลักประกัน",
         "desc": "รูปถ่ายเล่มทะเบียน หน้าปก",
@@ -186,10 +178,42 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "desc": "หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)",
         "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF",
         "mandatory": true
+      },
+      {
+        "code": "AA07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือมอบอำนาจ (ใบมอบอำนาจ)",
+        "targetName": "หนังสือมอบอำนาจ",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA08",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "แบบคำขอโอนและรับโอน (ใบคำขอโอน)",
+        "targetName": "แบบคำขอโอนรับโอน",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA12",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF",
+        "mandatory": false
+      },
+      {
+        "code": "C07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือ/อีเมลขออนุโลมประกันภัย (ถ้ามี)",
+        "targetName": "อนุโลมประกัน",
+        "format": "PDF",
+        "mandatory": false
       },
       {
         "code": "C05",
@@ -320,22 +344,6 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
-        "code": "AA07",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)",
-        "targetName": "หนังสือมอบอำนาจ",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA08",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "แบบคำขอโอนและรับโอน",
-        "targetName": "แบบคำขอโอนรับโอน",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
         "code": "AA11",
         "group": "AA สัญญาสำหรับผู้กู้",
         "desc": "Checklist เอกสารมอบให้ลูกค้าทำสินเชื่อ",
@@ -382,14 +390,6 @@ window.LOAN_CHECKLISTS = {
         "targetName": "Sale Sheet",
         "format": "JPG",
         "mandatory": true
-      },
-      {
-        "code": "AA12",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
-        "targetName": "ใบรับมอบสินค้า",
-        "format": "PDF",
-        "mandatory": false
       }
     ]
   },
@@ -527,10 +527,10 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "B09",
         "group": "B ตรวจสอบหลักประกัน",
-        "desc": "รูปเลขเครื่องยนต์",
+        "desc": "รูปเกียร์ 4x4 / 4WD (ถ้ามี)_สำหรับรถกระบะที่ขับเคลื่อน 4ล้อ",
         "targetName": "รูปรถ 9",
         "format": "JPG",
-        "mandatory": true
+        "mandatory": false
       },
       {
         "code": "B101",
@@ -607,10 +607,34 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "desc": "หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)",
         "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF",
         "mandatory": true
+      },
+      {
+        "code": "AA07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือมอบอำนาจ (ใบมอบอำนาจ)",
+        "targetName": "หนังสือมอบอำนาจ",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA08",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "แบบคำขอโอนและรับโอน (ใบคำขอโอน)",
+        "targetName": "แบบคำขอโอนรับโอน",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA12",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF",
+        "mandatory": false
       },
       {
         "code": "C05",
@@ -757,22 +781,6 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
-        "code": "AA07",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)",
-        "targetName": "หนังสือมอบอำนาจ",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA08",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "แบบคำขอโอนและรับโอน",
-        "targetName": "แบบคำขอโอนรับโอน",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
         "code": "AA11",
         "group": "AA สัญญาสำหรับผู้กู้",
         "desc": "Checklist เอกสารมอบให้ลูกค้าทำสินเชื่อ",
@@ -819,14 +827,6 @@ window.LOAN_CHECKLISTS = {
         "targetName": "Sale Sheet",
         "format": "JPG",
         "mandatory": true
-      },
-      {
-        "code": "AA12",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
-        "targetName": "ใบรับมอบสินค้า",
-        "format": "PDF",
-        "mandatory": false
       }
     ]
   },
@@ -1050,14 +1050,6 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
-        "code": "B109",
-        "group": "B ตรวจสอบหลักประกัน",
-        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
-        "targetName": "ใบรับมอบสินค้า",
-        "format": "PDF",
-        "mandatory": false
-      },
-      {
         "code": "C01",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
         "desc": "สำเนาสมุดคู่ฝากธนาคารเพื่อใช้ในการโอนเงิน (บัญชีลูกค้าเท่านั้น)",
@@ -1068,10 +1060,34 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "desc": "หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)",
         "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF",
         "mandatory": true
+      },
+      {
+        "code": "AA07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือมอบอำนาจ (ใบมอบอำนาจ)",
+        "targetName": "หนังสือมอบอำนาจ",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA08",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "แบบคำขอโอนและรับโอน (ใบคำขอโอน)",
+        "targetName": "แบบคำขอโอนรับโอน",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA12",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF",
+        "mandatory": false
       },
       {
         "code": "C05",
@@ -1206,22 +1222,6 @@ window.LOAN_CHECKLISTS = {
         "group": "AA สัญญาสำหรับผู้กู้",
         "desc": "ใบรับเงินกู้",
         "targetName": "ใบรับเงินกู้",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA07",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)",
-        "targetName": "หนังสือมอบอำนาจ",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA08",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "แบบคำขอโอนและรับโอน",
-        "targetName": "แบบคำขอโอนรับโอน",
         "format": "PDF",
         "mandatory": true
       },
@@ -1497,10 +1497,34 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "desc": "หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)",
         "targetName": "หนังสือให้ติดตามทวงถามหนี้",
         "format": "PDF",
         "mandatory": true
+      },
+      {
+        "code": "AA07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือมอบอำนาจ (ใบมอบอำนาจ)",
+        "targetName": "หนังสือมอบอำนาจ",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA08",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "แบบคำขอโอนและรับโอน (ใบคำขอโอน)",
+        "targetName": "แบบคำขอโอนรับโอน",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA12",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
+        "targetName": "ใบรับมอบสินค้า",
+        "format": "PDF",
+        "mandatory": false
       },
       {
         "code": "C05",
@@ -1671,22 +1695,6 @@ window.LOAN_CHECKLISTS = {
         "mandatory": true
       },
       {
-        "code": "AA07",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)",
-        "targetName": "หนังสือมอบอำนาจ",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA08",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "แบบคำขอโอนและรับโอน",
-        "targetName": "แบบคำขอโอนรับโอน",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
         "code": "AA11",
         "group": "AA สัญญาสำหรับผู้กู้",
         "desc": "Checklist เอกสารมอบให้ลูกค้าทำสินเชื่อ",
@@ -1733,14 +1741,6 @@ window.LOAN_CHECKLISTS = {
         "targetName": "Sale Sheet",
         "format": "JPG",
         "mandatory": true
-      },
-      {
-        "code": "AA12",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "ใบรับมอบสินค้า (สำหรับรถ)",
-        "targetName": "ใบรับมอบสินค้า",
-        "format": "PDF",
-        "mandatory": false
       }
     ]
   },
@@ -1966,8 +1966,24 @@ window.LOAN_CHECKLISTS = {
       {
         "code": "C04",
         "group": "C พิจารณาอนุมัติสินเชื่อ",
-        "desc": "หนังสือให้ติดตามทวงถามหนี้",
+        "desc": "หนังสือติดตามทวงถามหนี้ (หนังสือให้ติดตามทวงถามหนี้)",
         "targetName": "หนังสือให้ติดตามทวงถามหนี้",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA07",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "หนังสือมอบอำนาจ (ใบมอบอำนาจ)",
+        "targetName": "หนังสือมอบอำนาจ",
+        "format": "PDF",
+        "mandatory": true
+      },
+      {
+        "code": "AA08",
+        "group": "C พิจารณาอนุมัติสินเชื่อ",
+        "desc": "แบบคำขอโอนและรับโอน (ใบคำขอโอน)",
+        "targetName": "แบบคำขอโอนรับโอน",
         "format": "PDF",
         "mandatory": true
       },
@@ -2136,22 +2152,6 @@ window.LOAN_CHECKLISTS = {
         "group": "A ยืนยันตัวตน",
         "desc": "หนังสือมอบอำนาจ (สำหรับรีไฟแนนซ์)",
         "targetName": "หนังสือมอบอำนาจรีไฟแนนซ์",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA07",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "หนังสือมอบอำนาจ (สำหรับจดจำนอง / ทำสัญญา)",
-        "targetName": "หนังสือมอบอำนาจ",
-        "format": "PDF",
-        "mandatory": true
-      },
-      {
-        "code": "AA08",
-        "group": "AA สัญญาสำหรับผู้กู้",
-        "desc": "แบบคำขอโอนและรับโอน",
-        "targetName": "แบบคำขอโอนรับโอน",
         "format": "PDF",
         "mandatory": true
       },

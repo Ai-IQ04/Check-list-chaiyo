@@ -313,11 +313,6 @@
           <span>เริ่มเคสใหม่</span>
         </button>
 
-        <!-- PRIMARY: Add Custom Slot -->
-        <button id="btnAddCustomSlot" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-orange-600 flex items-center gap-1.5 cursor-pointer" title="เพิ่มช่องสำหรับแนบเอกสารอื่นๆ และพิมพ์ชื่อไฟล์เอง">
-          <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-orange-500"></i>
-          <span>+ เอกสารเพิ่ม</span>
-        </button>
 
         <!-- PRIMARY: ZIP Download -->
         <button id="btnDownloadZip" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap shadow-md">
@@ -552,7 +547,7 @@
 
   <!-- LOAN CATEGORY & CONTRACT SETUP WIZARD MODAL (POPUP BEFORE ATTACHING FILES) -->
   <div id="loanSetupModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-3 sm:p-4 transition-all duration-300">
-    <div class="neu-raised max-w-2xl w-full rounded-3xl p-5 sm:p-7 space-y-5 max-h-[92vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+    <div class="neu-raised max-w-2xl w-full rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[92dvh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60">
@@ -642,7 +637,7 @@
       </div>
 
       <!-- Modal Footer Action -->
-      <div class="pt-3 border-t border-[#cbd5e1]/60 flex items-center justify-between gap-3">
+      <div class="flex-shrink-0 pt-3 border-t border-[#cbd5e1]/60 flex items-center justify-between gap-3">
         <button id="btnCancelLoanSetupModal" class="neu-btn px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer">
           ยกเลิก
         </button>
@@ -969,52 +964,52 @@
   </div>
 
   <!-- PRE-FLIGHT REVIEW SUMMARY MODAL (Visual Checklist & Audit Summary before ZIP) -->
-  <div id="reviewSummaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-3 sm:p-4 transition-all duration-300">
-    <div class="neu-raised max-w-4xl w-full rounded-3xl p-5 sm:p-6 space-y-4 max-h-[94vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+  <div id="reviewSummaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-2 sm:p-4 transition-all duration-300 overflow-hidden">
+    <div class="neu-raised max-w-4xl w-full rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-3 sm:space-y-4 max-h-[92dvh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
       
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl neu-inset text-orange-600 flex items-center justify-center shadow-inner flex-shrink-0">
-            <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+      <div class="flex-shrink-0 flex items-center justify-between pb-2.5 sm:pb-3 border-b border-[#cbd5e1]/60">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl neu-inset text-orange-600 flex items-center justify-center shadow-inner flex-shrink-0">
+            <i data-lucide="clipboard-check" class="w-5 h-5 sm:w-6 sm:h-6"></i>
           </div>
           <div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="text-base sm:text-lg font-black text-slate-800 tracking-tight">สรุปและตรวจสอบเอกสารก่อนส่ง (Pre-Flight Review)</h3>
-              <span id="reviewProductBadge" class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h3 class="text-sm sm:text-lg font-black text-slate-800 tracking-tight">สรุปและตรวจสอบเอกสารก่อนส่ง (Pre-Flight Review)</h3>
+              <span id="reviewProductBadge" class="text-[10px] px-2 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold">
                 🏍️ รถมอเตอร์ไซค์
               </span>
             </div>
-            <p class="text-xs text-slate-500 font-medium">กวาดสายตาตรวจเช็ครูปถ่าย ความครบถ้วน และขนาดไฟล์ทั้งหมดก่อนดาวน์โหลด ZIP</p>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium line-clamp-1 sm:line-clamp-none">กวาดสายตาตรวจเช็ครูปถ่าย ความครบถ้วน และขนาดไฟล์ทั้งหมดก่อนดาวน์โหลด ZIP</p>
           </div>
         </div>
-        <button id="btnCloseReviewSummaryModal" class="p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 cursor-pointer" title="ปิดหน้าต่าง">
+        <button id="btnCloseReviewSummaryModal" class="p-1.5 sm:p-2 rounded-xl neu-btn text-slate-400 hover:text-red-600 cursor-pointer flex-shrink-0" title="ปิดหน้าต่าง">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
       <!-- Mini KPI Dashboard (4 Quick Stat Boxes) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div class="p-3 rounded-2xl neu-inset text-center space-y-0.5">
+      <div class="flex-shrink-0 grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5">
+        <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl neu-inset text-center space-y-0.5">
           <span class="text-[10px] font-bold text-slate-500 block">เอกสารที่แนบแล้ว</span>
-          <div id="reviewKpiAttached" class="text-sm sm:text-base font-black text-slate-800">0 / 0 ช่อง</div>
+          <div id="reviewKpiAttached" class="text-xs sm:text-base font-black text-slate-800">0 / 0 ช่อง</div>
         </div>
-        <div class="p-3 rounded-2xl neu-inset text-center space-y-0.5">
+        <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl neu-inset text-center space-y-0.5">
           <span class="text-[10px] font-bold text-slate-500 block">สถานะเอกสารบังคับ</span>
-          <div id="reviewKpiMandatory" class="text-sm sm:text-base font-black text-rose-600">ขาด 0 รายการ</div>
+          <div id="reviewKpiMandatory" class="text-xs sm:text-base font-black text-rose-600">ขาด 0 รายการ</div>
         </div>
-        <div class="p-3 rounded-2xl neu-inset text-center space-y-0.5">
+        <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl neu-inset text-center space-y-0.5">
           <span class="text-[10px] font-bold text-slate-500 block">จำนวนหน้ารวม</span>
-          <div id="reviewKpiPages" class="text-sm sm:text-base font-black text-indigo-600">0 หน้า</div>
+          <div id="reviewKpiPages" class="text-xs sm:text-base font-black text-indigo-600">0 หน้า</div>
         </div>
-        <div class="p-3 rounded-2xl neu-inset text-center space-y-0.5">
+        <div class="p-2 sm:p-3 rounded-xl sm:rounded-2xl neu-inset text-center space-y-0.5">
           <span class="text-[10px] font-bold text-slate-500 block">ขนาดไฟล์รวมประมาณการ</span>
-          <div id="reviewKpiSize" class="text-sm sm:text-base font-black text-emerald-600">0 MB</div>
+          <div id="reviewKpiSize" class="text-xs sm:text-base font-black text-emerald-600">0 MB</div>
         </div>
       </div>
 
       <!-- View Switcher Tabs -->
-      <div class="flex items-center justify-between gap-2 border-b border-[#cbd5e1]/40 pb-2">
+      <div class="flex-shrink-0 flex items-center justify-between gap-2 border-b border-[#cbd5e1]/40 pb-2">
         <div class="flex items-center gap-1.5 p-1 rounded-2xl neu-inset">
           <button id="btnReviewTabGrid" class="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active">
             <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
@@ -1029,19 +1024,19 @@
       </div>
 
       <!-- Scrollable Review Content Container -->
-      <div id="reviewContentContainer" class="flex-1 overflow-y-auto space-y-4 pr-1 min-h-[260px] max-h-[50vh]">
+      <div id="reviewContentContainer" class="flex-1 min-h-0 overflow-y-auto space-y-3 sm:space-y-4 pr-1 overscroll-contain">
         <!-- Injected by JavaScript dynamically -->
       </div>
 
       <!-- Modal Footer Action Buttons -->
-      <div class="pt-3 border-t border-[#cbd5e1]/60 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <button id="btnReviewBackToEdit" class="neu-btn px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:text-orange-600 cursor-pointer w-full sm:w-auto flex items-center justify-center gap-1.5">
+      <div class="flex-shrink-0 pt-2.5 sm:pt-3 border-t border-[#cbd5e1]/60 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+        <button id="btnReviewBackToEdit" class="neu-btn px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold text-slate-700 hover:text-orange-600 cursor-pointer w-full sm:w-auto flex items-center justify-center gap-1.5 order-2 sm:order-1 select-none">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
           <span>กลับไปแก้ไข / แนบเพิ่ม</span>
         </button>
         
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-          <button id="btnReviewProceedZip" class="neu-btn-orange px-6 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end order-1 sm:order-2">
+          <button id="btnReviewProceedZip" class="neu-btn-orange px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-extrabold cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg select-none">
             <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
             <span>ยืนยันข้อมูล & ตั้งชื่อ ZIP ➔</span>
           </button>
@@ -1052,8 +1047,8 @@
   </div>
 
   <!-- ZIP FILE NAMING & PRE-DOWNLOAD MODAL -->
-  <div id="zipNamingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4 transition-all duration-300">
-    <div class="neu-raised max-w-lg w-full rounded-3xl p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+  <div id="zipNamingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-2 sm:p-4 transition-all duration-300 overflow-hidden">
+    <div class="neu-raised max-w-lg w-full rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-3.5 sm:space-y-4 max-h-[92dvh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-y-auto">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60">

@@ -1059,7 +1059,7 @@ function evaluateChecklistMatching() {
       });
     } else {
       if (item.mandatory) {
-        const isContractGroup = (item.code && (item.code.startsWith('AA') || item.code.startsWith('BB'))) || (item.group && (item.group.startsWith('AA') || item.group.startsWith('BB')));
+        const isContractGroup = item.group && (item.group.startsWith('AA') || item.group.startsWith('BB'));
         results.push({
           ...item,
           status: isContractGroup ? 'PENDING_CONTRACT' : 'MISSING',
@@ -1212,8 +1212,21 @@ function normalizeThaiDocName(text) {
     .replace(/คู่มือ/g, 'เล่มทะเบียน')
     .replace(/เล่ม/g, 'เล่มทะเบียน')
     .replace(/ผู้ค้ำประกัน/g, 'ผู้ค้ำ')
+    .replace(/ใบมอบอำนาจ/g, 'หนังสือมอบอำนาจ')
+    .replace(/ใบคำขอโอน/g, 'แบบคำขอโอนรับโอน')
+    .replace(/แบบคำขอโอนและรับโอน/g, 'แบบคำขอโอนรับโอน')
+    .replace(/คำขอโอนและรับโอน/g, 'แบบคำขอโอนรับโอน')
+    .replace(/คำขอโอนรับโอน/g, 'แบบคำขอโอนรับโอน')
+    .replace(/หนังสือให้ติดตามทวงถามหนี้/g, 'หนังสือติดตามทวงถามหนี้')
+    .replace(/ให้ติดตามทวงถาม/g, 'ติดตามทวงถาม')
     .replace(/ทวงถามหนี้/g, 'ทวงถาม')
-    .replace(/หนังสือทวงถาม/g, 'ทวงถาม');
+    .replace(/หนังสือทวงถาม/g, 'ทวงถาม')
+    .replace(/รูปเกียร์4x4/g, 'รูปรถ9')
+    .replace(/เกียร์4x4/g, 'รูปรถ9')
+    .replace(/รูปเกียร์4wd/g, 'รูปรถ9')
+    .replace(/เกียร์4wd/g, 'รูปรถ9')
+    .replace(/เกียร์4ล้อ/g, 'รูปรถ9')
+    .replace(/ขับเคลื่อน4ล้อ/g, 'รูปรถ9');
 }
 
 function getThaiDocTokens(text) {
