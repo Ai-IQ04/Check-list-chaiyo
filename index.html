@@ -467,42 +467,37 @@
 
     </div>
 
-    <!-- Row 2: Document Group Filter Panel & Action Buttons (Pure Neumorphic Board) -->
-    <div class="neu-raised rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3.5">
+    <!-- Row 2: Action Bar & Quick Tools (Clean & Minimalist) -->
+    <div class="neu-raised rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 flex items-center justify-between gap-3">
       
-      <!-- Horizontal Scrollable Filter Board (Single Row Carousel) -->
-      <div class="flex items-center gap-2 flex-1 min-w-0">
-        <div class="flex items-center gap-1.5 pl-1 text-slate-600 flex-shrink-0">
-          <div class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-orange-600 shadow-sm">
-            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
-          </div>
-          <span class="text-xs font-bold whitespace-nowrap hidden sm:inline">หมวด:</span>
+      <!-- Section Title & Status Indicator -->
+      <div class="flex items-center gap-2 pl-1 text-slate-700">
+        <div class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-orange-600 shadow-sm flex-shrink-0">
+          <i data-lucide="list-checks" class="w-3.5 h-3.5"></i>
         </div>
-        
-        <div class="relative flex-1 min-w-0 overflow-hidden">
-          <div id="groupFilterPills" class="flex items-center gap-2 overflow-x-auto py-1 px-1 no-scrollbar scroll-smooth whitespace-nowrap">
-            <!-- Injected dynamically by JavaScript as Pure Neumorphic Chips -->
-          </div>
-        </div>
+        <span class="text-xs font-black tracking-tight">รายการเอกสารตามหมวดหมู่</span>
       </div>
 
+      <!-- Hidden container to keep DOM references fully safe -->
+      <div id="groupFilterPills" class="hidden"></div>
+
       <!-- Quick Batch Actions & AI Scanner Button -->
-      <div class="flex items-center gap-2 flex-shrink-0 self-end md:self-auto pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-[#cbd5e1]/60 pl-0 md:pl-3">
+      <div class="flex items-center gap-2 flex-shrink-0">
         <!-- AI SMART CAMERA TRIGGER -->
         <input type="file" id="aiCameraInput" accept="image/*" capture="environment" class="hidden">
-        <label for="aiCameraInput" class="neu-btn-ai px-4 py-2.5 rounded-2xl text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-md select-none group">
+        <label for="aiCameraInput" class="neu-btn-ai px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-md select-none group">
           <i data-lucide="sparkles" class="w-4 h-4 text-purple-600 group-hover:text-orange-500 animate-pulse"></i>
           <span>✨ สแกน AI</span>
         </label>
 
         <input type="file" id="batchFileInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden">
-        <button id="btnBatchAutoFill" class="neu-btn px-3 py-2.5 rounded-2xl text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer hover:text-orange-600" title="เลือกรูปหลายๆ ไฟล์เพื่อใส่ลงช่อง Checklist ตามลำดับอัตโนมัติ">
+        <button id="btnBatchAutoFill" class="neu-btn px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer hover:text-orange-600" title="เลือกรูปหลายๆ ไฟล์เพื่อใส่ลงช่อง Checklist ตามลำดับอัตโนมัติ">
           <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
           <span class="hidden sm:inline">โยนหลายรูป</span>
           <span class="sm:hidden">โยนรูป</span>
         </button>
         
-        <button id="btnClearAllAttached" class="neu-btn p-2.5 rounded-2xl text-slate-400 hover:text-red-600 cursor-pointer" title="ล้างไฟล์ที่แนบทั้งหมด">
+        <button id="btnClearAllAttached" class="neu-btn p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-400 hover:text-red-600 cursor-pointer" title="ล้างไฟล์ที่แนบทั้งหมด">
           <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
       </div>

@@ -629,95 +629,12 @@ function getAllSlots() {
   return [...state.slots, ...state.customSlots];
 }
 
-// 4. Modern Vector Duotone Document Group Filter Board (Single Row Carousel)
+// 4. Document Group Filter Board (Simplified to clean continuous category view)
 function renderGroupFilterPills() {
-  groupFilterPills.innerHTML = '';
-  const allSlots = getAllSlots();
-  const unattachedCount = state.slots.filter((s) => !s.attached).length;
-
-  // 1. "All" Pill
-  const allPill = document.createElement('button');
-  allPill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
-    state.selectedGroupFilter === 'all'
-      ? 'neu-pill-active'
-      : 'text-slate-700 hover:text-orange-600'
-  }`;
-  allPill.innerHTML = `<i data-lucide="layout-grid" class="w-3.5 h-3.5 text-orange-500"></i><span>ทั้งหมด (${allSlots.length})</span>`;
-  allPill.addEventListener('click', () => {
-    state.selectedGroupFilter = 'all';
-    renderGroupFilterPills();
-    renderSlots();
-  });
-  groupFilterPills.appendChild(allPill);
-
-  // 2. "Unattached" Filter Pill (Missing Items)
-  if (unattachedCount > 0) {
-    const missingPill = document.createElement('button');
-    missingPill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
-      state.selectedGroupFilter === 'unattached'
-        ? 'neu-pill-active text-amber-600'
-        : 'text-amber-700 hover:text-amber-800'
-    }`;
-    missingPill.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i><span>ยังไม่แนบ (${unattachedCount})</span>`;
-    missingPill.addEventListener('click', () => {
-      state.selectedGroupFilter = 'unattached';
-      renderGroupFilterPills();
-      renderSlots();
-    });
-    groupFilterPills.appendChild(missingPill);
+  state.selectedGroupFilter = 'all';
+  if (groupFilterPills) {
+    groupFilterPills.innerHTML = '';
   }
-
-  // Visual vertical separator between status filters & category filters
-  const divider = document.createElement('div');
-  divider.className = 'w-[1.5px] h-4 bg-[#cbd5e1]/70 flex-shrink-0 mx-0.5 rounded-full';
-  groupFilterPills.appendChild(divider);
-
-  // 3. Specific Group Pills (Clean Modern Vector Chips)
-  const groups = Array.from(new Set(allSlots.map((s) => s.group)));
-  groups.forEach((groupName) => {
-    const countInGroup = allSlots.filter((s) => s.group === groupName).length;
-    const attachedInGroup = allSlots.filter((s) => s.group === groupName && s.attached).length;
-
-    let iconName = 'folder';
-    let iconColor = 'text-slate-500';
-
-    if (groupName.startsWith('A')) {
-      iconName = 'user-check';
-      iconColor = 'text-indigo-500';
-    } else if (groupName.startsWith('B')) {
-      iconName = state.currentCategory === 'land' ? 'map-pin' : 'shield-check';
-      iconColor = 'text-orange-500';
-    } else if (groupName.startsWith('C')) {
-      iconName = 'banknote';
-      iconColor = 'text-emerald-600';
-    } else if (groupName.startsWith('AA') || groupName.startsWith('BB') || groupName.startsWith('CC') || groupName.startsWith('DD')) {
-      iconName = 'file-signature';
-      iconColor = 'text-purple-600';
-    }
-
-    const pill = document.createElement('button');
-    const isSelected = state.selectedGroupFilter === groupName;
-    pill.className = `neu-btn px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap active:scale-95 ${
-      isSelected
-        ? 'neu-pill-active'
-        : 'text-slate-700 hover:text-orange-600'
-    }`;
-    pill.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${groupName} (${attachedInGroup}/${countInGroup})</span>`;
-    pill.addEventListener('click', () => {
-      state.selectedGroupFilter = groupName;
-      renderGroupFilterPills();
-      renderSlots();
-    });
-    groupFilterPills.appendChild(pill);
-
-    if (isSelected) {
-      setTimeout(() => {
-        pill.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-      }, 50);
-    }
-  });
-
-  lucide.createIcons();
 }
 
 // 5. Render Checklist Slots with Apple Fluid Spring Animations
