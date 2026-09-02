@@ -5,10 +5,10 @@
 
 // Manager App State
 const mgrState = {
-  selectedCategory: 'motorcycle', // Default category
-  selectedSubType: 'pledge',      // Default product subtype
+  selectedCategory: null,        // Unselected initially so user MUST choose first
+  selectedSubType: null,         // Unselected initially
   hasGuarantor: false,
-  isStep1Confirmed: true,        // Unlocked by default for instant upload
+  isStep1Confirmed: false,       // Locked until user chooses category & subtype
   images: [], // Attached screenshots [{ id, file, dataUrl }]
   extractedBlueTexts: [], // Extracted filenames from OCR [{ cleanName, ext, raw }]
   auditResults: [], // Audit items matched against checklist
@@ -184,8 +184,8 @@ function setupStep1Listeners() {
       const cat = btn.getAttribute('data-cat');
       mgrState.selectedCategory = cat;
 
-      // Assign default subType if none selected or if mortgage invalid for non-land/car
-      if (!mgrState.selectedSubType || (cat !== 'land' && cat !== 'car' && mgrState.selectedSubType === 'mortgage')) {
+      // Assign default subType if none selected or if mortgage invalid for non-land
+      if (!mgrState.selectedSubType || (cat !== 'land' && mgrState.selectedSubType === 'mortgage')) {
         mgrState.selectedSubType = 'pledge';
       }
 
@@ -200,7 +200,7 @@ function setupStep1Listeners() {
       const sub = btn.getAttribute('data-subtype');
       mgrState.selectedSubType = sub;
       if (!mgrState.selectedCategory) {
-        mgrState.selectedCategory = 'motorcycle';
+        mgrState.selectedCategory = 'car';
       }
       mgrState.isStep1Confirmed = true;
       updateStep1UI();
@@ -298,7 +298,7 @@ function updateStep1UI() {
   const catNames = { motorcycle: 'มอเตอร์ไซค์', car: 'รถเก๋ง/กระบะ/ตู้', truck: 'รถบรรทุก', agri: 'รถเกษตร', land: 'สินเชื่อที่ดิน' };
   const subNames = { pledge: 'จำนำเล่ม', mortgage: 'จำนอง', refinance: 'รีไฟแนนซ์', topup: 'Top-up' };
 
-  if (mgrState.isStep1Confirmed) {
+  if (mgrState.isStep1Confirmed && mgrState.selectedCategory) {
     if (lockOverlay) lockOverlay.classList.add('hidden');
     if (statusBadge) {
       statusBadge.className = 'text-xs px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 font-bold border border-emerald-300 flex items-center gap-1';
@@ -307,8 +307,8 @@ function updateStep1UI() {
   } else {
     if (lockOverlay) lockOverlay.classList.remove('hidden');
     if (statusBadge) {
-      statusBadge.className = 'text-xs px-3 py-1 rounded-xl bg-amber-100 text-amber-800 font-bold border border-amber-300 flex items-center gap-1';
-      statusBadge.innerHTML = '<i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> กรุณาเลือกประเภทสินเชื่อและผลิตภัณฑ์ด้านบน';
+      statusBadge.className = 'text-xs px-3 py-1 rounded-xl bg-amber-100 text-amber-800 font-bold border border-amber-300 flex items-center gap-1 animate-pulse';
+      statusBadge.innerHTML = '<i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> กรุณาเลือกประเภทสินเชื่อและธุรกรรมด้านบนก่อน';
     }
   }
 
@@ -399,6 +399,19 @@ function renderStep1ChecklistPreview() {
 
   if (!gridElem) return;
 
+  if (!mgrState.selectedCategory) {
+    if (titleElem) titleElem.innerText = 'กรุณาคลิกเลือกประเภทสินเชื่อและธุรกรรมด้านบน';
+    if (countBadge) countBadge.innerText = 'รอการเลือก';
+    gridElem.innerHTML = `
+      <div class="col-span-full py-6 text-center text-xs text-slate-500 font-bold flex flex-col items-center gap-2">
+        <i data-lucide="mouse-pointer-click" class="w-6 h-6 text-amber-500 animate-bounce"></i>
+        <span>กรุณาคลิกเลือกประเภทสินเชื่อในข้อ 1 ด้านบน เพื่อดูรายการเอกสารที่ต้องใช้</span>
+      </div>
+    `;
+    initLucideIcons();
+    return;
+  }
+
   const catNames = { 
     motorcycle: 'รถมอเตอร์ไซค์', 
     car: 'รถเก๋ง/กระบะ/ตู้', 
@@ -474,11 +487,23 @@ function setupDropzoneListeners() {
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('screenshotInput');
   const btnClear = document.getElementById('btnClearImages');
+  const lockOverlay = document.getElementById('dropzoneLockOverlay');
+
+  if (lockOverlay) {
+    lockOverlay.addEventListener('click', () => {
+      showToast('⚠️ กรุณาคลิกเลือกประเภทสินเชื่อและธุรกรรมในขั้นตอนที่ 1 ด้านบนก่อนวางรูปภาพ', 'warning');
+      const step1 = document.querySelector('main section');
+      if (step1) step1.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
 
   if (!dropzone || !fileInput) return;
 
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
+    if (!mgrState.isStep1Confirmed || !mgrState.selectedCategory) {
+      return;
+    }
     dropzone.classList.add('border-indigo-600', 'bg-indigo-50/50');
   });
 
@@ -489,12 +514,25 @@ function setupDropzoneListeners() {
   dropzone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropzone.classList.remove('border-indigo-600', 'bg-indigo-50/50');
+    if (!mgrState.isStep1Confirmed || !mgrState.selectedCategory) {
+      showToast('⚠️ กรุณาคลิกเลือกประเภทสินเชื่อและธุรกรรมในขั้นตอนที่ 1 ด้านบนก่อนวางรูปภาพ', 'warning');
+      const step1 = document.querySelector('main section');
+      if (step1) step1.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFilesAdded(e.dataTransfer.files);
     }
   });
 
   fileInput.addEventListener('change', (e) => {
+    if (!mgrState.isStep1Confirmed || !mgrState.selectedCategory) {
+      showToast('⚠️ กรุณาคลิกเลือกประเภทสินเชื่อและธุรกรรมในขั้นตอนที่ 1 ด้านบนก่อนวางรูปภาพ', 'warning');
+      fileInput.value = '';
+      const step1 = document.querySelector('main section');
+      if (step1) step1.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     if (fileInput.files && fileInput.files.length > 0) {
       handleFilesAdded(fileInput.files);
       fileInput.value = '';
@@ -512,6 +550,12 @@ function setupDropzoneListeners() {
 }
 
 function handleFilesAdded(files) {
+  if (!mgrState.isStep1Confirmed || !mgrState.selectedCategory) {
+    showToast('⚠️ กรุณาคลิกเลือกประเภทสินเชื่อและธุรกรรมในขั้นตอนที่ 1 ด้านบนก่อนวางรูปภาพ', 'warning');
+    const step1 = document.querySelector('main section');
+    if (step1) step1.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   Array.from(files).forEach((file) => {
     if (!file.type.startsWith('image/')) return;
     const reader = new FileReader();
@@ -982,6 +1026,7 @@ function evaluateChecklistMatching() {
     });
 
     if (bestMatch && highestScore >= 0.45) {
+      usedExtractIndices.add(bestMatchIdx);
       const isSameFormat = (e1, e2) => {
         if (!e1 || !e2) return true;
         const a = e1.toUpperCase();
