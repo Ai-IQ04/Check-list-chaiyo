@@ -509,6 +509,17 @@ function selectCategory(catId, subTypeId = null) {
   lucide.createIcons();
 }
 
+// Helper: Update collapsed settings summary text
+function updateSettingsSummary() {
+  const el = document.getElementById('settingsSummaryText');
+  if (!el) return;
+  const catData = window.LOAN_CHECKLISTS[state.currentCategory];
+  const subType = catData && catData.subTypes ? catData.subTypes.find(s => s.id === state.currentSubType) : null;
+  const subName = subType ? subType.name : 'ยังไม่เลือก';
+  const guarantorText = state.hasGuarantor ? 'มีผู้ค้ำ' : 'ไม่มีผู้ค้ำ';
+  el.innerText = `${subName} • ${guarantorText}`;
+}
+
 // 3. Pure Neumorphic Sub-Product Switcher Panel
 function renderSubProductPills() {
   subProductPills.innerHTML = '';
@@ -533,6 +544,8 @@ function renderSubProductPills() {
 
     subProductPills.appendChild(btn);
   });
+
+  updateSettingsSummary();
 }
 
 // Helper: Filter items based on Category, SubType, and Guarantor
@@ -679,7 +692,7 @@ function renderSlots() {
     const safeGroupName = groupName.replace(/"/g, '&quot;');
 
     groupSection.innerHTML = `
-      <div class="flex items-center justify-between pb-1.5 border-b border-[#cbd5e1]/70 gap-2 flex-wrap sm:flex-nowrap">
+      <div class="flex items-center justify-between pb-1.5 pt-2 border-b border-[#cbd5e1]/70 gap-2 flex-wrap sm:flex-nowrap sticky z-20 bg-[#e0e5ec]" style="top: var(--header-h, 60px);">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full ${isCustomGroup ? 'bg-amber-500' : 'bg-orange-500'} shadow-[0_0_8px_#ff6a00]"></span>
           <span>${groupName}</span>
@@ -2253,6 +2266,7 @@ function setGuarantorMode(hasGuarantor, silent = false) {
   }
 
   loadSlotsForCurrentSubProduct();
+  updateSettingsSummary();
   if (!silent) {
     showToast(hasGuarantor ? '👥 เลือกโหมด: มีผู้ค้ำประกัน (แสดงเอกสารผู้ค้ำครบถ้วน)' : '👤 เลือกโหมด: ไม่มีผู้ค้ำประกัน (แสดงเฉพาะผู้กู้)', 'info');
   }
@@ -2511,6 +2525,35 @@ async function resetToNewCase(showNotification = true) {
 }
 
 function setupGlobalEventListeners() {
+  // Collapsible Settings Panel Toggle
+  const btnToggleSettings = document.getElementById('btnToggleSettings');
+  const settingsContent = document.getElementById('settingsCollapsibleContent');
+  const settingsChevron = document.getElementById('settingsChevron');
+  let settingsOpen = false;
+
+  if (btnToggleSettings && settingsContent) {
+    btnToggleSettings.addEventListener('click', () => {
+      settingsOpen = !settingsOpen;
+      if (settingsOpen) {
+        settingsContent.style.maxHeight = settingsContent.scrollHeight + 'px';
+        if (settingsChevron) settingsChevron.style.transform = 'rotate(180deg)';
+      } else {
+        settingsContent.style.maxHeight = '0px';
+        if (settingsChevron) settingsChevron.style.transform = 'rotate(0deg)';
+      }
+    });
+  }
+
+  // Measure header height and set CSS variable for sticky group headers
+  const headerEl = document.querySelector('header');
+  if (headerEl) {
+    const setHeaderH = () => {
+      document.documentElement.style.setProperty('--header-h', headerEl.getBoundingClientRect().height + 'px');
+    };
+    setHeaderH();
+    window.addEventListener('resize', setHeaderH);
+  }
+
   const btnGuarantorNo = document.getElementById('btnGuarantorNo');
   const btnGuarantorYes = document.getElementById('btnGuarantorYes');
 
@@ -3225,10 +3268,10 @@ function updateProgressBar(mandatorySlots, attachedMandatoryCount, allSlots) {
   // Color change based on completion
   if (percent >= 100) {
     progressBarFill.className = 'h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 progress-bar-fill shadow-[0_0_8px_rgba(16,185,129,0.4)]';
-    progressPercentText.className = 'text-xs font-black text-emerald-600';
+    progressPercentText.className = 'text-[10px] font-black text-emerald-600 flex-shrink-0 min-w-[28px] text-right';
   } else {
     progressBarFill.className = 'h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 progress-bar-fill shadow-[0_0_8px_rgba(255,106,0,0.4)]';
-    progressPercentText.className = 'text-xs font-black text-orange-600';
+    progressPercentText.className = 'text-[10px] font-black text-orange-600 flex-shrink-0 min-w-[28px] text-right';
   }
 }
 
