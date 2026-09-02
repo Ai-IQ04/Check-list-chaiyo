@@ -500,7 +500,23 @@ async function runGoogleCloudVisionAPI(dataUrl, apiKey) {
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Google Cloud Vision API Error (${response.status}): ${errText}`);
+    let errMessage = `Google Cloud Vision API Error (${response.status}): ${errText}`;
+    try {
+      const errJson = JSON.parse(errText);
+      if (errJson.error?.message) {
+        if (errJson.error.message.includes('has not been used in project') || errJson.error.message.includes('disabled')) {
+          const projMatch = errText.match(/project[ =](\d+)/i);
+          const projNum = projMatch ? projMatch[1] : '';
+          const actUrl = projNum 
+            ? `https://console.developers.google.com/apis/api/vision.googleapis.com/overview?project=${projNum}`
+            : 'https://console.cloud.google.com/apis/library/vision.googleapis.com';
+          errMessage = `ยังไม่ได้เปิดใช้งาน Cloud Vision API บน Google Cloud Project (${projNum}) กรุณาเปิดใช้งานที่: ${actUrl} แล้วรอ 1-2 นาที จากนั้นลองใหม่อีกครั้ง`;
+        } else {
+          errMessage = `Google Cloud Vision API Error (${response.status}): ${errJson.error.message}`;
+        }
+      }
+    } catch (_) {}
+    throw new Error(errMessage);
   }
 
   const json = await response.json();
@@ -584,8 +600,8 @@ async function runGeminiVisionOCR(dataUrl, apiKey, preferredModel) {
   const cleanKey = apiKey.trim();
   const isOAuth = cleanKey.startsWith('AQ') || cleanKey.startsWith('ya29') || !cleanKey.startsWith('AIza');
   
-  const targetModel = preferredModel && preferredModel !== 'google-cloud-vision' ? preferredModel : 'gemini-3.5-flash-lite';
-  const models = [...new Set([targetModel, 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.5-flash'])];
+  const targetModel = preferredModel && preferredModel !== 'google-cloud-vision' ? preferredModel : 'gemini-2.5-flash';
+  const models = [...new Set([targetModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'])];
   let lastError = null;
 
   for (const model of models) {
