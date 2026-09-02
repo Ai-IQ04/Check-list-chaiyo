@@ -939,11 +939,27 @@ async function runAuditEngine() {
       const items = await runVisionAI(imgObj.dataUrl, apiKey);
       if (Array.isArray(items)) {
         items.forEach((it) => {
-          mgrState.extractedBlueTexts.push({
-            cleanName: it.cleanName || '',
-            ext: (it.ext || '').toUpperCase(),
-            raw: it.raw || `${it.cleanName}.${it.ext}`,
+          const cleanName = (it.cleanName || '').trim();
+          const ext = (it.ext || '').toUpperCase();
+          const raw = it.raw || `${cleanName}.${ext}`;
+
+          if (!cleanName) return;
+
+          // Deduplicate if already extracted from an overlapping screenshot
+          const isDuplicate = mgrState.extractedBlueTexts.some((existing) => {
+            const sameName = normalizeThaiDocName(existing.cleanName) === normalizeThaiDocName(cleanName);
+            const isSameExt = (existing.ext === ext) || 
+                              ((existing.ext === 'JPG' || existing.ext === 'JPEG') && (ext === 'JPG' || ext === 'JPEG'));
+            return sameName && isSameExt;
           });
+
+          if (!isDuplicate) {
+            mgrState.extractedBlueTexts.push({
+              cleanName: cleanName,
+              ext: ext,
+              raw: raw,
+            });
+          }
         });
       }
     }
@@ -1054,20 +1070,38 @@ function evaluateChecklistMatching() {
     }
   });
 
+  // Handle truly custom branch attachments (Exclude duplicate scans of standard checklist documents)
+  const seenAttachNorms = new Set();
+
   mgrState.extractedBlueTexts.forEach((extracted, idx) => {
-    if (!usedExtractIndices.has(idx)) {
-      results.push({
-        code: 'ATTACH',
-        group: 'เอกสารแนบเพิ่มจากสาขา',
-        desc: 'เอกสารแนบเพิ่มเติมจากสาขา (ต้องตรวจสอบเนื้อหาก่อนอนุมัติ)',
-        targetName: 'แนบเพิ่มเติม',
-        format: extracted.ext || 'FILE',
-        foundName: `${extracted.cleanName}.${extracted.ext || ''}`.replace(/\.$/, ''),
-        mandatory: false,
-        status: 'CUSTOM_ATTACHMENT',
-        reason: 'สาขาแนบเอกสารเพิ่มเติม',
-      });
-    }
+    if (usedExtractIndices.has(idx)) return;
+
+    // Check if this extracted text actually matches ANY standard checklist item (even if already matched)
+    // E.g. an extra or scrolled photo of 'เล่มหน้าปก' or 'เล่มหน้ารายการ'
+    const matchesStandardChecklist = items.some((it) => {
+      const score = calculateFuzzyMatchScore(it.targetName, extracted.cleanName, it.desc, extracted.raw);
+      return score >= 0.45;
+    });
+
+    // If it's just a duplicate scan of a standard checklist document, skip it!
+    if (matchesStandardChecklist) return;
+
+    // Deduplicate custom attachments by normalized name
+    const norm = normalizeThaiDocName(extracted.cleanName);
+    if (seenAttachNorms.has(norm)) return;
+    seenAttachNorms.add(norm);
+
+    results.push({
+      code: 'ATTACH',
+      group: 'เอกสารแนบเพิ่มจากสาขา',
+      desc: 'เอกสารแนบเพิ่มเติมจากสาขา (ต้องตรวจสอบเนื้อหาก่อนอนุมัติ)',
+      targetName: 'แนบเพิ่มเติม',
+      format: extracted.ext || 'FILE',
+      foundName: `${extracted.cleanName}.${extracted.ext || ''}`.replace(/\.$/, ''),
+      mandatory: false,
+      status: 'CUSTOM_ATTACHMENT',
+      reason: 'สาขาแนบเอกสารเพิ่มเติม',
+    });
   });
 
   mgrState.auditResults = results;
