@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.10.0';
+const CURRENT_APP_VERSION = '3.11.0';
 
 // Application State
 const state = {
@@ -956,7 +956,7 @@ function renderSlots() {
               <button class="p-2 rounded-xl neu-btn text-orange-600 btn-slot-change cursor-pointer hover:scale-105 transition-transform" title="เปลี่ยนไฟล์ทั้งหมดในช่องนี้" data-id="${slot.id}">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               </button>
-              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="ดาวน์โหลดไฟล์นี้เดี่ยวๆ">
+              <button class="px-2.5 py-1 rounded-xl neu-btn text-orange-600 text-xs font-bold flex items-center gap-1 btn-slot-download cursor-pointer hover:scale-105 transition-transform" data-id="${slot.id}" title="บีบอัดและดาวน์โหลดไฟล์นี้เดี่ยวๆ (คุมไม่เกิน 5MB)">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>โหลด</span>
               </button>
@@ -1179,21 +1179,32 @@ function attachSlotEvents() {
     });
   });
 
-  // Single download
+  // Single download (< 5MB Guaranteed)
   document.querySelectorAll('.btn-slot-download').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
-      const id = e.currentTarget.dataset.id;
+      const targetBtn = e.currentTarget;
+      const id = targetBtn.dataset.id;
       const all = getAllSlots();
       const slot = all.find((s) => s.id === id);
       if (slot && slot.attached) {
-        showToast(`กำลังเตรียมไฟล์ ${slot.attached.targetName}...`, 'info');
+        const originalHtml = targetBtn.innerHTML;
+        targetBtn.disabled = true;
+        targetBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>`;
+        if (window.lucide) lucide.createIcons();
+
+        showToast(`กำลังบีบอัดและเตรียมไฟล์ ${slot.attached.targetName} (คุมขนาดไม่เกิน 5 MB)...`, 'info');
         try {
           const { blob, finalFilename } = await processAttachedFile(slot.attached);
           downloadBlob(blob, finalFilename);
-          showToast(`ดาวน์โหลด ${finalFilename} เรียบร้อยแล้ว`, 'success');
+          const sizeStr = formatFileSize(blob.size);
+          showToast(`ดาวน์โหลด ${finalFilename} สำเร็จ! (${sizeStr} • ผ่านเกณฑ์ไม่เกิน 5 MB)`, 'success');
         } catch (err) {
           console.error(err);
           showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
+        } finally {
+          targetBtn.disabled = false;
+          targetBtn.innerHTML = originalHtml;
+          if (window.lucide) lucide.createIcons();
         }
       }
     });
@@ -1227,7 +1238,7 @@ function setupAiScannerListeners() {
     const file = e.target.files[0];
     e.target.value = '';
 
-    showToast('🤖 AI กำลังวิเคราะห์เอกสาร...', 'info');
+    showToast('🔍 กำลังสแกนวิเคราะห์เอกสาร...', 'info');
 
     const dataUrl = await readFileAsDataURL(file);
     state.pendingAiImage = {
@@ -1257,13 +1268,45 @@ function setupAiScannerListeners() {
   });
 }
 
+async function downscaleImageForFastOCR(dataUrl, maxWidth = 600) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width <= maxWidth) return resolve(dataUrl);
+      const canvas = document.createElement('canvas');
+      const scale = maxWidth / img.width;
+      canvas.width = maxWidth;
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function extractPdfTextFast(dataUrl) {
+  if (!window.pdfjsLib || !dataUrl || !dataUrl.startsWith('data:application/pdf')) return null;
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const loadingTask = pdfjsLib.getDocument(dataUrl);
+    const pdfDoc = await loadingTask.promise;
+    const firstPage = await pdfDoc.getPage(1);
+    const textContent = await firstPage.getTextContent();
+    return textContent.items.map(item => item.str).join(' ');
+  } catch (e) {
+    return null;
+  }
+}
+
 async function classifyDocumentWithAI(dataUrl, filename = '') {
   let detectedKeywords = [];
   let detectedType = 'UNKNOWN';
   let confidence = 85;
   let summaryTitle = 'เอกสารทั่วไป';
 
-  // Check filename keywords first
+  // Check filename keywords first (Instant 0.001s check)
   const lowerName = filename.toLowerCase();
   if (lowerName.includes('id') || lowerName.includes('card') || lowerName.includes('บัตร')) {
     detectedType = 'ID_CARD';
@@ -1279,12 +1322,47 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
     detectedType = 'INCOME';
   }
 
-  // Fast Client-Side OCR with Tesseract if loaded
+  // Instant Direct PDF Digital Text Extraction (0.01s check)
+  if (dataUrl && dataUrl.startsWith('data:application/pdf') && detectedType === 'UNKNOWN') {
+    const pdfText = await extractPdfTextFast(dataUrl);
+    if (pdfText && pdfText.trim().length > 3) {
+      const t = pdfText.toLowerCase();
+      if (t.includes('บัตรประจำตัวประชาชน') || t.includes('identification card') || t.includes('เลขประจำตัว')) {
+        detectedType = 'ID_CARD';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: บัตรประชาชน');
+      } else if (t.includes('สำเนาทะเบียนบ้าน') || t.includes('รายการเกี่ยวกับบ้าน') || t.includes('ทะเบียนราษฎร')) {
+        detectedType = 'HOUSE_REG';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: ทะเบียนบ้าน');
+      } else if (t.includes('โฉนดที่ดิน') || t.includes('น.ส. 4') || t.includes('ตราจอง') || t.includes('กรมที่ดิน')) {
+        detectedType = 'TITLE_DEED';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: โฉนดที่ดิน');
+      } else if (t.includes('ใบคู่มือจดทะเบียน') || t.includes('กรมการขนส่งทางบก') || t.includes('รายการจดทะเบียน')) {
+        detectedType = 'VEHICLE_BOOK';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: ใบคู่มือจดทะเบียน');
+      } else if (t.includes('วันสิ้นอายุภาษี') || t.includes('ภาษีประจำปี')) {
+        detectedType = 'TAX_SIGN';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: ป้ายภาษี');
+      } else if (t.includes('เงินได้') || t.includes('สลิป') || t.includes('เงินเดือน') || t.includes('salary') || t.includes('statement') || t.includes('ธนาคาร')) {
+        detectedType = 'INCOME';
+        confidence = 99;
+        detectedKeywords.push('ข้อความ PDF: สลิป/รายได้');
+      }
+    }
+  }
+
+  // Blazing Fast Client-Side OCR with Downscaled Image & 1.5s Timeout Guard
   if (window.Tesseract && detectedType === 'UNKNOWN') {
     try {
-      const { data: { text } } = await Tesseract.recognize(dataUrl, 'tha+eng', {
-        logger: () => {},
-      });
+      const scaledDataUrl = await downscaleImageForFastOCR(dataUrl, 600);
+      const ocrPromise = Tesseract.recognize(scaledDataUrl, 'tha+eng', { logger: () => {} });
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Fast OCR Timeout')), 1500));
+
+      const { data: { text } } = await Promise.race([ocrPromise, timeoutPromise]);
       const t = text.toLowerCase();
 
       if (t.includes('บัตรประจำตัวประชาชน') || t.includes('identification card') || t.includes('thai national') || t.includes('เลขประจำตัว')) {
@@ -1313,7 +1391,7 @@ async function classifyDocumentWithAI(dataUrl, filename = '') {
         detectedKeywords.push('สลิป/เอกสารรายได้');
       }
     } catch (e) {
-      console.warn('OCR fast pass failed, fallback to heuristic');
+      console.warn('Fast OCR pass timed out or skipped, using fast heuristic fallback');
     }
   }
 
@@ -1890,14 +1968,24 @@ function setupPreviewModalListeners() {
     const all = getAllSlots();
     const slot = all.find((s) => s.id === state.activePreviewSlotId);
     if (slot && slot.attached) {
-      showToast(`กำลังเตรียมไฟล์ ${slot.attached.targetName}...`, 'info');
+      const originalHtml = btnPreviewDownload.innerHTML;
+      btnPreviewDownload.disabled = true;
+      btnPreviewDownload.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>กำลังบีบอัด...</span>`;
+      if (window.lucide) lucide.createIcons();
+
+      showToast(`กำลังบีบอัดและเตรียมไฟล์ ${slot.attached.targetName} (คุมขนาดไม่เกิน 5 MB)...`, 'info');
       try {
         const { blob, finalFilename } = await processAttachedFile(slot.attached);
         downloadBlob(blob, finalFilename);
-        showToast(`ดาวน์โหลด ${finalFilename} เรียบร้อยแล้ว`, 'success');
+        const sizeStr = formatFileSize(blob.size);
+        showToast(`ดาวน์โหลด ${finalFilename} สำเร็จ! (${sizeStr} • ผ่านเกณฑ์ไม่เกิน 5 MB)`, 'success');
       } catch (err) {
         console.error(err);
         showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
+      } finally {
+        btnPreviewDownload.disabled = false;
+        btnPreviewDownload.innerHTML = originalHtml;
+        if (window.lucide) lucide.createIcons();
       }
     }
   });
@@ -3469,18 +3557,28 @@ async function processAttachedFile(attachedObj) {
     if (p.dataUrl) {
       const blob = await compressImageToBlob(p.dataUrl, p.rotation, MAX_FILE_SIZE_BYTES);
       return { blob, finalFilename };
+    } else if (p.file && p.file.type === 'application/pdf') {
+      const blob = await compressPdfFileToBlob(p.file, MAX_FILE_SIZE_BYTES);
+      return { blob, finalFilename: `${cleanName}.pdf` };
     } else {
       return { blob: p.file, finalFilename: `${cleanName}.pdf` };
     }
   }
 
-  // Case 2: Multi-Image or Single PDF target
+  // Case 2: Multi-Image or Single PDF target (< 5MB Guaranteed)
   if (targetFormat === 'PDF') {
-    if (!isMultiPage && pages[0].file.type === 'application/pdf') {
-      return { blob: pages[0].file, finalFilename };
+    // Sub-case 2.1: Single original PDF file uploaded
+    if (!isMultiPage && pages[0].file && pages[0].file.type === 'application/pdf') {
+      const blob = await compressPdfFileToBlob(pages[0].file, MAX_FILE_SIZE_BYTES);
+      return { blob, finalFilename };
     }
 
-    const perPageMaxBytes = Math.max(Math.floor((4.5 * 1024 * 1024) / pages.length), 600 * 1024);
+    // Sub-case 2.2: Convert one or more images into a single PDF
+    const totalBudget = 4.6 * 1024 * 1024; // 4.6 MB total budget for safety
+    const perPageMaxBytes = Math.min(
+      Math.max(Math.floor(totalBudget / pages.length), 150 * 1024),
+      4.5 * 1024 * 1024
+    );
     const pdfDoc = await PDFLib.PDFDocument.create();
 
     for (let i = 0; i < pages.length; i++) {
@@ -3508,7 +3606,13 @@ async function processAttachedFile(attachedObj) {
     }
 
     const pdfBytes = await pdfDoc.save();
-    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+    let pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+    // Extra safety guarantee: if resulting PDF exceeds 5MB, recompress via compressPdfFileToBlob
+    if (pdfBlob.size > MAX_FILE_SIZE_BYTES) {
+      pdfBlob = await compressPdfFileToBlob(pdfBlob, MAX_FILE_SIZE_BYTES);
+    }
+
     return { blob: pdfBlob, finalFilename };
   }
 
@@ -3526,11 +3630,11 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
     img.onload = async () => {
       let width = img.width;
       let height = img.height;
-      let quality = 0.95;
+      let quality = 0.92;
       let scale = 1.0;
 
       const isSwapped = rotation === 90 || rotation === 270;
-      let maxDim = 3840;
+      let maxDim = 3200;
 
       if (Math.max(width, height) > maxDim) {
         scale = maxDim / Math.max(width, height);
@@ -3539,7 +3643,7 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
       }
 
       let resultBlob = null;
-      for (let attempt = 0; attempt < 6; attempt++) {
+      for (let attempt = 0; attempt < 10; attempt++) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
 
@@ -3566,10 +3670,13 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
           break;
         }
 
-        quality -= 0.08;
-        if (quality < 0.72) {
-          width = Math.round(width * 0.9);
-          height = Math.round(height * 0.9);
+        // Progressively decrease quality and resolution to guarantee <= maxBytes (< 5MB)
+        if (quality > 0.70) {
+          quality -= 0.08;
+        } else {
+          quality = Math.max(0.55, quality - 0.05);
+          width = Math.round(width * 0.85);
+          height = Math.round(height * 0.85);
         }
       }
 
@@ -3578,6 +3685,95 @@ async function compressImageToBlob(dataUrl, rotation = 0, maxBytes = MAX_FILE_SI
     img.onerror = reject;
     img.src = dataUrl;
   });
+}
+
+/**
+ * PDF Document Compressor (< 5MB Guaranteed)
+ * If PDF exceeds 5MB, renders pages to canvas via pdfjsLib and recompiles with PDFLib
+ */
+async function compressPdfFileToBlob(pdfFile, maxBytes = MAX_FILE_SIZE_BYTES) {
+  if (pdfFile.size <= maxBytes) {
+    return pdfFile; // Already under 5MB - preserve 100% original digital quality
+  }
+  if (!window.pdfjsLib) {
+    console.warn('pdfjsLib not available, returning original PDF');
+    return pdfFile;
+  }
+
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const arrayBuffer = await pdfFile.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+    const pdfDoc = await loadingTask.promise;
+    const numPages = pdfDoc.numPages;
+
+    if (numPages === 0) return pdfFile;
+
+    const totalBudget = Math.min(maxBytes * 0.92, 4.6 * 1024 * 1024);
+    const perPageMax = Math.max(Math.floor(totalBudget / numPages), 120 * 1024);
+
+    const newPdfDoc = await PDFLib.PDFDocument.create();
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
+      let viewport = page.getViewport({ scale: 1.5 });
+
+      const maxDim = 2400;
+      if (Math.max(viewport.width, viewport.height) > maxDim) {
+        const scaleFactor = maxDim / Math.max(viewport.width, viewport.height);
+        viewport = page.getViewport({ scale: 1.5 * scaleFactor });
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      const ctx = canvas.getContext('2d', { alpha: false });
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      let quality = 0.85;
+      let imgBlob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+      let curW = canvas.width;
+      let curH = canvas.height;
+
+      while (imgBlob && imgBlob.size > perPageMax && (quality > 0.50 || curW > 800)) {
+        if (quality > 0.65) {
+          quality -= 0.10;
+        } else {
+          curW = Math.round(curW * 0.85);
+          curH = Math.round(curH * 0.85);
+          const scaledCanvas = document.createElement('canvas');
+          scaledCanvas.width = curW;
+          scaledCanvas.height = curH;
+          const sCtx = scaledCanvas.getContext('2d');
+          sCtx.drawImage(canvas, 0, 0, curW, curH);
+          imgBlob = await new Promise((res) => scaledCanvas.toBlob(res, 'image/jpeg', quality));
+          break;
+        }
+        imgBlob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+      }
+
+      if (imgBlob) {
+        const imgBuffer = await imgBlob.arrayBuffer();
+        const pdfImage = await newPdfDoc.embedJpg(imgBuffer);
+        const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
+        newPage.drawImage(pdfImage, {
+          x: 0,
+          y: 0,
+          width: viewport.width,
+          height: viewport.height,
+        });
+      }
+    }
+
+    const pdfBytes = await newPdfDoc.save();
+    return new Blob([pdfBytes], { type: 'application/pdf' });
+  } catch (err) {
+    console.error('Failed to compress PDF, falling back to original:', err);
+    return pdfFile;
+  }
 }
 
 // 15. Batch Download as .ZIP

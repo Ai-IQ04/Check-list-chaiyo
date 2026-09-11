@@ -42,11 +42,12 @@
 
   <style>
     :root {
-      --neu-bg: #e0e5ec;
-      --neu-shadow-dark: #a3b1c6;
+      --neu-bg: #f1f5f9;
+      --neu-shadow-dark: #cbd5e1;
       --neu-shadow-light: #ffffff;
       --orange-accent: #ff6a00;
       --indigo-accent: #4f46e5;
+      --card-border: rgba(226, 232, 240, 0.85);
     }
 
     /* Mobile, iPad & PC Touch Optimization */
@@ -56,8 +57,13 @@
     }
 
     body {
-      background-color: var(--neu-bg);
-      color: #313b4c;
+      background-color: #f1f5f9;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(255, 106, 0, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: #1e293b;
       font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
@@ -77,59 +83,63 @@
       scrollbar-width: none;
     }
 
-    /* Mobile Neumorphic Touch Card Adjustments */
+    /* Mobile Glassmorphic Adjustments */
     @media (max-width: 640px) {
       .neu-raised {
-        box-shadow: 5px 5px 12px var(--neu-shadow-dark), -5px -5px 12px var(--neu-shadow-light);
+        box-shadow: 0 4px 15px -3px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
       }
       .neu-inset {
-        box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+        box-shadow: inset 0 1.5px 3px 0 rgba(0, 0, 0, 0.04);
       }
     }
 
-    /* 100% Pure Neumorphic Raised Plate */
+    /* Glassmorphic & Modern Neumorphic Raised Plate */
     .neu-raised {
-      background: #e0e5ec;
-      box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 8px 25px -5px rgba(15, 23, 42, 0.06), 0 3px 10px rgba(15, 23, 42, 0.03);
       transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
-    /* Pure Neumorphic Deep Inset Well */
+    /* Crisp Recessed Deep Well */
     .neu-inset {
-      background: #e0e5ec;
-      box-shadow: inset 5px 5px 10px var(--neu-shadow-dark), inset -5px -5px 10px var(--neu-shadow-light);
-      border: 1px solid rgba(163, 177, 198, 0.2);
+      background: rgba(241, 245, 249, 0.9);
+      border: 1px solid rgba(203, 213, 225, 0.6);
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
     }
 
-    /* Pure Neumorphic Tactile Button */
+    /* Modern Tactile Button */
     .neu-btn {
-      background: #e0e5ec;
-      box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
-      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
       transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
       cursor: pointer;
       user-select: none;
     }
 
     .neu-btn:hover {
-      box-shadow: 7px 7px 14px var(--neu-shadow-dark), -7px -7px 14px var(--neu-shadow-light);
+      background: #ffffff;
+      box-shadow: 0 8px 18px -4px rgba(99, 102, 241, 0.18), 0 2px 6px rgba(15, 23, 42, 0.04);
       transform: translateY(-1.5px);
       color: #4f46e5;
+      border-color: rgba(99, 102, 241, 0.4);
     }
 
     .neu-btn:active {
-      box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
       transform: translateY(1px);
     }
 
     /* Neumorphic Active Inset Pill */
     .neu-pill-active {
-      background: #e0e5ec !important;
-      box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light) !important;
+      background: rgba(238, 242, 255, 0.95) !important;
+      box-shadow: inset 0 2px 4px rgba(79, 70, 229, 0.12) !important;
       color: #4f46e5 !important;
       font-weight: 800 !important;
-      border: 1px solid rgba(79, 70, 229, 0.35) !important;
+      border: 1.5px solid rgba(79, 70, 229, 0.5) !important;
     }
 
     .neu-pill-active span, .neu-pill-active i {
@@ -140,13 +150,14 @@
     .neu-btn-indigo {
       background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
       color: #ffffff;
-      box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light), 0 0 14px rgba(99, 102, 241, 0.35);
+      box-shadow: 0 8px 20px -3px rgba(99, 102, 241, 0.4), 0 4px 6px rgba(99, 102, 241, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.4);
       transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
     .neu-btn-indigo:hover {
-      box-shadow: 8px 8px 18px var(--neu-shadow-dark), -8px -8px 18px var(--neu-shadow-light), 0 0 20px rgba(99, 102, 241, 0.5);
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      box-shadow: 0 12px 25px -4px rgba(99, 102, 241, 0.55), 0 6px 12px rgba(99, 102, 241, 0.3);
       transform: translateY(-2px);
     }
 
@@ -162,8 +173,8 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-indigo-200 selection:text-indigo-950 pb-24">
 
-  <!-- Header -->
-  <header class="w-full bg-[#e0e5ec] border-b border-[#cbd5e1]/50 py-3 sticky top-0 z-40 shadow-sm">
+  <!-- Glassmorphic Header -->
+  <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 py-3 sticky top-0 z-40 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
       
       <!-- Brand & Title -->
