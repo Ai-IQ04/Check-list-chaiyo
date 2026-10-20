@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.11.0';
+const CURRENT_APP_VERSION = '3.12.0';
 
 // Application State
 const state = {
@@ -1615,12 +1615,17 @@ async function appendFilesToSlotById(id, files) {
 
 function readFileAsDataURL(file) {
   return new Promise((resolve) => {
-    if (file.type.startsWith('image/')) {
+    if (!file) return resolve(null);
+    if (file.type && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
       reader.readAsDataURL(file);
     } else {
-      resolve(null);
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
     }
   });
 }
