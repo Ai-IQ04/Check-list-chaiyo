@@ -161,9 +161,9 @@
       const buffer = await file.arrayBuffer();
       studioState.unlockArrayBuffer = buffer;
 
-      // Try loading without password first
+      // Try loading without password first (use sliced copy so master buffer isn't detached)
       const loadingTask = window.pdfjsLib.getDocument({
-        data: new Uint8Array(buffer),
+        data: new Uint8Array(buffer.slice(0)),
         password: '',
       });
 
@@ -199,7 +199,7 @@
       return;
     }
 
-    if (!studioState.unlockArrayBuffer) {
+    if (!studioState.unlockFile && !studioState.unlockArrayBuffer) {
       showUnlockError('ไม่พบข้อมูลไฟล์ PDF กรุณาเลือกไฟล์ใหม่อีกครั้ง');
       return;
     }
@@ -211,8 +211,13 @@
     try {
       showUnlockLoading(true, 'กำลังถอดรหัสผ่านและประมวลผลเอกสาร...');
 
+      // Always obtain a fresh ArrayBuffer from the file to avoid detached buffer errors
+      const freshBuffer = studioState.unlockFile
+        ? await studioState.unlockFile.arrayBuffer()
+        : studioState.unlockArrayBuffer.slice(0);
+
       const loadingTask = window.pdfjsLib.getDocument({
-        data: new Uint8Array(studioState.unlockArrayBuffer),
+        data: new Uint8Array(freshBuffer),
         password: password,
       });
 
@@ -453,8 +458,9 @@
       const buffer = await file.arrayBuffer();
       studioState.convertArrayBuffer = buffer;
 
+      // Use sliced copy so master buffer isn't detached by Web Worker
       const loadingTask = window.pdfjsLib.getDocument({
-        data: new Uint8Array(buffer),
+        data: new Uint8Array(buffer.slice(0)),
         password: '',
       });
 
@@ -487,8 +493,13 @@
 
     try {
       showConvertLoading(true, 'กำลังถอดรหัสผ่าน...');
+      // Obtain fresh buffer
+      const freshBuffer = studioState.convertFile
+        ? await studioState.convertFile.arrayBuffer()
+        : studioState.convertArrayBuffer.slice(0);
+
       const loadingTask = window.pdfjsLib.getDocument({
-        data: new Uint8Array(studioState.convertArrayBuffer),
+        data: new Uint8Array(freshBuffer),
         password: password,
       });
 
@@ -1125,8 +1136,13 @@
     ensurePdfWorker();
 
     try {
+      // Obtain fresh buffer to avoid detached ArrayBuffer
+      const freshBuffer = studioState.quickUnlockFile
+        ? await studioState.quickUnlockFile.arrayBuffer()
+        : studioState.quickUnlockArrayBuffer.slice(0);
+
       const loadingTask = window.pdfjsLib.getDocument({
-        data: new Uint8Array(studioState.quickUnlockArrayBuffer),
+        data: new Uint8Array(freshBuffer),
         password: password,
       });
 
@@ -1433,7 +1449,7 @@
           try {
             const buf = await pdfFile.arrayBuffer();
             const testTask = window.pdfjsLib.getDocument({
-              data: new Uint8Array(buf),
+              data: new Uint8Array(buf.slice(0)),
               password: '',
             });
             await testTask.promise; // If passes, it's not password protected!
