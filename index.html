@@ -303,7 +303,7 @@
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold tracking-tight">
-              v3.12.1 • License: Anusat
+              v3.13.0 • License: Anusat
             </span>
           </div>
           <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • ป้องกันงานหาย 3 ชั้น • Auto-Save</p>
@@ -339,6 +339,12 @@
         <button id="btnOpenPdfStudioModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-indigo-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer border border-indigo-200/70" title="ปลดล็อครหัสผ่าน PDF, แปลง PDF เป็นรูปภาพ หรือรวมรูปเป็น PDF">
           <i data-lucide="unlock" class="w-3.5 h-3.5 text-orange-500"></i>
           <span>ปลดล็อค/แปลง PDF</span>
+        </button>
+
+        <!-- PRIMARY: DSR & IIR Studio -->
+        <button id="btnOpenDsrIirModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-blue-700 hover:text-blue-900 flex items-center gap-1.5 cursor-pointer border border-blue-200/70 bg-blue-50/20" title="คำนวณ IIR / DSR และประเมินภาระหนี้ตามเกณฑ์ ปกค035">
+          <i data-lucide="calculator" class="w-3.5 h-3.5 text-blue-600"></i>
+          <span>คำนวณ DSR / IIR</span>
         </button>
 
         <!-- PRIMARY: Start New Case -->
@@ -380,6 +386,16 @@
 
       <!-- Menu Items -->
       <div class="space-y-2">
+        <button id="btnOpenDsrIirModalMenu" class="w-full neu-btn px-4 py-3 rounded-2xl text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-3 cursor-pointer text-left border border-blue-200/60 bg-blue-50/20">
+          <div class="w-8 h-8 rounded-xl neu-inset flex items-center justify-center text-blue-600 flex-shrink-0">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <span class="block font-extrabold">คำนวณ DSR & IIR (ภาระหนี้)</span>
+            <span class="text-[10px] text-slate-500">Chaiyo Credit Studio • ปกค035 • ผู้กู้เดี่ยว/รวมผู้ค้ำ</span>
+          </div>
+        </button>
+
         <button id="btnOpenPdfStudioModalMenu" class="w-full neu-btn px-4 py-3 rounded-2xl text-xs font-bold text-indigo-700 hover:text-orange-600 flex items-center gap-3 cursor-pointer text-left border border-indigo-200/60 bg-indigo-50/20">
           <div class="w-8 h-8 rounded-xl neu-inset flex items-center justify-center text-orange-500 flex-shrink-0">
             <i data-lucide="unlock" class="w-4 h-4"></i>
@@ -443,7 +459,7 @@
 
       <!-- Version Info -->
       <div class="pt-3 border-t border-[#cbd5e1]/60 text-center">
-        <span class="text-[10px] text-slate-500 font-bold">v3.12.1 • License: Anusat • 100% Client-Side</span>
+        <span class="text-[10px] text-slate-500 font-bold">v3.13.0 • License: Anusat • 100% Client-Side</span>
       </div>
     </div>
   </div>
@@ -1861,6 +1877,64 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- MODAL: DSR & IIR CALCULATOR (Chaiyo Credit Studio) -->
+  <!-- ======================================================== -->
+  <div id="dsrIirModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+    <div id="dsrIirModalContainer" class="relative w-full max-w-7xl h-[92vh] neu-raised bg-[#f1f5f9] rounded-3xl p-3 sm:p-5 flex flex-col shadow-2xl border border-white/70 overflow-hidden my-auto transition-all duration-200">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#cbd5e1]/60 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center text-blue-600 shadow-inner flex-shrink-0">
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
+              โมดูลคำนวณภาระหนี้ DSR & IIR
+              <span class="text-[10px] px-2 py-0.5 rounded-lg neu-inset text-blue-700 bg-blue-50 font-bold border border-blue-200">
+                ปกค035 · Chaiyo Credit Studio
+              </span>
+            </h3>
+            <p class="text-xs text-slate-500 font-medium hidden sm:block">ประเมินเกณฑ์ IIR/DSR ตามระเบียบ ปกค035 • ผู้กู้เดี่ยว • แยกประเมิน • รวมรายได้ผู้ค้ำ</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <!-- Button Toggle Maximize -->
+          <button id="btnToggleMaxDsrIirModal" class="neu-btn p-2 rounded-xl text-slate-600 hover:text-blue-600 cursor-pointer flex-shrink-0" title="ขยายเต็มจอ / ย่อขนาด">
+            <i id="dsrIirMaxIcon" data-lucide="maximize-2" class="w-4 h-4"></i>
+          </button>
+          <!-- Button Open in New Tab -->
+          <a href="คำนวน DSR+IIR.html" target="_blank" rel="noopener noreferrer" class="neu-btn px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-blue-600 flex items-center gap-1.5" title="เปิดโมดูลในแท็บใหม่แยกจอ">
+            <i data-lucide="external-link" class="w-4 h-4 text-blue-600"></i>
+            <span class="hidden sm:inline">เปิดแท็บใหม่</span>
+          </a>
+          <!-- Button Close Modal -->
+          <button id="btnCloseDsrIirModal" class="p-2 rounded-xl neu-btn text-slate-500 hover:text-red-600 cursor-pointer flex-shrink-0" title="ปิดหน้าต่าง">
+            <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Iframe Container -->
+      <div class="flex-1 w-full h-full mt-3 rounded-2xl overflow-hidden border border-slate-200/80 bg-white shadow-inner relative">
+        <iframe id="dsrIirIframe" src="about:blank" data-src="คำนวน DSR+IIR.html" class="w-full h-full border-0" loading="lazy" title="Chaiyo IIR DSR Calculator"></iframe>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2.5 border-t border-[#cbd5e1]/40 flex-shrink-0 mt-2">
+        <span class="flex items-center gap-1">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600"></i> สามารถกดคัดลอกสรุปข้อความ (Copy Summary) ในโมดูลเพื่อนำไปกรอกหรือแนบในแบบฟอร์มสินเชื่อได้ทันที
+        </span>
+        <button type="button" onclick="closeDsrIirModal()" class="font-bold text-slate-600 hover:text-orange-600 cursor-pointer">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- QUICK UNLOCK DIALOG (WHEN DROPPED TO A CHECKLIST SLOT) -->
   <div id="quickUnlockModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-md neu-raised bg-[#f1f5f9] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl border border-white/80 animate-in fade-in zoom-in-95 duration-200">
@@ -1916,9 +1990,10 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.12.1"></script>
-  <script src="app.js?v=3.12.1"></script>
-  <script src="pdf-studio.js?v=3.12.1"></script>
+  <script src="checklists.js?v=3.13.0"></script>
+  <script src="app.js?v=3.13.0"></script>
+  <script src="pdf-studio.js?v=3.13.0"></script>
+  <script src="dsr-iir-studio.js?v=3.13.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();

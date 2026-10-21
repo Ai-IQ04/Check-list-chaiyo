@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chaiyo IIR/DSR" />
+  <meta name="theme-color" content="#0B192C" />
+  <title>Chaiyo Credit Studio — Mobile & iPad Ready</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #F3F2EE;
+      --bg-panel: #FFFFFF;
+      --bg-muted: #F8F7F4;
+      --ink-main: #111827;
+      --ink-sub: #64748B;
+      --line-soft: #E5E4DF;
+      --brand-navy: #0B192C;
+      --brand-blue: #1D4ED8;
+    }
+    body.dark-theme {
+      --bg-page: #0B0F17;
+      --bg-panel: #131B2E;
+      --bg-muted: #1B253B;
+      --ink-main: #F1F5F9;
+      --ink-sub: #94A3B8;
+      --line-soft: #26334D;
+      --brand-navy: #38BDF8;
+      --brand-blue: #60A5FA;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'IBM Plex Sans Thai', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--ink-main);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    @media (min-width: 1024px) {
+      body {
+        padding-bottom: 2.5rem;
+      }
+    }
+    .mono-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+    .muted-box {
+      background-color: var(--bg-muted);
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+    }
+    .field-wrap {
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      background-color: var(--bg-muted);
+      border: 1.5px solid var(--line-soft);
+      border-radius: 11px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field-wrap:focus-within {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.14);
+      background-color: var(--bg-panel);
+    }
+    /* ฟอนต์ 16px (1rem) ป้องกัน iOS Safari ซูมหน้าจออัตโนมัติเวลาแตะช่องกรอก */
+    .field-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0.65rem 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink-main);
+      outline: none;
+    }
+    .field-select {
+      width: 100%;
+      min-height: 48px;
+      background-color: var(--bg-muted);
+      border: 1.5px solid var(--line-soft);
+      border-radius: 11px;
+      padding: 0.6rem 0.85rem;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink-main);
+      outline: none;
+    }
+    .field-select:focus {
+      border-color: var(--brand-blue);
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .bar-fill {
+      transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+    }
+    .pill-ok { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .pill-warn { background: rgba(245, 158, 11, 0.14); color: #B45309; border: 1px solid rgba(245, 158, 11, 0.38); }
+    .pill-bad { background: rgba(239, 68, 68, 0.12); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.35); }
+    body.dark-theme .pill-ok { color: #34D399; }
+    body.dark-theme .pill-warn { color: #FBBF24; }
+    body.dark-theme .pill-bad { color: #F87171; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top App Bar -->
+  <header class="border-b border-[var(--line-soft)] bg-[var(--bg-panel)] sticky top-0 z-30">
+    <div class="max-w-[1380px] mx-auto px-3.5 sm:px-6 lg:px-8 py-3 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 shrink-0 rounded-xl bg-[#0B192C] text-amber-400 flex items-center justify-center font-bold mono-num text-sm shadow-sm">
+            CY
+          </div>
+          <div class="truncate">
+            <div class="flex items-center gap-2">
+              <h1 class="font-bold text-sm sm:text-base tracking-tight truncate">Chaiyo Credit Studio</h1>
+              <span class="mono-num text-[10px] sm:text-[11px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 font-semibold shrink-0">
+                V.4 · ปกค035
+              </span>
+            </div>
+            <p class="text-[11px] text-[var(--ink-sub)] truncate">ระบบคำนวณ IIR / DSR และประเมินภาระหนี้ (รองรับมือถือ / iPad)</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <a href="index.html" id="btnBackOrCloseApp" class="px-2.5 sm:px-3 py-2 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-semibold text-xs active:scale-95 transition flex items-center gap-1">
+            ← กลับหน้าจัดการเอกสาร
+          </a>
+          <button onclick="downloadSelfHtml()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold active:scale-95 transition">
+            บันทึกแอป
+          </button>
+          <button onclick="toggleDark()" class="px-2.5 sm:px-3 py-2 rounded-xl muted-box text-xs font-medium active:scale-95 transition">
+            ธีมสี
+          </button>
+        </div>
+      </div>
+
+      <!-- Touch-Scrollable Preset Bar (ใช้งานได้ทั้งบนมือถือ, iPad และคอมพิวเตอร์) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+        <span class="text-[11px] text-[var(--ink-sub)] shrink-0 mr-1">ตัวอย่างคู่มือ:</span>
+        <button onclick="applyCase('p27')" class="shrink-0 px-3 py-1.5 rounded-lg muted-box text-xs font-medium active:scale-95 transition">
+          เคสหน้า 27 (กู้เดี่ยว)
+        </button>
+        <button onclick="applyCase('p28')" class="shrink-0 px-3 py-1.5 rounded-lg muted-box text-xs font-medium active:scale-95 transition">
+          เคสหน้า 28–29 (รวมรายได้ผู้ค้ำ)
+        </button>
+        <button onclick="applyCase('p14')" class="shrink-0 px-3 py-1.5 rounded-lg muted-box text-xs font-medium active:scale-95 transition">
+          เคสหน้า 14 (IIR &lt; 1.5)
+        </button>
+        <button onclick="applyCase('clear')" class="shrink-0 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 border border-rose-500/20 text-xs font-semibold active:scale-95 transition">
+          ล้างค่าทั้งหมด
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Responsive Grid (Mobile: 1 Col, iPad Portrait: 1 Col with 2-col subgrids, iPad Landscape & Desktop: 12-Col Split) -->
+  <main class="max-w-[1380px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start flex-1">
+
+    <!-- LEFT WORKSPACE: INPUTS (7 COLS ON DESKTOP / IPAD LANDSCAPE) -->
+    <div class="lg:col-span-7 space-y-4 sm:space-y-5">
+
+      <!-- Mode Switcher (Touch-sized Segmented Buttons) -->
+      <div class="panel p-1.5 grid grid-cols-3 gap-1.5">
+        <button id="modeBtn_single" onclick="setMode('single')" class="min-h-[44px] py-2 px-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-[#0B192C] text-white leading-tight">
+          1. ผู้กู้เดี่ยว
+        </button>
+        <button id="modeBtn_separate" onclick="setMode('separate')" class="min-h-[44px] py-2 px-2 rounded-xl text-xs sm:text-sm font-semibold transition text-[var(--ink-sub)] hover:bg-[var(--bg-muted)] leading-tight">
+          2. แยกประเมินผู้ค้ำ
+        </button>
+        <button id="modeBtn_combined" onclick="setMode('combined')" class="min-h-[44px] py-2 px-2 rounded-xl text-xs sm:text-sm font-semibold transition text-[var(--ink-sub)] hover:bg-[var(--bg-muted)] leading-tight">
+          3. รวมรายได้ผู้ค้ำ
+        </button>
+      </div>
+
+      <!-- STEP 1: ข้อมูลสินเชื่อเงินไชโย (ข้อ 2.2) -->
+      <section class="panel p-4 sm:p-6">
+        <div class="flex items-center justify-between gap-2 pb-3.5 mb-4 border-b border-[var(--line-soft)]">
+          <div>
+            <span class="mono-num text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-blue-600">PART 01 · CHAIYO LOAN</span>
+            <h2 class="text-base sm:text-lg font-bold mt-0.5">ภาระหนี้กับ "เงินไชโย" (หมวด 2.2)</h2>
+          </div>
+          <div class="muted-box px-3 py-1.5 text-right shrink-0">
+            <span class="text-[10px] text-[var(--ink-sub)] block">รวมค่างวดไชโย</span>
+            <span id="sumChaiyoTop" class="mono-num text-sm font-bold text-blue-600">7,800.00 ฿</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 sm:gap-4">
+          <div class="sm:col-span-12">
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1.5">ประเภทผลิตภัณฑ์สินเชื่อที่ยื่นขอ</label>
+            <select id="loanCategory" onchange="compute()" class="field-select">
+              <option value="vehicle">จำนำทะเบียนรถ (จยย. · รถยนต์ · รถบรรทุก · รถเก่าเกษตร) — รวมรายได้ผู้ค้ำได้</option>
+              <option value="non_vehicle">จำนำที่ดิน · จำนองที่ดิน · รถใหม่เพื่อการเกษตร — ไม่ร่วมเกณฑ์รวมรายได้ผู้ค้ำ</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">1) ค่างวดสัญญาเดิม (ถ้ามี)</label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inChaiyoOld" value="0" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-xs font-semibold text-blue-600 mb-1">2) ค่างวดที่ขอในครั้งนี้ *</label>
+            <div class="field-wrap border-blue-500/60">
+              <input type="number" inputmode="decimal" id="inChaiyoNew" value="7800" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">3) ค่างวดประกันผ่อน (ถ้ามี)</label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inChaiyoIns" value="0" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: ข้อมูลผู้กู้หลัก (ข้อ 2.1) -->
+      <section class="panel p-4 sm:p-6">
+        <div class="flex items-center justify-between gap-2 pb-3.5 mb-4 border-b border-[var(--line-soft)]">
+          <div>
+            <span class="mono-num text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-600">PART 02 · BORROWER</span>
+            <h2 class="text-base sm:text-lg font-bold mt-0.5">รายได้และภาระหนี้ส่วนตัว "ผู้กู้" (หมวด 2.1)</h2>
+          </div>
+          <div class="muted-box px-3 py-1.5 text-right shrink-0">
+            <span class="text-[10px] text-[var(--ink-sub)] block">หนี้ส่วนตัวผู้กู้</span>
+            <span id="sumBorrowerPersonalTop" class="mono-num text-sm font-bold text-emerald-600">8,000.00 ฿</span>
+          </div>
+        </div>
+
+        <!-- รายได้สุทธิผู้กู้ + ตัวช่วยหารรายได้เกษตรกรร่วม -->
+        <div class="muted-box p-3.5 sm:p-4 mb-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+            <label class="text-xs sm:text-sm font-bold">รายได้สุทธิของผู้กู้ (บาท/เดือน) *</label>
+            <button type="button" onclick="toggleBox('agriSplitBox')" class="text-xs text-blue-600 font-semibold py-1">
+              + ตัวช่วยหารรายได้ทำนาร่วม (หน้า 12)
+            </button>
+          </div>
+          <div class="field-wrap bg-[var(--bg-panel)]">
+            <input type="number" inputmode="decimal" id="inBIncome" value="30000" min="0" oninput="compute()" class="field-input" />
+            <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿/เดือน</span>
+          </div>
+
+          <div id="agriSplitBox" class="hidden mt-3 pt-3 border-t border-[var(--line-soft)] grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end">
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">รายได้รวมในที่นาเดียวกัน</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="decimal" id="agriTotalIncome" value="90000" min="0" class="field-input" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">จำนวนผู้มีชื่อร่วม (คน)</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="numeric" id="agriSharedPersons" value="3" min="1" class="field-input" />
+              </div>
+            </div>
+            <button type="button" onclick="applyAgriSplit()" class="min-h-[48px] px-3 rounded-xl bg-blue-600 text-white text-xs font-semibold active:scale-95 transition">
+              นำค่าเฉลี่ยไปใส่รายได้
+            </button>
+          </div>
+        </div>
+
+        <!-- หมวดภาระหนี้ส่วนตัวผู้กู้ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">
+              2.1 (1) ผ่อนบ้าน / ที่ดิน <span class="text-[11px] opacity-75">(Mobius: ที่อยู่อาศัย*)</span>
+            </label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inBHouse" value="0" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">
+              2.1 (2) ค่างวดรถทุกคัน <span class="text-[11px] opacity-75">(ไม่รวมคันที่รีไฟแนนซ์)</span>
+            </label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inBVehicle" value="4500" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- หมวด 2.1 (3) ภาระหนี้อื่นๆ -->
+        <div class="muted-box p-3.5 sm:p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold">หมวด 2.1 (3) ภาระหนี้อื่นๆ (Mobius: ภาระหนี้อื่นๆ*)</span>
+            <span id="sumBOtherSub" class="mono-num text-xs font-bold px-2.5 py-1 rounded-lg bg-[var(--bg-panel)] border border-[var(--line-soft)] shrink-0">3,500.00 ฿</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">บัตรเครดิต/กดเงินสด/OD (มีการกดใช้ ดูสเตทเมนท์ 3 ด.)</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="decimal" id="inBCardUsed" value="1500" min="0" oninput="compute()" class="field-input" />
+                <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">วงเงินบัตรที่ไม่ได้กดใช้ (ยอดเป็น 0 คิดขั้นต่ำ 8%)</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="decimal" id="inBCardUnusedLimit" value="0" min="0" oninput="compute()" class="field-input" placeholder="กรอกวงเงินเต็ม" />
+                <span id="outBCard8Pct" class="mr-2 px-2 py-1 rounded-md text-xs mono-num bg-amber-500/15 text-amber-700 font-semibold shrink-0">= 0 ฿</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">หนี้สลิปเงินเดือน (กยศ./สหกรณ์) + ผ่อนสินค้า (Shopee/ทีวี)</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="decimal" id="inBSlipAndShop" value="2000" min="0" oninput="compute()" class="field-input" />
+                <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-[var(--ink-sub)] mb-1">หนี้นอกระบบ / ค่าเช่าบ้าน / หนี้อื่นๆ ที่สืบทราบได้</label>
+              <div class="field-wrap bg-[var(--bg-panel)]">
+                <input type="number" inputmode="decimal" id="inBInformal" value="0" min="0" oninput="compute()" class="field-input" />
+                <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: ข้อมูลผู้ค้ำประกัน -->
+      <section id="guarantorPanel" class="panel p-4 sm:p-6 hidden">
+        <div class="flex items-center justify-between gap-2 pb-3.5 mb-4 border-b border-[var(--line-soft)]">
+          <div>
+            <span class="mono-num text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-amber-600">PART 03 · GUARANTOR (ปกค035/2569)</span>
+            <h2 class="text-base sm:text-lg font-bold mt-0.5">ข้อมูล "ผู้ค้ำประกัน" (สูงสุดไม่เกิน 1 คน)</h2>
+          </div>
+          <div class="muted-box px-3 py-1.5 text-right shrink-0">
+            <span class="text-[10px] text-[var(--ink-sub)] block">หนี้ส่วนตัวผู้ค้ำ</span>
+            <span id="sumGuarantorPersonalTop" class="mono-num text-sm font-bold text-amber-600">8,300.00 ฿</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">ความสัมพันธ์กับผู้กู้ (หน้า 8, 15–16)</label>
+            <select id="inGRelation" onchange="compute()" class="field-select">
+              <option value="valid_family">ญาติสายตรง (พ่อ / แม่ / บุตร / บุตรบุญธรรมมีเอกสารราชการ)</option>
+              <option value="valid_spouse_reg">คู่สมรสจดทะเบียนสมรส</option>
+              <option value="valid_spouse_child">คู่สมรสไม่จดทะเบียน แต่มีบุตรร่วมกัน (มีเอกสาร ThaiD/ตัวจริง)</option>
+              <option value="invalid_other">ความสัมพันธ์อื่นๆ (เช่น น้า-หลาน, พี่น้อง) — รวมรายได้ไม่ได้</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--ink-sub)] mb-1">สถานะการค้ำประกันให้บุคคลอื่น</label>
+            <select id="inGGuaranteeStatus" onchange="compute()" class="field-select">
+              <option value="clean">ไม่มีสถานะค้ำประกันให้ผู้กู้รายอื่น (AutoX / สถาบันอื่น)</option>
+              <option value="has_other">มีภาระค้ำประกันให้ผู้กู้รายอื่นอยู่ (รวมรายได้ไม่ได้)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="muted-box p-3.5 sm:p-4 mb-4">
+          <label class="block text-xs sm:text-sm font-bold mb-1.5">รายได้สุทธิของผู้ค้ำประกัน (นำมารวมคำนวณได้ 100%) *</label>
+          <div class="field-wrap bg-[var(--bg-panel)]">
+            <input type="number" inputmode="decimal" id="inGIncome" value="25000" min="0" oninput="compute()" class="field-input" />
+            <span class="pr-3 text-xs mono-num text-[var(--ink-sub)]">฿/เดือน</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs text-[var(--ink-sub)] mb-1">ผ่อนบ้าน/ที่ดิน (ผู้ค้ำ)</label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inGHouse" value="0" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-2.5 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-[var(--ink-sub)] mb-1">ค่างวดรถ (ผู้ค้ำ)</label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inGVehicle" value="0" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-2.5 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-[var(--ink-sub)] mb-1">ภาระหนี้อื่นๆ รวม (ผู้ค้ำ)</label>
+            <div class="field-wrap">
+              <input type="number" inputmode="decimal" id="inGOther" value="8300" min="0" oninput="compute()" class="field-input" />
+              <span class="pr-2.5 text-xs mono-num text-[var(--ink-sub)]">฿</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: ANALYTICS & V.8 / MOBIUS TABLE (5 COLS ON DESKTOP/IPAD LANDSCAPE) -->
+    <div id="resultSectionAnchor" class="lg:col-span-5 lg:sticky lg:top-24 space-y-4 sm:space-y-5">
+
+      <!-- MAIN DECISION TERMINAL -->
+      <section class="panel p-4 sm:p-6">
+        <div class="flex items-center justify-between mb-3">
+          <span class="mono-num text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-sub)]">UNDERWRITING VERDICT</span>
+          <span id="modeBadgeText" class="text-xs font-semibold px-2.5 py-0.5 rounded-md muted-box">โหมดผู้กู้เดี่ยว</span>
+        </div>
+
+        <!-- Status Banner -->
+        <div id="verdictBanner" class="p-4 rounded-xl mb-4 pill-ok">
+          <div id="verdictHeadline" class="font-bold text-base sm:text-lg">ผ่านเกณฑ์การพิจารณา</div>
+          <p id="verdictSubline" class="text-xs mt-1 opacity-90">-</p>
+        </div>
+
+        <!-- Primary Metrics Display (Gauges) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
+          <div class="muted-box p-4">
+            <div class="flex items-baseline justify-between mb-1">
+              <div>
+                <span class="text-xs font-bold">IIR (รายได้ ÷ ค่างวด)</span>
+                <span class="text-[11px] text-[var(--ink-sub)] block">เกณฑ์ปกติ ≥ 2.00 เท่า</span>
+              </div>
+              <div class="text-right">
+                <span id="mainIIRNumber" class="mono-num text-2xl font-bold">3.84</span>
+                <span class="text-xs text-[var(--ink-sub)]">เท่า</span>
+              </div>
+            </div>
+            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden relative my-2">
+              <div id="iirBarFill" class="bar-fill h-full bg-emerald-500 rounded-full" style="width: 80%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] mono-num text-[var(--ink-sub)]">
+              <span>0.0x</span>
+              <span>รวมผู้ค้ำ 1.5x</span>
+              <span>ปกติ 2.0x</span>
+              <span id="iirFormulaSmall">30,000 ÷ 7,800</span>
+            </div>
+          </div>
+
+          <div class="muted-box p-4">
+            <div class="flex items-baseline justify-between mb-1">
+              <div>
+                <span class="text-xs font-bold">DSR (ภาระหนี้ทั้งหมด ÷ รายได้)</span>
+                <span class="text-[11px] text-[var(--ink-sub)] block">เกณฑ์สูงสุด ≤ 80.00%</span>
+              </div>
+              <div class="text-right">
+                <span id="mainDSRNumber" class="mono-num text-2xl font-bold">52.66%</span>
+              </div>
+            </div>
+            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden relative my-2">
+              <div id="dsrBarFill" class="bar-fill h-full bg-emerald-500 rounded-full" style="width: 52.66%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] mono-num text-[var(--ink-sub)]">
+              <span>0%</span>
+              <span>50%</span>
+              <span>เพดาน 80%</span>
+              <span id="dsrFormulaSmall">(15,800 ÷ 30,000) × 100</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="subComparisonGrid" class="hidden mt-4 pt-4 border-t border-[var(--line-soft)] grid grid-cols-2 gap-3 text-xs">
+          <div class="muted-box p-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-semibold text-[var(--ink-sub)]">ผู้กู้ (ก่อนรวม)</span>
+              <span id="bPreStatus" class="mono-num text-[10px] px-1.5 py-0.5 rounded font-bold">-</span>
+            </div>
+            <div class="mono-num font-bold text-xs sm:text-sm">IIR: <span id="bPreIIR">0.00</span>x · DSR: <span id="bPreDSR">0.00</span>%</div>
+          </div>
+          <div class="muted-box p-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-semibold text-[var(--ink-sub)]">ผู้ค้ำ (ก่อนรวม)</span>
+              <span id="gPreStatus" class="mono-num text-[10px] px-1.5 py-0.5 rounded font-bold">-</span>
+            </div>
+            <div class="mono-num font-bold text-xs sm:text-sm">IIR: <span id="gPreIIR">0.00</span>x · DSR: <span id="gPreDSR">0.00</span>%</div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-[var(--line-soft)] flex items-center justify-between text-xs">
+          <div>
+            <span class="font-bold block">เพดานค่างวดเงินไชโยสูงสุดที่รับได้</span>
+            <span class="text-[11px] text-[var(--ink-sub)]">คำนวณย้อนกลับจากรายได้และหนี้ส่วนตัวที่มีอยู่</span>
+          </div>
+          <div class="text-right">
+            <span id="maxInstallmentAllowed" class="mono-num text-base font-bold text-blue-600">15,000.00 ฿/ด.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORM V.8 & MOBIUS RECONCILIATION TABLE -->
+      <section class="panel p-4 sm:p-6">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-[var(--line-soft)]">
+          <div>
+            <h3 class="font-bold text-sm sm:text-base">โพยกรอก แบบฟอร์ม V.8 & ระบบ Mobius</h3>
+            <p class="text-[11px] text-[var(--ink-sub)]">ยอดรวมในระบบ Mobius และฟอร์ม V.8 ต้องตรงกัน (หน้า 34)</p>
+          </div>
+          <button onclick="copySummary()" id="copyBtn" class="px-3 py-1.5 rounded-lg muted-box text-xs font-semibold active:scale-95 transition">
+            คัดลอกสรุป
+          </button>
+        </div>
+
+        <div class="space-y-2.5 text-xs">
+          <div class="flex justify-between items-center p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 font-bold">
+            <span>ข้อ 2. ภาระหนี้รวมของผู้กู้ (2.1 + 2.2)</span>
+            <span id="v8RowTotal" class="mono-num text-sm">15,800.00 ฿</span>
+          </div>
+
+          <div class="muted-box p-3 space-y-1.5">
+            <div class="flex justify-between font-bold border-b border-[var(--line-soft)] pb-1.5">
+              <span>ข้อ 2.1 ภาระหนี้ส่วนตัวรวม (Mobius)</span>
+              <span id="v8Row21" class="mono-num text-emerald-600">8,000.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)] pt-0.5">
+              <span>1) ผ่อนบ้าน/ที่ดิน <span class="opacity-75">(ที่อยู่อาศัย*)</span></span>
+              <span id="v8Row21_1" class="mono-num font-semibold text-[var(--ink-main)]">0.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)]">
+              <span>2) ค่างวดรถ <span class="opacity-75">(ค่างวดรถ*)</span></span>
+              <span id="v8Row21_2" class="mono-num font-semibold text-[var(--ink-main)]">4,500.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)]">
+              <span>3) ภาระหนี้อื่นๆ <span class="opacity-75">(ภาระหนี้อื่นๆ*)</span></span>
+              <span id="v8Row21_3" class="mono-num font-semibold text-[var(--ink-main)]">3,500.00 ฿</span>
+            </div>
+          </div>
+
+          <div class="muted-box p-3 space-y-1.5">
+            <div class="flex justify-between font-bold border-b border-[var(--line-soft)] pb-1.5">
+              <span>ข้อ 2.2 ภาระหนี้กับเงินไชโยรวม (ข้อ 1–3)</span>
+              <span id="v8Row22" class="mono-num text-blue-600">7,800.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)] pt-0.5">
+              <span>1) ค่างวดเงินไชโย (วงเงินเดิม)</span>
+              <span id="v8Row22_1" class="mono-num font-semibold text-[var(--ink-main)]">0.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)]">
+              <span>2) ค่างวดสินเชื่อที่ขอในครั้งนี้</span>
+              <span id="v8Row22_2" class="mono-num font-semibold text-[var(--ink-main)]">7,800.00 ฿</span>
+            </div>
+            <div class="flex justify-between text-[var(--ink-sub)]">
+              <span>3) ค่างวดประกันที่ผ่อนกับเงินไชโย</span>
+              <span id="v8Row22_3" class="mono-num font-semibold text-[var(--ink-main)]">0.00 ฿</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- FLOATING STICKY BOTTOM BAR FOR MOBILE & IPAD PORTRAIT -->
+  <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--bg-panel)]/95 backdrop-blur-md border-t border-[var(--line-soft)] px-4 py-2.5 shadow-2xl" style="padding-bottom: calc(0.65rem + env(safe-area-inset-bottom));">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <span id="mobileVerdictDot" class="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold">IIR: <strong id="mobileBarIIR" class="mono-num text-sm">3.84</strong>x</span>
+            <span class="text-xs text-[var(--ink-sub)]">|</span>
+            <span class="text-xs font-bold">DSR: <strong id="mobileBarDSR" class="mono-num text-sm">52.66%</strong></span>
+          </div>
+          <p id="mobileBarStatusText" class="text-[11px] text-[var(--ink-sub)] truncate">ผ่านเกณฑ์อนุมัติ (ผู้กู้เดี่ยว)</p>
+        </div>
+      </div>
+      <button onclick="scrollToResults()" class="shrink-0 px-3.5 py-2 rounded-xl bg-[#0B192C] text-amber-400 text-xs font-bold active:scale-95 transition">
+        ดูโพย V.8 / Mobius
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentMode = 'single';
+
+    function num(id) {
+      const el = document.getElementById(id);
+      const v = parseFloat(el ? el.value : 0);
+      return isNaN(v) || v < 0 ? 0 : v;
+    }
+
+    function money(n) {
+      return n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function trunc2(n) {
+      return Math.floor((n + 1e-9) * 100) / 100;
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle('dark-theme');
+    }
+
+    function toggleBox(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+
+    function scrollToResults() {
+      const el = document.getElementById('resultSectionAnchor');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function applyAgriSplit() {
+      const total = num('agriTotalIncome');
+      const persons = Math.max(1, num('agriSharedPersons'));
+      const perPerson = Math.floor((total / persons) * 100) / 100;
+      document.getElementById('inBIncome').value = perPerson;
+      if (currentMode !== 'single') {
+        document.getElementById('inGIncome').value = perPerson;
+      }
+      compute();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      ['single', 'separate', 'combined'].forEach(m => {
+        const btn = document.getElementById('modeBtn_' + m);
+        if (m === mode) {
+          btn.className = 'min-h-[44px] py-2 px-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-[#0B192C] text-white leading-tight';
+        } else {
+          btn.className = 'min-h-[44px] py-2 px-2 rounded-xl text-xs sm:text-sm font-semibold transition text-[var(--ink-sub)] hover:bg-[var(--bg-muted)] leading-tight';
+        }
+      });
+
+      const showG = mode !== 'single';
+      document.getElementById('guarantorPanel').classList.toggle('hidden', !showG);
+      document.getElementById('subComparisonGrid').classList.toggle('hidden', !showG);
+
+      const modeLabels = {
+        single: 'โหมดผู้กู้เดี่ยว',
+        separate: 'โหมดแยกประเมิน ผู้กู้ + ผู้ค้ำ',
+        combined: 'โหมดรวมรายได้ผู้ค้ำ (ปกค035/2569)'
+      };
+      document.getElementById('modeBadgeText').textContent = modeLabels[mode];
+      compute();
+    }
+
+    function compute() {
+      const cOld = num('inChaiyoOld');
+      const cNew = num('inChaiyoNew');
+      const cIns = num('inChaiyoIns');
+      const chaiyoTotal = cOld + cNew + cIns;
+
+      const bIncome = num('inBIncome');
+      const bHouse = num('inBHouse');
+      const bVehicle = num('inBVehicle');
+      const bCardUsed = num('inBCardUsed');
+      const bCardUnusedLimit = num('inBCardUnusedLimit');
+      const bCard8Pct = bCardUnusedLimit * 0.08;
+      document.getElementById('outBCard8Pct').textContent = '= ' + money(bCard8Pct) + ' ฿';
+
+      const bSlipShop = num('inBSlipAndShop');
+      const bInformal = num('inBInformal');
+      const bOtherTotal = bCardUsed + bCard8Pct + bSlipShop + bInformal;
+      const bPersonalTotal = bHouse + bVehicle + bOtherTotal;
+      const bAllDebt = bPersonalTotal + chaiyoTotal;
+
+      document.getElementById('sumChaiyoTop').textContent = money(chaiyoTotal) + ' ฿';
+      document.getElementById('sumBorrowerPersonalTop').textContent = money(bPersonalTotal) + ' ฿';
+      document.getElementById('sumBOtherSub').textContent = money(bOtherTotal) + ' ฿';
+
+      document.getElementById('v8RowTotal').textContent = money(bAllDebt) + ' ฿';
+      document.getElementById('v8Row21').textContent = money(bPersonalTotal) + ' ฿';
+      document.getElementById('v8Row21_1').textContent = money(bHouse) + ' ฿';
+      document.getElementById('v8Row21_2').textContent = money(bVehicle) + ' ฿';
+      document.getElementById('v8Row21_3').textContent = money(bOtherTotal) + ' ฿';
+      document.getElementById('v8Row22').textContent = money(chaiyoTotal) + ' ฿';
+      document.getElementById('v8Row22_1').textContent = money(cOld) + ' ฿';
+      document.getElementById('v8Row22_2').textContent = money(cNew) + ' ฿';
+      document.getElementById('v8Row22_3').textContent = money(cIns) + ' ฿';
+
+      const bIIR = chaiyoTotal > 0 ? trunc2(bIncome / chaiyoTotal) : 0;
+      const bDSR = bIncome > 0 ? trunc2((bAllDebt / bIncome) * 100) : 0;
+
+      const gIncome = num('inGIncome');
+      const gPersonalTotal = num('inGHouse') + num('inGVehicle') + num('inGOther');
+      document.getElementById('sumGuarantorPersonalTop').textContent = money(gPersonalTotal) + ' ฿';
+      const gAllDebt = gPersonalTotal + chaiyoTotal;
+      const gIIR = chaiyoTotal > 0 ? trunc2(gIncome / chaiyoTotal) : 0;
+      const gDSR = gIncome > 0 ? trunc2((gAllDebt / gIncome) * 100) : 0;
+
+      document.getElementById('bPreIIR').textContent = bIIR.toFixed(2);
+      document.getElementById('bPreDSR').textContent = bDSR.toFixed(2);
+      document.getElementById('gPreIIR').textContent = gIIR.toFixed(2);
+      document.getElementById('gPreDSR').textContent = gDSR.toFixed(2);
+
+      const bPrePassMin = bIIR >= 1.5 && bDSR <= 80 && bIncome > 0;
+      const gPrePassMin = gIIR >= 1.5 && gDSR <= 80 && gIncome > 0;
+
+      const bPreStatusEl = document.getElementById('bPreStatus');
+      bPreStatusEl.className = 'mono-num text-[10px] px-1.5 py-0.5 rounded font-bold ' + (bPrePassMin ? 'pill-ok' : 'pill-bad');
+      bPreStatusEl.textContent = bPrePassMin ? '≥1.5x ผ่านขั้นต่ำ' : 'ไม่ผ่านขั้นต่ำ';
+
+      const gPreStatusEl = document.getElementById('gPreStatus');
+      gPreStatusEl.className = 'mono-num text-[10px] px-1.5 py-0.5 rounded font-bold ' + (gPrePassMin ? 'pill-ok' : 'pill-bad');
+      gPreStatusEl.textContent = gPrePassMin ? '≥1.5x ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์';
+
+      let activeIIR = bIIR;
+      let activeDSR = bDSR;
+      let activeIncome = bIncome;
+      let activePersonalDebt = bPersonalTotal;
+      let statusTone = 'ok'; // 'ok' | 'warn' | 'bad'
+
+      const loanCat = document.getElementById('loanCategory').value;
+      const gRel = document.getElementById('inGRelation').value;
+      const gGuaranteeClean = document.getElementById('inGGuaranteeStatus').value === 'clean';
+
+      const banner = document.getElementById('verdictBanner');
+      const headline = document.getElementById('verdictHeadline');
+      const subline = document.getElementById('verdictSubline');
+
+      if (currentMode === 'single') {
+        document.getElementById('iirFormulaSmall').textContent = `${money(bIncome)} ÷ ${money(chaiyoTotal)}`;
+        document.getElementById('dsrFormulaSmall').textContent = `(${money(bAllDebt)} ÷ ${money(bIncome)}) × 100`;
+
+        if (bIIR >= 2.0 && bDSR <= 80 && bIncome > 0 && chaiyoTotal > 0) {
+          statusTone = 'ok';
+          banner.className = 'p-4 rounded-xl mb-4 pill-ok';
+          headline.textContent = 'ผ่านเกณฑ์อนุมัติ (ผู้กู้เดี่ยว)';
+          subline.textContent = `IIR = ${bIIR.toFixed(2)} เท่า (เกณฑ์ ≥ 2.00) และ DSR = ${bDSR.toFixed(2)}% (เกณฑ์ ≤ 80.00%)`;
+        } else if (bIIR >= 1.5 && bDSR <= 80 && loanCat === 'vehicle') {
+          statusTone = 'warn';
+          banner.className = 'p-4 rounded-xl mb-4 pill-warn';
+          headline.textContent = 'ไม่ผ่านกู้เดี่ยว แต่ใช้สิทธิ "รวมรายได้ผู้ค้ำ" ได้';
+          subline.textContent = `ผู้กู้มี IIR ${bIIR.toFixed(2)} เท่า (ผ่านเกณฑ์ขั้นต่ำ 1.50 เท่า) แนะนำให้เลือกโหมดที่ 3 เพื่อรวมรายได้ญาติสายตรงหรือคู่สมรส`;
+        } else {
+          statusTone = 'bad';
+          banner.className = 'p-4 rounded-xl mb-4 pill-bad';
+          headline.textContent = 'ไม่ผ่านเกณฑ์การพิจารณา';
+          subline.textContent = bIIR < 1.5
+            ? `IIR ผู้กู้ = ${bIIR.toFixed(2)} เท่า (ต่ำกว่า 1.50 เท่า ไม่สามารถกู้เดี่ยวและไม่สามารถนำผู้ค้ำมารวมรายได้ได้ ตามตัวอย่างหน้า 14)`
+            : `DSR ผู้กู้ = ${bDSR.toFixed(2)}% (เกินเพดาน 80%) หรือประเภทสินเชื่อไม่ร่วมเกณฑ์รวมรายได้`;
+        }
+      } else if (currentMode === 'separate') {
+        document.getElementById('iirFormulaSmall').textContent = `ผู้กู้ ${bIIR.toFixed(2)}x | ผู้ค้ำ ${gIIR.toFixed(2)}x`;
+        document.getElementById('dsrFormulaSmall').textContent = `ผู้กู้ ${bDSR.toFixed(2)}% | ผู้ค้ำ ${gDSR.toFixed(2)}%`;
+
+        if (bIIR >= 2.0 && bDSR <= 80 && gPrePassMin) {
+          statusTone = 'ok';
+          banner.className = 'p-4 rounded-xl mb-4 pill-ok';
+          headline.textContent = 'ผ่านเกณฑ์ทั้งผู้กู้หลักและผู้ค้ำประกัน';
+          subline.textContent = `ผู้กู้ผ่านเกณฑ์ปกติ (IIR ${bIIR.toFixed(2)}x ≥ 2.0) และผู้ค้ำผ่านเกณฑ์ใหม่ ปกค035/2569 (IIR ${gIIR.toFixed(2)}x ≥ 1.5, DSR ≤ 80%)`;
+        } else {
+          statusTone = 'bad';
+          banner.className = 'p-4 rounded-xl mb-4 pill-bad';
+          headline.textContent = 'ไม่ผ่านเกณฑ์แยกประเมิน (ไม่รวมรายได้)';
+          subline.textContent = `เกณฑ์ไม่รวมรายได้: ผู้กู้ต้องได้ IIR ≥ 2.0, DSR ≤ 80% และผู้ค้ำต้องได้ IIR ≥ 1.5, DSR ≤ 80%`;
+        }
+      } else {
+        const combIncome = bIncome + gIncome;
+        const combPersonalDebt = bPersonalTotal + gPersonalTotal;
+        const combAllDebt = combPersonalDebt + chaiyoTotal;
+        const combIIR = chaiyoTotal > 0 ? trunc2(combIncome / chaiyoTotal) : 0;
+        const combDSR = combIncome > 0 ? trunc2((combAllDebt / combIncome) * 100) : 0;
+
+        activeIIR = combIIR;
+        activeDSR = combDSR;
+        activeIncome = combIncome;
+        activePersonalDebt = combPersonalDebt;
+
+        document.getElementById('iirFormulaSmall').textContent = `(${money(bIncome)}+${money(gIncome)}) ÷ ${money(chaiyoTotal)}`;
+        document.getElementById('dsrFormulaSmall').textContent = `(${money(combAllDebt)} ÷ ${money(combIncome)}) × 100`;
+
+        const eligibleRules =
+          loanCat === 'vehicle' &&
+          gRel !== 'invalid_other' &&
+          gGuaranteeClean &&
+          bPrePassMin &&
+          gPrePassMin;
+
+        if (eligibleRules && combIIR >= 2.0 && combDSR <= 80) {
+          statusTone = 'ok';
+          banner.className = 'p-4 rounded-xl mb-4 pill-ok';
+          headline.textContent = 'ผ่านเกณฑ์การรวมรายได้ (ผู้กู้ + ผู้ค้ำประกัน)';
+          subline.textContent = `รายได้รวม ${money(combIncome)} ฿ · ภาระหนี้รวม ${money(combAllDebt)} ฿ → IIR รวม = ${combIIR.toFixed(2)} เท่า (≥ 2.0) และ DSR รวม = ${combDSR.toFixed(2)}% (≤ 80%)`;
+        } else {
+          statusTone = 'bad';
+          banner.className = 'p-4 rounded-xl mb-4 pill-bad';
+          headline.textContent = 'ไม่ผ่านเงื่อนไขการรวมรายได้ผู้ค้ำประกัน';
+          if (loanCat !== 'vehicle') subline.textContent = 'สินเชื่อที่ดินและรถใหม่เพื่อการเกษตร ไม่สามารถใช้เกณฑ์รวมรายได้ผู้ค้ำได้ (หน้า 6)';
+          else if (gRel === 'invalid_other') subline.textContent = 'ความสัมพันธ์ไม่เข้าเงื่อนไข (ต้องเป็นญาติสายตรง พ่อ/แม่/บุตร หรือคู่สมรสเท่านั้น)';
+          else if (!gGuaranteeClean) subline.textContent = 'ผู้ค้ำประกันมีสถานะค้ำประกันให้ผู้กู้รายอื่นอยู่ จึงไม่สามารถนำมารวมรายได้ได้ (หน้า 8)';
+          else if (!bPrePassMin) subline.textContent = `คุณสมบัติผู้กู้ก่อนรวมไม่ผ่านขั้นต่ำ (IIR ผู้กู้ = ${bIIR.toFixed(2)}x ต้อง ≥ 1.50 เท่า และ DSR ≤ 80%)`;
+          else if (!gPrePassMin) subline.textContent = `คุณสมบัติผู้ค้ำก่อนรวมไม่ผ่านขั้นต่ำ (IIR ผู้ค้ำ = ${gIIR.toFixed(2)}x ต้อง ≥ 1.50 เท่า และ DSR ≤ 80%)`;
+          else subline.textContent = `ผลคำนวณหลังรวมรายได้ไม่ผ่านเกณฑ์ (IIR รวม = ${combIIR.toFixed(2)}x ต้อง ≥ 2.00 เท่า, DSR รวม = ${combDSR.toFixed(2)}% ต้อง ≤ 80%)`;
+        }
+      }
+
+      document.getElementById('mainIIRNumber').textContent = activeIIR.toFixed(2);
+      document.getElementById('mainDSRNumber').textContent = activeDSR.toFixed(2) + '%';
+
+      // อัปเดตแถบสรุปด้านล่างสำหรับมือถือและ iPad แนวตั้ง
+      document.getElementById('mobileBarIIR').textContent = activeIIR.toFixed(2);
+      document.getElementById('mobileBarDSR').textContent = activeDSR.toFixed(2) + '%';
+      document.getElementById('mobileBarStatusText').textContent = headline.textContent;
+      const dot = document.getElementById('mobileVerdictDot');
+      dot.className = 'w-3 h-3 rounded-full shrink-0 ' + (statusTone === 'ok' ? 'bg-emerald-500' : (statusTone === 'warn' ? 'bg-amber-500' : 'bg-rose-500'));
+
+      const iirPct = Math.min(100, Math.max(0, (activeIIR / 4.0) * 100));
+      const iirBar = document.getElementById('iirBarFill');
+      iirBar.style.width = iirPct + '%';
+      iirBar.className = 'bar-fill h-full rounded-full ' + (activeIIR >= 2.0 ? 'bg-emerald-500' : (activeIIR >= 1.5 ? 'bg-amber-500' : 'bg-rose-500'));
+
+      const dsrPct = Math.min(100, Math.max(0, activeDSR));
+      const dsrBar = document.getElementById('dsrBarFill');
+      dsrBar.style.width = dsrPct + '%';
+      dsrBar.className = 'bar-fill h-full rounded-full ' + (activeDSR <= 80 && activeIncome > 0 ? 'bg-emerald-500' : 'bg-rose-500');
+
+      const maxByIIR = activeIncome / 2.0;
+      const maxByDSR = (activeIncome * 0.80) - activePersonalDebt;
+      const maxAllowed = Math.max(0, Math.min(maxByIIR, maxByDSR));
+      document.getElementById('maxInstallmentAllowed').textContent = money(maxAllowed) + ' ฿/ด.';
+    }
+
+    function applyCase(name) {
+      if (name === 'p27') {
+        document.getElementById('loanCategory').value = 'vehicle';
+        document.getElementById('inChaiyoOld').value = 0;
+        document.getElementById('inChaiyoNew').value = 7800;
+        document.getElementById('inChaiyoIns').value = 0;
+        document.getElementById('inBIncome').value = 30000;
+        document.getElementById('inBHouse').value = 0;
+        document.getElementById('inBVehicle').value = 4500;
+        document.getElementById('inBCardUsed').value = 1500;
+        document.getElementById('inBCardUnusedLimit').value = 0;
+        document.getElementById('inBSlipAndShop').value = 2000;
+        document.getElementById('inBInformal').value = 0;
+        setMode('single');
+      } else if (name === 'p28') {
+        document.getElementById('loanCategory').value = 'vehicle';
+        document.getElementById('inChaiyoOld').value = 0;
+        document.getElementById('inChaiyoNew').value = 7770;
+        document.getElementById('inChaiyoIns').value = 0;
+        document.getElementById('inBIncome').value = 20000;
+        document.getElementById('inBHouse').value = 3200;
+        document.getElementById('inBVehicle').value = 0;
+        document.getElementById('inBCardUsed').value = 0;
+        document.getElementById('inBCardUnusedLimit').value = 0;
+        document.getElementById('inBSlipAndShop').value = 1200;
+        document.getElementById('inBInformal').value = 0;
+        document.getElementById('inGRelation').value = 'valid_spouse_reg';
+        document.getElementById('inGGuaranteeStatus').value = 'clean';
+        document.getElementById('inGIncome').value = 25000;
+        document.getElementById('inGHouse').value = 0;
+        document.getElementById('inGVehicle').value = 0;
+        document.getElementById('inGOther').value = 8300;
+        setMode('combined');
+      } else if (name === 'p14') {
+        document.getElementById('loanCategory').value = 'vehicle';
+        document.getElementById('inChaiyoOld').value = 0;
+        document.getElementById('inChaiyoNew').value = 10000;
+        document.getElementById('inChaiyoIns').value = 0;
+        document.getElementById('inBIncome').value = 10000;
+        document.getElementById('inBHouse').value = 0;
+        document.getElementById('inBVehicle').value = 0;
+        document.getElementById('inBCardUsed').value = 0;
+        document.getElementById('inBCardUnusedLimit').value = 0;
+        document.getElementById('inBSlipAndShop').value = 0;
+        document.getElementById('inBInformal').value = 0;
+        document.getElementById('inGRelation').value = 'valid_spouse_reg';
+        document.getElementById('inGGuaranteeStatus').value = 'clean';
+        document.getElementById('inGIncome').value = 30000;
+        document.getElementById('inGHouse').value = 0;
+        document.getElementById('inGVehicle').value = 0;
+        document.getElementById('inGOther').value = 2000;
+        setMode('combined');
+      } else {
+        ['inChaiyoOld','inChaiyoNew','inChaiyoIns','inBIncome','inBHouse','inBVehicle','inBCardUsed','inBCardUnusedLimit','inBSlipAndShop','inBInformal','inGIncome','inGHouse','inGVehicle','inGOther'].forEach(id => {
+          document.getElementById(id).value = 0;
+        });
+        setMode('single');
+      }
+    }
+
+    function copySummary() {
+      const text = [
+        `=== สรุปผลประเมิน IIR / DSR เงินไชโย ===`,
+        `ผลการพิจารณา: ${document.getElementById('verdictHeadline').textContent}`,
+        `IIR: ${document.getElementById('mainIIRNumber').textContent} เท่า | DSR: ${document.getElementById('mainDSRNumber').textContent}`,
+        `----------------------------------------`,
+        `2. ภาระหนี้รวมผู้กู้ (2.1+2.2): ${document.getElementById('v8RowTotal').textContent}`,
+        `2.1 ภาระหนี้ส่วนตัวรวม (Mobius): ${document.getElementById('v8Row21').textContent}`,
+        `  - 1) บ้าน/ที่ดิน (ที่อยู่อาศัย*): ${document.getElementById('v8Row21_1').textContent}`,
+        `  - 2) ค่างวดรถ (ค่างวดรถ*): ${document.getElementById('v8Row21_2').textContent}`,
+        `  - 3) ภาระหนี้อื่นๆ: ${document.getElementById('v8Row21_3').textContent}`,
+        `2.2 ภาระหนี้กับเงินไชโยรวม: ${document.getElementById('v8Row22').textContent}`
+      ].join('\n');
+
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'คัดลอกแล้ว';
+      setTimeout(() => { btn.textContent = 'คัดลอกสรุป'; }, 1800);
+    }
+
+    function downloadSelfHtml() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'chaiyo-iir-dsr-mobile-ipad.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    window.onload = function() {
+      compute();
+
+      // ตรวจจับว่าทำงานอยู่ภายใน iframe ของระบบจัดการเอกสารหลักหรือไม่
+      if (window.self !== window.top) {
+        const btn = document.getElementById('btnBackOrCloseApp');
+        if (btn) {
+          btn.innerHTML = '✕ ปิดหน้าต่าง';
+          btn.removeAttribute('href');
+          btn.style.cursor = 'pointer';
+          btn.onclick = function(e) {
+            e.preventDefault();
+            window.parent.postMessage({ action: 'closeDsrIirModal' }, '*');
+          };
+        }
+      }
+    };
+  </script>
+</body>
+</html>
