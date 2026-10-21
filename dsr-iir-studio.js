@@ -17,7 +17,7 @@
 
     // Lazy load iframe เมื่อเปิดครั้งแรก เพื่อประหยัดทรัพยากรเครื่อง
     if (iframe && !isDsrIirLoaded) {
-      const targetSrc = iframe.getAttribute('data-src') || 'คำนวน DSR+IIR.html';
+      const targetSrc = iframe.getAttribute('data-src') || 'dsr-iir.html';
       iframe.src = targetSrc;
       isDsrIirLoaded = true;
     }
