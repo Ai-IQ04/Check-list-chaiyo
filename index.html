@@ -8,10 +8,10 @@
   <meta http-equiv="Expires" content="0">
   <title>Auto Loan Document Optimizer & Renamer | ระบบจัดการเอกสารสินเชื่อ</title>
   
-  <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
+  <!-- Google Fonts: IBM Plex Sans Thai & JetBrains Mono (เหมือนโมดูล คำนวน DSR+IIR) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,16 +20,14 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Prompt', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['IBM Plex Sans Thai', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            neu: {
-              bg: '#e0e5ec',
-              base: '#e0e5ec',
-              dark: '#2d3748',
-              muted: '#718096',
-              orange: '#ff6a00',
-              orangeDark: '#e65c00',
+            brand: {
+              navy: '#0B192C',
+              blue: '#1D4ED8',
+              amber: '#F59E0B',
             }
           }
         }
@@ -50,33 +48,244 @@
 
   <style>
     :root {
-      --neu-bg: #f1f5f9;
-      --neu-shadow-dark: #cbd5e1;
-      --neu-shadow-light: #ffffff;
-      --orange-accent: #ff6a00;
-      --card-border: rgba(226, 232, 240, 0.85);
+      --bg-page: #F3F2EE;
+      --bg-panel: #FFFFFF;
+      --bg-muted: #F8F7F4;
+      --ink-main: #111827;
+      --ink-sub: #64748B;
+      --line-soft: #E5E4DF;
+      --brand-navy: #0B192C;
+      --brand-blue: #1D4ED8;
+      --brand-amber: #D97706;
+      --card-border: #E5E4DF;
     }
 
     /* Mobile, iPad & PC Touch Optimization */
     html {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
     }
 
     body {
-      background-color: #f1f5f9;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(255, 106, 0, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(249, 115, 22, 0.06) 0px, transparent 50%);
-      background-attachment: fixed;
-      color: #1e293b;
-      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--ink-main);
+      font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Smooth horizontal touch scrolling for tables & pill bars */
+    .mono-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Panels & Containers (DSR+IIR Studio Aesthetics) */
+    .panel,
+    .neu-raised {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Recessed Soft Boxes & Inputs */
+    .muted-box,
+    .neu-inset {
+      background-color: var(--bg-muted);
+      border: 1.5px solid var(--line-soft);
+      border-radius: 12px;
+      color: var(--ink-main);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+
+    .neu-inset:focus-within {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+      background-color: var(--bg-panel);
+    }
+
+    /* Tactile Studio Buttons */
+    .neu-btn {
+      background-color: var(--bg-panel);
+      border: 1.5px solid var(--line-soft);
+      border-radius: 12px;
+      color: var(--ink-main);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .neu-btn:hover {
+      background-color: #FFFFFF;
+      border-color: var(--brand-blue);
+      color: var(--brand-blue);
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .neu-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Primary Chaiyo Action Button (Dark Navy & Amber Accent) */
+    .neu-btn-orange {
+      background: linear-gradient(135deg, #0B192C 0%, #1E293B 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 14px rgba(11, 25, 44, 0.22);
+      border-radius: 12px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .neu-btn-orange:hover {
+      background: linear-gradient(135deg, #132238 0%, #0B192C 100%);
+      box-shadow: 0 6px 18px rgba(11, 25, 44, 0.32);
+      transform: translateY(-1.5px);
+      color: #FCD34D;
+    }
+
+    .neu-btn-orange:active {
+      transform: scale(0.98);
+    }
+
+    /* Active Pill State */
+    .neu-pill-active {
+      background: #0B192C !important;
+      color: #FFFFFF !important;
+      font-weight: 700 !important;
+      border: 1.5px solid #0B192C !important;
+      box-shadow: 0 2px 8px rgba(11, 25, 44, 0.2) !important;
+    }
+
+    .neu-pill-active span,
+    .neu-pill-active i {
+      color: #FFFFFF !important;
+    }
+
+    /* AI Special Button */
+    .neu-btn-ai {
+      background: var(--bg-panel);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.08);
+      border: 1.5px solid rgba(139, 92, 246, 0.35);
+      color: #6D28D9;
+      border-radius: 12px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .neu-btn-ai:hover {
+      box-shadow: 0 6px 16px rgba(124, 58, 237, 0.18);
+      transform: translateY(-1px);
+      color: #5B21B6;
+      border-color: rgba(124, 58, 237, 0.6);
+    }
+
+    .neu-btn-ai:active {
+      transform: scale(0.98);
+    }
+
+    /* Bottom Fixed Deck (DSR+IIR Glass/Clean Plate) */
+    .neu-bottom-deck {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--line-soft);
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Big Product Selector Buttons in Bottom Bar */
+    .neu-product-btn {
+      background: var(--bg-muted);
+      border: 1.5px solid var(--line-soft);
+      border-radius: 12px;
+      color: var(--ink-sub);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .neu-product-btn:hover {
+      background: #FFFFFF;
+      border-color: var(--brand-blue);
+      color: var(--brand-blue);
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.08);
+    }
+
+    .neu-product-active {
+      background: #0B192C !important;
+      border: 1.5px solid #0B192C !important;
+      box-shadow: 0 4px 14px rgba(11, 25, 44, 0.25) !important;
+      color: #FFFFFF !important;
+      transform: translateY(-1px);
+    }
+
+    .neu-product-active span {
+      color: #FCD34D !important;
+      font-weight: 700 !important;
+    }
+
+    /* Attached Success Glow & Custom Slot Highlight */
+    .neu-slot-attached {
+      border: 1.5px solid rgba(16, 185, 129, 0.55) !important;
+      background: linear-gradient(180deg, #FFFFFF 0%, rgba(16, 185, 129, 0.04) 100%) !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08) !important;
+    }
+
+    .neu-slot-custom {
+      border: 1.5px dashed rgba(245, 158, 11, 0.6) !important;
+      background: linear-gradient(180deg, #FFFFFF 0%, rgba(245, 158, 11, 0.04) 100%) !important;
+    }
+
+    .neu-slot-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--line-soft);
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      contain: layout style;
+    }
+
+    .neu-slot-card:hover {
+      transform: translateY(-2px);
+      border-color: #CBD5E1;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Sticky Group Header Override to match DSR+IIR Page Background */
+    div[class*="bg-[#e0e5ec]"] {
+      background-color: var(--bg-page) !important;
+      border-bottom-color: var(--line-soft) !important;
+    }
+
+    /* Status Pills from DSR+IIR */
+    .pill-ok {
+      background: rgba(16, 185, 129, 0.12);
+      color: #047857;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .pill-warn {
+      background: rgba(245, 158, 11, 0.14);
+      color: #B45309;
+      border: 1px solid rgba(245, 158, 11, 0.38);
+    }
+    .pill-bad {
+      background: rgba(239, 68, 68, 0.12);
+      color: #B91C1C;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    /* Smooth horizontal touch scrolling */
     .overflow-x-auto {
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
@@ -90,170 +299,6 @@
       scrollbar-width: none;
     }
 
-    /* Mobile Glassmorphic Adjustments */
-    @media (max-width: 640px) {
-      .neu-raised {
-        box-shadow: 0 4px 15px -3px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
-      }
-      .neu-inset {
-        box-shadow: inset 0 1.5px 3px 0 rgba(0, 0, 0, 0.04);
-      }
-    }
-
-    /* Glassmorphic & Modern Neumorphic Raised Plate */
-    .neu-raised {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 8px 25px -5px rgba(15, 23, 42, 0.06), 0 3px 10px rgba(15, 23, 42, 0.03);
-      transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-
-    /* Crisp Recessed Deep Well */
-    .neu-inset {
-      background: rgba(241, 245, 249, 0.9);
-      border: 1px solid rgba(203, 213, 225, 0.6);
-      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
-    }
-
-    /* Modern Tactile Button */
-    .neu-btn {
-      background: #ffffff;
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-      transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .neu-btn:hover {
-      background: #ffffff;
-      box-shadow: 0 8px 18px -4px rgba(255, 106, 0, 0.18), 0 2px 6px rgba(15, 23, 42, 0.04);
-      transform: translateY(-1.5px);
-      color: #ff6a00;
-      border-color: rgba(255, 106, 0, 0.4);
-    }
-
-    .neu-btn:active {
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
-      transform: translateY(1px);
-    }
-
-    /* Neumorphic Active Inset Pill */
-    .neu-pill-active {
-      background: rgba(255, 247, 237, 0.95) !important;
-      box-shadow: inset 0 2px 4px rgba(255, 106, 0, 0.12) !important;
-      color: #ff6a00 !important;
-      font-weight: 800 !important;
-      border: 1.5px solid rgba(255, 106, 0, 0.5) !important;
-    }
-
-    .neu-pill-active span, .neu-pill-active i {
-      color: #ff6a00 !important;
-    }
-
-    /* Glowing Orange Accent Button */
-    .neu-btn-orange {
-      background: linear-gradient(135deg, #ff7a18 0%, #ff4500 100%);
-      color: #ffffff;
-      box-shadow: 0 8px 20px -3px rgba(255, 107, 0, 0.4), 0 4px 6px rgba(255, 107, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-
-    .neu-btn-orange:hover {
-      background: linear-gradient(135deg, #ff882b 0%, #ff5500 100%);
-      box-shadow: 0 12px 25px -4px rgba(255, 107, 0, 0.55), 0 6px 12px rgba(255, 107, 0, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .neu-btn-orange:active {
-      box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
-      transform: translateY(1px);
-    }
-
-    /* AI Glowing Button */
-    .neu-btn-ai {
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.12);
-      border: 1.5px solid rgba(139, 92, 246, 0.4);
-      color: #6d28d9;
-      transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-
-    .neu-btn-ai:hover {
-      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
-      transform: translateY(-2px);
-      color: #ff6a00;
-      border-color: rgba(255, 106, 0, 0.6);
-    }
-
-    .neu-btn-ai:active {
-      box-shadow: inset 0 2px 4px rgba(124, 58, 237, 0.2);
-    }
-
-    /* Bottom Fixed Deck */
-    .neu-bottom-deck {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 -10px 35px -5px rgba(15, 23, 42, 0.1), 0 -2px 10px rgba(15, 23, 42, 0.04);
-      border-top: 1.5px solid rgba(255, 255, 255, 0.95);
-    }
-
-    /* Big Product Selector Buttons in Bottom Bar */
-    .neu-product-btn {
-      background: #ffffff;
-      border: 1.5px solid rgba(226, 232, 240, 0.9);
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-      transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-      cursor: pointer;
-    }
-
-    .neu-product-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 106, 0, 0.18);
-      color: #ff6a00;
-      border-color: rgba(255, 106, 0, 0.5);
-    }
-
-    .neu-product-active {
-      background: linear-gradient(135deg, rgba(255, 247, 237, 0.98) 0%, rgba(255, 237, 213, 0.9) 100%) !important;
-      box-shadow: inset 0 2px 6px rgba(255, 106, 0, 0.15), 0 4px 12px rgba(255, 106, 0, 0.1) !important;
-      color: #ff6a00 !important;
-      border: 2px solid #ff6a00 !important;
-      transform: translateY(1px);
-    }
-
-    .neu-product-active span {
-      color: #ff6a00 !important;
-      font-weight: 800;
-    }
-
-    /* Attached Success Glow */
-    .neu-slot-attached {
-      border: 2px solid rgba(255, 106, 0, 0.7) !important;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 247, 237, 0.92) 100%) !important;
-      box-shadow: 0 10px 25px -5px rgba(255, 106, 0, 0.18), 0 4px 10px rgba(255, 106, 0, 0.08) !important;
-    }
-
-    /* Custom Slot Highlight */
-    .neu-slot-custom {
-      border: 1.5px dashed rgba(245, 158, 11, 0.7) !important;
-      background: rgba(254, 252, 232, 0.6) !important;
-    }
-
-    .neu-slot-card {
-      transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
-      contain: layout style;
-    }
-
-    .neu-slot-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 30px -5px rgba(15, 23, 42, 0.1), 0 6px 15px rgba(15, 23, 42, 0.05);
-    }
-
     /* Hamburger Side Menu */
     .hamburger-menu-overlay {
       transition: opacity 0.25s ease;
@@ -264,19 +309,19 @@
 
     /* Progress Bar */
     .progress-bar-fill {
-      transition: width 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* FAB Jump Button */
     .fab-jump {
       position: fixed;
-      bottom: 110px;
+      bottom: 105px;
       right: 20px;
       z-index: 39;
-      transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .fab-jump:hover {
-      transform: translateY(-3px) scale(1.05);
+      transform: translateY(-2px) scale(1.03);
     }
     .fab-jump:active {
       transform: translateY(1px) scale(0.97);
@@ -285,83 +330,82 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-orange-200 selection:text-orange-950 pb-36">
 
-  <!-- Glassmorphic Header -->
-  <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 py-3 sticky top-0 z-40 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+  <!-- Top App Bar (สไตล์เดียวกับ Chaiyo Credit Studio ในโมดูล คำนวน DSR+IIR) -->
+  <header class="w-full bg-[var(--bg-panel)] border-b border-[var(--line-soft)] py-2.5 sm:py-3 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
       
       <!-- Brand Logo & Title -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl neu-inset flex items-center justify-center text-orange-600 shadow-inner">
-          <i data-lucide="layers" class="w-6 h-6"></i>
+      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-[#0B192C] text-amber-400 flex items-center justify-center font-bold mono-num text-sm shadow-sm select-none">
+          CY
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-black text-slate-800 tracking-tight">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="font-bold text-sm sm:text-base tracking-tight text-[var(--ink-main)] truncate">
               ระบบจัดการเอกสารสินเชื่อ
             </h1>
-            <span id="currentLoanBadge" class="text-xs px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold hidden sm:inline-block">
+            <span id="currentLoanBadge" class="mono-num text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-700 font-semibold shrink-0 border border-blue-500/20 hidden sm:inline-block">
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
-            <span class="text-[10px] px-2.5 py-0.5 rounded-lg neu-inset text-orange-600 font-extrabold tracking-tight">
-              v3.13.1 • License: Anusat
+            <span class="mono-num text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 font-semibold shrink-0 border border-amber-500/25">
+              v3.13.2 · Anusat
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">100% Pure Neumorphism (Soft UI) • ป้องกันงานหาย 3 ชั้น • Auto-Save</p>
+          <p class="text-[11px] text-[var(--ink-sub)] truncate hidden sm:block">Chaiyo Document Studio • ตรวจสอบและจัดเตรียมเอกสารสินเชื่อก่อนส่ง (รองรับมือถือ / iPad)</p>
         </div>
       </div>
 
       <!-- Quick Metrics & Primary Actions -->
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         <!-- Auto-Save Real-time Status Indicator -->
-        <div id="autoSaveStatusBadge" class="flex items-center gap-1.5 px-3 py-2 rounded-xl neu-inset text-emerald-700 font-bold text-xs transition-all shadow-xs" title="ระบบบันทึกรูปภาพและข้อมูลเคสลงในเครื่องอัตโนมัติตลอดเวลา">
-          <span id="autoSaveDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm inline-block animate-pulse"></span>
+        <div id="autoSaveStatusBadge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl pill-ok text-xs font-semibold shadow-xs select-none" title="ระบบบันทึกรูปภาพและข้อมูลเคสลงในเครื่องอัตโนมัติตลอดเวลา">
+          <span id="autoSaveDot" class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
           <span id="autoSaveText">บันทึกอัตโนมัติ</span>
         </div>
 
         <!-- Status Pill (Clickable to view missing mandatory list) -->
-        <div id="missingCountBadge" class="flex items-center gap-1.5 px-3 py-2 rounded-xl neu-inset text-amber-700 font-bold text-xs transition-all cursor-pointer hover:shadow-md active:scale-95 select-none" title="คลิกเพื่อดูรายการเอกสารบังคับที่ยังขาด">
-          <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i>
+        <div id="missingCountBadge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl pill-warn text-xs font-semibold cursor-pointer hover:shadow-sm active:scale-95 select-none" title="คลิกเพื่อดูรายการเอกสารบังคับที่ยังขาด">
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600"></i>
           <span id="missingText">ตรวจสอบเอกสาร</span>
         </div>
 
         <!-- Attached count -->
-        <div class="px-3 py-2 rounded-xl neu-inset text-slate-700 font-bold text-xs">
+        <div class="px-2.5 py-1.5 rounded-xl muted-box mono-num text-xs font-semibold text-[var(--ink-main)]">
           <span id="attachedCountBadge">0 ไฟล์</span>
         </div>
 
         <!-- PRIMARY: Choose Loan Category -->
-        <button id="btnOpenLoanSetupModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-orange-600 hover:text-orange-700 flex items-center gap-1.5 cursor-pointer" title="เลือกประเภทสินเชื่อและรูปแบบสัญญา">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-orange-500"></i>
+        <button id="btnOpenLoanSetupModal" class="neu-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-700 flex items-center gap-1.5 cursor-pointer active:scale-95 transition" title="เลือกประเภทสินเชื่อและรูปแบบสัญญา">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-600"></i>
           <span>เลือกประเภทสินเชื่อ</span>
         </button>
 
         <!-- PRIMARY: PDF Studio (Unlock & Convert) -->
-        <button id="btnOpenPdfStudioModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-indigo-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer border border-indigo-200/70" title="ปลดล็อครหัสผ่าน PDF, แปลง PDF เป็นรูปภาพ หรือรวมรูปเป็น PDF">
-          <i data-lucide="unlock" class="w-3.5 h-3.5 text-orange-500"></i>
+        <button id="btnOpenPdfStudioModal" class="neu-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-700 flex items-center gap-1.5 cursor-pointer active:scale-95 transition" title="ปลดล็อครหัสผ่าน PDF, แปลง PDF เป็นรูปภาพ หรือรวมรูปเป็น PDF">
+          <i data-lucide="unlock" class="w-3.5 h-3.5 text-indigo-600"></i>
           <span>ปลดล็อค/แปลง PDF</span>
         </button>
 
         <!-- PRIMARY: DSR & IIR Studio -->
-        <button id="btnOpenDsrIirModal" class="neu-btn px-3 py-2 rounded-xl text-xs font-extrabold text-blue-700 hover:text-blue-900 flex items-center gap-1.5 cursor-pointer border border-blue-200/70 bg-blue-50/20" title="คำนวณ IIR / DSR และประเมินภาระหนี้ตามเกณฑ์ ปกค035">
-          <i data-lucide="calculator" class="w-3.5 h-3.5 text-blue-600"></i>
+        <button id="btnOpenDsrIirModal" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#0B192C] text-amber-400 border border-amber-400/30 hover:bg-[#132238] flex items-center gap-1.5 cursor-pointer active:scale-95 transition shadow-sm" title="คำนวณ IIR / DSR และประเมินภาระหนี้ตามเกณฑ์ ปกค035">
+          <i data-lucide="calculator" class="w-3.5 h-3.5 text-amber-400"></i>
           <span>คำนวณ DSR / IIR</span>
         </button>
 
         <!-- PRIMARY: Start New Case -->
-        <button id="btnStartNewCase" class="neu-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-orange-600 flex items-center gap-1.5 cursor-pointer" title="ล้างข้อมูลทั้งหมดเพื่อเริ่มทำเคสลูกค้าคนใหม่">
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-orange-500"></i>
+        <button id="btnStartNewCase" class="neu-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-rose-600 flex items-center gap-1.5 cursor-pointer active:scale-95 transition" title="ล้างข้อมูลทั้งหมดเพื่อเริ่มทำเคสลูกค้าคนใหม่">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>เริ่มเคสใหม่</span>
         </button>
 
-
         <!-- PRIMARY: ZIP Download -->
-        <button id="btnDownloadZip" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap shadow-md">
-          <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+        <button id="btnDownloadZip" class="neu-btn-orange px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap active:scale-95 transition shadow-sm">
+          <i data-lucide="archive" class="w-3.5 h-3.5 text-amber-400"></i>
           <span>ดาวน์โหลด ZIP</span>
         </button>
 
         <!-- HAMBURGER MENU TOGGLE -->
-        <button id="btnOpenHamburgerMenu" class="neu-btn p-2.5 rounded-xl text-slate-600 hover:text-orange-600 cursor-pointer" title="เปิดเมนูเพิ่มเติม">
+        <button id="btnOpenHamburgerMenu" class="neu-btn p-2 rounded-xl text-slate-600 hover:text-blue-600 cursor-pointer active:scale-95 transition" title="เปิดเมนูเพิ่มเติม">
           <i data-lucide="menu" class="w-4 h-4"></i>
         </button>
       </div>
@@ -464,91 +508,91 @@
     </div>
   </div>
 
-  <!-- Workspace Sub-Header: Pure Neumorphic Control Panels -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full space-y-3.5">
+  <!-- Workspace Sub-Header: Studio Control Panels -->
+  <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 pt-3 sm:pt-4 w-full space-y-3">
 
     <!-- Progress Strip: Ultra-Compact Inline -->
-    <div class="neu-raised rounded-xl p-2 sm:p-2.5">
+    <div class="panel p-2 sm:p-2.5">
       <div class="flex items-center gap-2.5">
-        <div class="w-5 h-5 rounded-lg neu-inset flex items-center justify-center text-orange-600 flex-shrink-0">
-          <i data-lucide="bar-chart-3" class="w-2.5 h-2.5"></i>
+        <div class="w-6 h-6 rounded-lg muted-box flex items-center justify-center text-blue-600 flex-shrink-0">
+          <i data-lucide="bar-chart-3" class="w-3 h-3"></i>
         </div>
-        <span class="text-[10px] font-extrabold text-slate-700 flex-shrink-0 whitespace-nowrap">เอกสารบังคับ</span>
-        <div class="flex-1 min-w-0 h-2 rounded-full neu-inset overflow-hidden">
-          <div id="progressBarFill" class="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 progress-bar-fill shadow-[0_0_8px_rgba(255,106,0,0.4)]" style="width: 0%"></div>
+        <span class="text-xs font-bold text-[var(--ink-main)] flex-shrink-0 whitespace-nowrap">ความคืบหน้าเอกสารบังคับ</span>
+        <div class="flex-1 min-w-0 h-2 rounded-full muted-box overflow-hidden">
+          <div id="progressBarFill" class="h-full rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 progress-bar-fill shadow-sm" style="width: 0%"></div>
         </div>
-        <span id="progressPercentText" class="text-[10px] font-black text-orange-600 flex-shrink-0 min-w-[28px] text-right">0%</span>
-        <span id="progressDetailText" class="text-[10px] font-bold text-slate-500 flex-shrink-0 hidden sm:inline whitespace-nowrap">แนบแล้ว 0 / 0 รายการบังคับ</span>
+        <span id="progressPercentText" class="mono-num text-xs font-bold text-blue-700 flex-shrink-0 min-w-[32px] text-right">0%</span>
+        <span id="progressDetailText" class="mono-num text-[11px] font-medium text-[var(--ink-sub)] flex-shrink-0 hidden sm:inline whitespace-nowrap">แนบแล้ว 0 / 0 รายการ</span>
       </div>
       <span id="progressTotalText" class="hidden">รวมทั้งหมด 0 ช่อง</span>
     </div>
     
     <!-- Row 1: Collapsible Settings Panel (Sub-Product & Guarantor) -->
-    <div class="neu-raised rounded-2xl sm:rounded-3xl overflow-hidden">
+    <div class="panel overflow-hidden">
       <!-- Toggle Header (always visible) -->
-      <button id="btnToggleSettings" type="button" class="w-full flex items-center justify-between p-2.5 sm:p-3 cursor-pointer hover:bg-[#d8dde4]/40 transition-colors select-none group">
+      <button id="btnToggleSettings" type="button" class="w-full flex items-center justify-between p-2.5 sm:p-3 cursor-pointer hover:bg-[var(--bg-muted)] transition-colors select-none group">
         <div class="flex items-center gap-2">
-          <div class="w-5 h-5 rounded-lg neu-inset flex items-center justify-center text-orange-600 flex-shrink-0">
-            <i data-lucide="settings-2" class="w-2.5 h-2.5"></i>
+          <div class="w-6 h-6 rounded-lg muted-box flex items-center justify-center text-blue-600 flex-shrink-0">
+            <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
           </div>
-          <span class="text-[11px] font-extrabold text-slate-800">ตั้งค่าเคส</span>
+          <span class="text-xs font-bold text-[var(--ink-main)]">ตั้งค่าเคส & ข้อมูลลูกค้า</span>
         </div>
         <div class="flex items-center gap-2">
-          <span id="settingsSummaryText" class="text-[10px] font-bold text-slate-500 truncate max-w-[220px] sm:max-w-[320px]">จำนำเล่มทะเบียน • ไม่มีผู้ค้ำ</span>
-          <i data-lucide="chevron-down" id="settingsChevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-300 group-hover:text-orange-500"></i>
+          <span id="settingsSummaryText" class="text-xs text-[var(--ink-sub)] font-medium truncate max-w-[220px] sm:max-w-[320px]">จำนำเล่มทะเบียน • ไม่มีผู้ค้ำ</span>
+          <i data-lucide="chevron-down" id="settingsChevron" class="w-4 h-4 text-[var(--ink-sub)] transition-transform duration-300 group-hover:text-blue-600"></i>
         </div>
       </button>
       <!-- Collapsible Content -->
       <div id="settingsCollapsibleContent" class="overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0px;">
-        <div class="p-3 sm:p-4 pt-1 sm:pt-1 space-y-3 border-t border-[#cbd5e1]/40">
+        <div class="p-3 sm:p-4 pt-1 sm:pt-1 space-y-3 border-t border-[var(--line-soft)]">
           
           <!-- Customer & Vehicle Info Inputs -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <div class="flex items-center gap-2 neu-inset px-3 py-2 rounded-xl">
-              <div class="w-6 h-6 rounded-lg neu-inset flex items-center justify-center text-orange-600 flex-shrink-0">
+            <div class="flex items-center gap-2 muted-box px-3 py-2 rounded-xl border border-[var(--line-soft)] focus-within:border-blue-600 focus-within:bg-[var(--bg-panel)] transition">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
                 <i data-lucide="user" class="w-3.5 h-3.5"></i>
               </div>
-              <input type="text" id="inputCustomerName" placeholder="ชื่อ-นามสกุล ลูกค้า (เช่น นายสมชาย ใจดี)" class="w-full bg-transparent text-xs font-extrabold text-slate-800 placeholder:text-slate-400 focus:outline-none">
+              <input type="text" id="inputCustomerName" placeholder="ชื่อ-นามสกุล ลูกค้า (เช่น นายสมชาย ใจดี)" class="w-full bg-transparent text-xs font-semibold text-[var(--ink-main)] placeholder:text-[var(--ink-sub)] focus:outline-none">
             </div>
 
-            <div class="flex items-center gap-2 neu-inset px-3 py-2 rounded-xl">
-              <div class="w-6 h-6 rounded-lg neu-inset flex items-center justify-center text-orange-600 flex-shrink-0">
+            <div class="flex items-center gap-2 muted-box px-3 py-2 rounded-xl border border-[var(--line-soft)] focus-within:border-blue-600 focus-within:bg-[var(--bg-panel)] transition">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
                 <i data-lucide="car" class="w-3.5 h-3.5"></i>
               </div>
-              <input type="text" id="inputCustomerPlate" placeholder="ทะเบียนรถ / ข้อมูลหลักประกัน (เช่น กข-1234 กทม.)" class="w-full bg-transparent text-xs font-extrabold text-slate-800 placeholder:text-slate-400 focus:outline-none">
+              <input type="text" id="inputCustomerPlate" placeholder="ทะเบียนรถ / ข้อมูลหลักประกัน (เช่น กข-1234 กทม.)" class="w-full bg-transparent text-xs font-semibold text-[var(--ink-main)] placeholder:text-[var(--ink-sub)] focus:outline-none">
             </div>
           </div>
 
-          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 pt-1 border-t border-[#cbd5e1]/40">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 pt-1 border-t border-[var(--line-soft)]">
             <!-- Sub-Product Section -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 w-full lg:w-auto">
               <div class="flex items-center gap-2 pl-1 flex-shrink-0">
-                <div class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-orange-600 shadow-sm">
+                <div class="w-7 h-7 rounded-lg muted-box flex items-center justify-center text-blue-600 shadow-xs">
                   <i data-lucide="tag" class="w-3.5 h-3.5"></i>
                 </div>
-                <span class="text-xs font-extrabold text-slate-800 whitespace-nowrap">
+                <span class="text-xs font-bold text-[var(--ink-main)] whitespace-nowrap">
                   ประเภทธุรกรรม:
                 </span>
               </div>
               <div id="subProductPills" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <!-- Injected dynamically by JavaScript as Pure Neumorphic Pills -->
+                <!-- Injected dynamically by JavaScript as Pills -->
               </div>
             </div>
 
-            <!-- Guarantor Toggle Switch (Pure Neumorphic Soft UI) -->
-            <div class="flex items-center gap-2.5 self-stretch lg:self-auto justify-between sm:justify-end pt-2 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[#cbd5e1]/60 lg:pl-4">
-              <div class="flex items-center gap-1.5 text-slate-700">
-                <div class="w-7 h-7 rounded-xl neu-inset flex items-center justify-center text-indigo-600 shadow-sm">
+            <!-- Guarantor Toggle Switch (Segmented Buttons like DSR+IIR Mode Switcher) -->
+            <div class="flex items-center gap-2.5 self-stretch lg:self-auto justify-between sm:justify-end pt-2 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[var(--line-soft)] lg:pl-4">
+              <div class="flex items-center gap-1.5 text-[var(--ink-main)]">
+                <div class="w-7 h-7 rounded-lg muted-box flex items-center justify-center text-blue-600 shadow-xs">
                   <i data-lucide="users" class="w-3.5 h-3.5"></i>
                 </div>
-                <span class="text-xs font-extrabold whitespace-nowrap">ผู้ค้ำประกัน:</span>
+                <span class="text-xs font-bold whitespace-nowrap">ผู้ค้ำประกัน:</span>
               </div>
-              <div class="flex items-center p-1 rounded-2xl neu-inset gap-1">
-                <button id="btnGuarantorNo" class="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active" title="คลิกเมื่อเคสนี้ไม่มีผู้ค้ำประกัน (จะซ่อนเอกสารผู้ค้ำอัตโนมัติ)">
+              <div class="flex items-center p-1 rounded-xl muted-box border border-[var(--line-soft)] gap-1">
+                <button id="btnGuarantorNo" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none flex items-center gap-1.5 neu-pill-active" title="คลิกเมื่อเคสนี้ไม่มีผู้ค้ำประกัน (จะซ่อนเอกสารผู้ค้ำอัตโนมัติ)">
                   <i data-lucide="user" class="w-3.5 h-3.5"></i>
                   <span>ไม่มีผู้ค้ำ</span>
                 </button>
-                <button id="btnGuarantorYes" class="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer select-none flex items-center gap-1.5 text-slate-600 hover:text-slate-900" title="คลิกเมื่อเคสนี้มีผู้ค้ำประกัน (จะแสดงเอกสารของผู้ค้ำ)">
+                <button id="btnGuarantorYes" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none flex items-center gap-1.5 text-[var(--ink-sub)] hover:text-[var(--ink-main)]" title="คลิกเมื่อเคสนี้มีผู้ค้ำประกัน (จะแสดงเอกสารของผู้ค้ำ)">
                   <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
                   <span>มีผู้ค้ำ</span>
                 </button>
@@ -1990,10 +2034,10 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.13.1"></script>
-  <script src="app.js?v=3.13.1"></script>
-  <script src="pdf-studio.js?v=3.13.1"></script>
-  <script src="dsr-iir-studio.js?v=3.13.1"></script>
+  <script src="checklists.js?v=3.13.2"></script>
+  <script src="app.js?v=3.13.2"></script>
+  <script src="pdf-studio.js?v=3.13.2"></script>
+  <script src="dsr-iir-studio.js?v=3.13.2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
