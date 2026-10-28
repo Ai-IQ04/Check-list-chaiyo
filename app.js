@@ -8,7 +8,7 @@
  */
 
 // App Version Constant
-const CURRENT_APP_VERSION = '3.13.1';
+const CURRENT_APP_VERSION = '3.13.3';
 
 // Application State
 const state = {
@@ -439,6 +439,7 @@ function showUpdateBanner(newVersion) {
   const banner = document.getElementById('updateNotificationBanner');
   const title = document.getElementById('updateBannerTitle');
   const btnReload = document.getElementById('btnReloadNewVersion');
+  const btnDismiss = document.getElementById('btnDismissUpdate');
 
   if (banner && title && btnReload) {
     title.innerText = `🚀 มีการอัปเดตเวอร์ชันใหม่ (v${newVersion})!`;
@@ -446,8 +447,19 @@ function showUpdateBanner(newVersion) {
     banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
     btnReload.onclick = () => {
-      window.location.reload(true);
+      // Force cache-busting reload
+      const url = new URL(window.location.href);
+      url.searchParams.set('v', newVersion);
+      url.searchParams.set('t', Date.now().toString());
+      window.location.href = url.toString();
     };
+
+    if (btnDismiss) {
+      btnDismiss.onclick = () => {
+        banner.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
+        banner.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+      };
+    }
   }
 }
 

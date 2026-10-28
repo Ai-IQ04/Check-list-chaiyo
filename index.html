@@ -348,7 +348,7 @@
               🏍️ สินเชื่อรถมอเตอร์ไซค์
             </span>
             <span class="mono-num text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 font-semibold shrink-0 border border-amber-500/25">
-              v3.13.2 · Anusat
+              v3.13.3 · Anusat
             </span>
           </div>
           <p class="text-[11px] text-[var(--ink-sub)] truncate hidden sm:block">Chaiyo Document Studio • ตรวจสอบและจัดเตรียมเอกสารสินเชื่อก่อนส่ง (รองรับมือถือ / iPad)</p>
@@ -503,7 +503,7 @@
 
       <!-- Version Info -->
       <div class="pt-3 border-t border-[#cbd5e1]/60 text-center">
-        <span class="text-[10px] text-slate-500 font-bold">v3.13.1 • License: Anusat • 100% Client-Side</span>
+        <span class="text-[10px] text-slate-500 font-bold">v3.13.3 • License: Anusat • 100% Client-Side</span>
       </div>
     </div>
   </div>
@@ -2023,6 +2023,9 @@
     <button id="btnReloadNewVersion" class="neu-btn-orange px-4 py-2 rounded-xl text-xs font-extrabold text-white cursor-pointer ml-2 flex-shrink-0">
       รีเฟรชทันที
     </button>
+    <button id="btnDismissUpdate" class="p-1.5 rounded-xl hover:bg-slate-200/60 text-slate-400 hover:text-slate-700 transition-colors ml-1 cursor-pointer flex-shrink-0" title="ปิดการแจ้งเตือน">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
   </div>
 
   <!-- Neumorphic Floating Toast Notification (Top Center) -->
@@ -2034,10 +2037,10 @@
   </div>
 
   <!-- Scripts with Version Cache-Buster -->
-  <script src="checklists.js?v=3.13.2"></script>
-  <script src="app.js?v=3.13.2"></script>
-  <script src="pdf-studio.js?v=3.13.2"></script>
-  <script src="dsr-iir-studio.js?v=3.13.2"></script>
+  <script src="checklists.js?v=3.13.3"></script>
+  <script src="app.js?v=3.13.3"></script>
+  <script src="pdf-studio.js?v=3.13.3"></script>
+  <script src="dsr-iir-studio.js?v=3.13.3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
